@@ -1,0 +1,6 @@
+numpy
+overpass
+pyproj
+pydantic
+requests
+shapely
