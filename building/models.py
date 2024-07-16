@@ -1,3 +1,6 @@
+from typing import Dict
+from typing import List
+
 from django.db import models
 
 from osm.building import Building as OSMBuilding
@@ -13,6 +16,14 @@ class Building(models.Model):
     lon_max = models.FloatField()
     lat_min = models.FloatField()
     lat_max = models.FloatField()
+
+    @property
+    def geometry(self) -> List[Dict[str, float]]:
+        return self.osm_raw["geometry"]
+
+    @property
+    def tags(self) -> Dict[str, str]:
+        return self.osm_raw["tags"]
 
     @classmethod
     def create_from_osm(cls, osm_building: OSMBuilding) -> "Building":
