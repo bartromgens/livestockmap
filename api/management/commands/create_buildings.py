@@ -32,18 +32,24 @@ class Command(BaseCommand):
         for building_raw in buildings_raw:
             buildings_osm.append(OSMBuilding.create_from_osm_way(building_raw))
 
+        self.stdout.write(f"{len(buildings_osm)} buildings found")
+
         test_building_id = 271591630  # area 2905, 100x29
         test_building = list(
             filter(lambda build: build.id == test_building_id, buildings_osm)
         )[0]
+        buildings_osm_large = list(
+            filter(lambda build: build.area_square_meters > 200, buildings_osm)
+        )
 
         self.stdout.write(f"area: {test_building.area_square_meters} m^2")
         self.stdout.write(f"length width: {test_building.length_width} m")
 
-        self.stdout.write(f"{len(buildings_osm)} buildings created")
+        self.stdout.write(f"{len(buildings_osm_large)} buildings created")
 
         buildings: List[Building] = [
-            Building.create_from_osm(building_osm) for building_osm in buildings_osm
+            Building.create_from_osm(building_osm)
+            for building_osm in buildings_osm_large
         ]
 
         self.stdout.write(
