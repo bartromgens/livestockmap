@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { CommonModule } from "@angular/common";
 import { RouterOutlet } from '@angular/router';
 
 import { LeafletModule } from "@bluehalo/ngx-leaflet";
@@ -6,6 +7,7 @@ import { latLng, polygon, tileLayer } from "leaflet";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
 
 import { BuildingService } from "./core/building.service";
 
@@ -14,9 +16,11 @@ import { BuildingService } from "./core/building.service";
   selector: 'app-root',
   standalone: true,
   imports: [
+    CommonModule,
     RouterOutlet,
     LeafletModule,
     MatToolbarModule,
+    MatIconModule,
     MatSidenavModule,
     MatButtonModule,
   ],
@@ -34,6 +38,7 @@ export class AppComponent {
     center: latLng(52.1, 5.58)
   };
   layers: any[] = [];
+  opened: boolean = true;
 
   constructor(private buildingService: BuildingService) {}
 
