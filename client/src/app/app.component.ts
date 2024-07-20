@@ -1,13 +1,25 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+
 import { LeafletModule } from "@bluehalo/ngx-leaflet";
-import { circle, latLng, marker, polygon, tileLayer } from "leaflet";
+import { latLng, polygon, tileLayer } from "leaflet";
+import { MatToolbarModule } from "@angular/material/toolbar";
+import { MatSidenavModule } from "@angular/material/sidenav";
+import { MatButtonModule } from "@angular/material/button";
+
 import { BuildingService } from "./core/building.service";
+
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, LeafletModule],
+  imports: [
+    RouterOutlet,
+    LeafletModule,
+    MatToolbarModule,
+    MatSidenavModule,
+    MatButtonModule,
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -18,14 +30,10 @@ export class AppComponent {
       tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         { maxZoom: 18, attribution: '...' })
     ],
-    zoom: 5,
-    center: latLng(46.879966, -121.726909)
+    zoom: 15,
+    center: latLng(52.1, 5.58)
   };
-  layers = [
-    circle([ 46.95, -122 ], { radius: 5000 }),
-    polygon([[ 46.8, -121.85 ], [ 46.92, -121.92 ], [ 46.87, -121.8 ]]),
-    marker([ 46.879966, -121.726909 ])
-  ];
+  layers: any[] = [];
 
   constructor(private buildingService: BuildingService) {}
 
