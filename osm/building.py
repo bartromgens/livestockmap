@@ -31,11 +31,34 @@ class Building:
 
     WGS84 = pyproj.Proj(init="epsg:4326")
     EXCLUDE_TYPES_DEFAULT = (
-        "house",
         "apartments",
-        "retail",
+        "barracks",
+        "castle",
+        "commercial",
+        "college",
         "industrial",
+        "garage",
+        "garages",
+        "government",
         "greenhouse",
+        "hangar",
+        "house",
+        "hotel",
+        "office",
+        "parking",
+        "public",
+        "religious",
+        "residental",
+        "retail",
+        "school",
+        "sports_hall",
+        "sports_centre",
+        "stadium",
+        "supermarket",
+        "university",
+        "train_station",
+        "transportation",
+        "warehouse",
     )
 
     @classmethod
