@@ -3,13 +3,15 @@ import { CommonModule } from "@angular/common";
 import { RouterOutlet } from '@angular/router';
 
 import { LeafletModule } from "@bluehalo/ngx-leaflet";
-import { latLng, LeafletMouseEvent, polygon, tileLayer, Map } from "leaflet";
+import { latLng, LeafletMouseEvent, polygon, tileLayer, Map, Polygon } from "leaflet";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
+import { MatCardModule } from "@angular/material/card";
 
 import { BuildingService } from "./core/building.service";
+import { Building } from "./core/building";
 
 
 @Component({
@@ -23,12 +25,14 @@ import { BuildingService } from "./core/building.service";
     MatIconModule,
     MatSidenavModule,
     MatButtonModule,
+    MatCardModule,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  title: string = 'livestockmap';
+  Object = Object;
+  readonly title: string = 'livestockmap';
   options = {
     layers: [
       tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -39,7 +43,21 @@ export class AppComponent {
   };
   layers: any[] = [];
   opened: boolean = true;
-  map: Map|null = null;
+
+  buildingSelected: Building|null = null;
+  layerSelected: Polygon|null = null;
+
+  private map: Map|null = null;
+  private readonly highlightStyle = {
+    'color': '#FF3388',
+    'weight': 2,
+    'opacity': 1
+  };
+  private readonly defaultStyle = {
+    'color': '#3388FF',
+    'weight': 3,
+    'opacity': 1
+  };
 
   constructor(private buildingService: BuildingService, private zone: NgZone) {}
 
@@ -65,12 +83,16 @@ export class AppComponent {
     this.layers = layers;
   }
 
-  onLayerClick(event: L.LeafletMouseEvent, layer: L.Layer) {
+  onLayerClick(event: L.LeafletMouseEvent, layerClicked: L.Layer) {
     // this.zone.run(() => {
     //   console.log('onLayerClick');
 		// });
-    console.log('onLayerClick', (layer as any)["buildingId"]);
-    console.log('onLayerClick', (layer as any)["building"]);
+    this.layerSelected?.setStyle(this.defaultStyle);
+    const layer: Polygon = (layerClicked as Polygon);
+    const building: Building = (layer as any)["building"];
+    this.layerSelected = layer;
+    this.buildingSelected = building;
+    layer.setStyle(this.highlightStyle);
   }
 
   onMapClick(event: LeafletMouseEvent): void {

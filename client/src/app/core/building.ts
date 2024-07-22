@@ -10,7 +10,6 @@ export interface BuildingResource {
   width: number;
   tags: {[key: string]: string};
   geometry: CoordinateResource[];
-  url: string;
 }
 
 export class Coordinate {
@@ -37,16 +36,19 @@ export class Building {
     public width: number,
     public tags: {[key: string]: string},
     public geometry: Coordinate[],
-    public url: string
   ) {
   }
 
   static fromResource(resource: BuildingResource): Building {
     const coordinates = Coordinate.fromResources(resource.geometry);
-    return new Building(resource.way_id, resource.area, resource.length, resource.width, resource.tags, coordinates, resource.url);
+    return new Building(resource.way_id, resource.area, resource.length, resource.width, resource.tags, coordinates);
   }
 
   static fromResources(resources: BuildingResource[]): Building[] {
     return resources.map(resource => Building.fromResource(resource))
+  }
+
+  get osmUrl(): string {
+    return `https://www.openstreetmap.org/way/${this.way_id}`
   }
 }
