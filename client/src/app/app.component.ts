@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { RouterOutlet } from '@angular/router';
 
 import { LeafletModule } from "@bluehalo/ngx-leaflet";
-import { latLng, polygon, tileLayer } from "leaflet";
+import { latLng, LeafletMouseEvent, polygon, tileLayer, Map } from "leaflet";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatButtonModule } from "@angular/material/button";
@@ -39,14 +39,15 @@ export class AppComponent {
   };
   layers: any[] = [];
   opened: boolean = true;
+  map: Map|null = null;
 
-  constructor(private buildingService: BuildingService) {}
+  constructor(private buildingService: BuildingService, private zone: NgZone) {}
 
   ngOnInit(): void {
     this.update();
   }
 
-  private update() {
+  private update(): void {
     const layers : any[] = [];
     this.buildingService.getBuildings().subscribe(buildings => {
       for (const building of buildings) {
@@ -54,9 +55,29 @@ export class AppComponent {
         for (const coordinate of building.geometry) {
           coordinates.push([coordinate.lat, coordinate.lon]);
         }
-        layers.push(polygon(coordinates));
+        const layer: any = polygon(coordinates);
+        layer.on('click', (event: L.LeafletMouseEvent) => this.onLayerClick(event, layer));
+        layer.buildingId = building.way_id;
+        layer.building = building;
+        layers.push(layer);
       }
     });
     this.layers = layers;
+  }
+
+  onLayerClick(event: L.LeafletMouseEvent, layer: L.Layer) {
+    // this.zone.run(() => {
+    //   console.log('onLayerClick');
+		// });
+    console.log('onLayerClick', (layer as any)["buildingId"]);
+    console.log('onLayerClick', (layer as any)["building"]);
+  }
+
+  onMapClick(event: LeafletMouseEvent): void {
+    console.log('mapClick');
+  }
+
+  onMapReady(map: Map) {
+	  this.map = map;
   }
 }

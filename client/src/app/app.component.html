@@ -9,7 +9,10 @@
     <div class="page-content-wrapper"
          leaflet
          [leafletOptions]="options"
-         [leafletLayers]="layers">
+         [leafletLayers]="layers"
+         (leafletClick)="onMapClick($event)"
+         (leafletMapReady)="onMapReady($event)"
+    >
     </div>
     Main content
   </mat-sidenav-content>
