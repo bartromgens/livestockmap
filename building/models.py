@@ -13,24 +13,31 @@ class Coordinate(BaseModel):
 
 
 class Address(models.Model):
+    node_id = models.IntegerField(unique=True, null=False, db_index=True)
+    lat = models.FloatField(null=False)
+    lon = models.FloatField(null=False)
     street = models.CharField(max_length=200)
     housenumber = models.CharField(max_length=200)
     postcode = models.CharField(max_length=200, null=True)
     city = models.CharField(max_length=200, null=True)
 
     @staticmethod
-    def create_from_node(node) -> "Address":
+    def get_or_create_from_node(node) -> "Address":
         tags = node["tags"]
         street = tags.get("addr:street")
         housenumber = tags.get("addr:housenumber")
         postcode = tags.get("addr:postcode")
         city = tags.get("addr:city")
-        return Address.objects.create(
+        address, _created = Address.objects.get_or_create(
+            node_id=node["id"],
             street=street,
             housenumber=housenumber,
             postcode=postcode,
             city=city,
+            lat=node["lat"],
+            lon=node["lon"],
         )
+        return address
 
     def __str__(self):
         return f"{self.street} {self.housenumber}, {self.city}"

@@ -19,10 +19,13 @@ class BuildingAdmin(admin.ModelAdmin):
 
 class AddressAdmin(admin.ModelAdmin):
     list_display = [
+        "node_id",
         "street",
         "housenumber",
         "postcode",
         "city",
+        "lat",
+        "lon",
     ]
 
 

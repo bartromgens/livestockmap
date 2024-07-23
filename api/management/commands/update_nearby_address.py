@@ -13,7 +13,6 @@ class Command(BaseCommand):
     help = ""
 
     def handle(self, *args, **options):
-        # TODO BR: get existing or remove duplicates
         distance = 100
         buildings = Building.objects.all()
         for i, building in enumerate(buildings):
@@ -21,6 +20,6 @@ class Command(BaseCommand):
             nodes = get_address_nearby(
                 building.center.lat, building.center.lon, distance
             )
-            addresses_nearby = [Address.create_from_node(node) for node in nodes]
+            addresses_nearby = [Address.get_or_create_from_node(node) for node in nodes]
             building.addresses_nearby.set(addresses_nearby)
             building.save()
