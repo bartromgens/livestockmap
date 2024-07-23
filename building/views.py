@@ -7,7 +7,7 @@ from building.models import Building
 class BuildingSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Building
-        fields = ["url", "way_id", "area", "length", "width", "tags", "geometry"]
+        fields = ["id", "way_id", "area", "length", "width", "tags", "geometry"]
 
 
 class BuildingViewSet(viewsets.ModelViewSet):

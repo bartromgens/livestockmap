@@ -1,20 +1,26 @@
+import logging
+
 from django.core.management.base import BaseCommand
+
+from building.models import Address
+from building.models import Building
 from osm.building import get_address_nearby
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
     help = ""
 
     def handle(self, *args, **options):
-        lat = 52.0988864
-        lon = 5.5681605
+        # TODO BR: get existing or remove duplicates
         distance = 100
-        nodes = get_address_nearby(lat, lon, distance)
-        print(nodes["elements"])
-        for node in nodes["elements"]:
-            print(
-                node["tags"]["addr:street"],
-                node["tags"]["addr:housenumber"],
-                node["tags"]["addr:postcode"],
-                node["tags"]["addr:city"],
+        buildings = Building.objects.all()
+        for i, building in enumerate(buildings):
+            self.stdout.write(f"finding address for building {i+1}/{len(buildings)}")
+            nodes = get_address_nearby(
+                building.center.lat, building.center.lon, distance
             )
+            addresses_nearby = [Address.create_from_node(node) for node in nodes]
+            building.addresses_nearby.set(addresses_nearby)
+            building.save()
