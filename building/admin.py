@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from building.models import Address
 from building.models import Building
+from building.models import Company
 
 
 class BuildingAdmin(admin.ModelAdmin):
@@ -29,6 +30,16 @@ class AddressAdmin(admin.ModelAdmin):
     ]
 
 
+class CompanyAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "address",
+        "description",
+        "active",
+    ]
+
+
 # Register your models here.
 admin.site.register(Building, BuildingAdmin)
 admin.site.register(Address, AddressAdmin)
+admin.site.register(Company, CompanyAdmin)
