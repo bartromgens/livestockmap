@@ -43,6 +43,12 @@ class Address(models.Model):
         return f"{self.street} {self.housenumber}, {self.city}"
 
 
+class Company(models.Model):
+    description = models.CharField(max_length=2000, null=False)
+    active = models.BooleanField(default=True, null=False)
+    address = models.ForeignKey(Address, null=False, on_delete=models.CASCADE)
+
+
 class Building(models.Model):
     way_id = models.IntegerField(unique=True, null=False, db_index=True)
     osm_raw = models.JSONField()
