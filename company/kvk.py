@@ -1,5 +1,4 @@
 from typing import List
-from typing import Tuple
 
 import requests
 from lxml import html

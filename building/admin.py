@@ -31,11 +31,17 @@ class AddressAdmin(admin.ModelAdmin):
 
 
 class CompanyAdmin(admin.ModelAdmin):
+    list_filter = ["active", "chicken", "pig", "cattle", "sheep", "goat"]
     list_display = [
         "id",
         "address",
         "description",
         "active",
+        "chicken",
+        "pig",
+        "cattle",
+        "sheep",
+        "goat",
     ]
 
 

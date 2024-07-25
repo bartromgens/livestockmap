@@ -47,6 +47,27 @@ class Company(models.Model):
     description = models.CharField(max_length=2000, null=False)
     active = models.BooleanField(default=True, null=False)
     address = models.ForeignKey(Address, null=False, on_delete=models.CASCADE)
+    chicken = models.BooleanField(default=False, null=False)
+    pig = models.BooleanField(default=False, null=False)
+    cattle = models.BooleanField(default=False, null=False)
+    sheep = models.BooleanField(default=False, null=False)
+    goat = models.BooleanField(default=False, null=False)
+
+    @property
+    def has_type(self) -> bool:
+        return any([self.chicken, self.pig, self.cattle, self.sheep, self.goat])
+
+    def update_type(self) -> None:
+        cattle_words = ["melkvee", "rundvee", "kalveren"]
+        chicken_words = ["pluimvee", "kippen", "kuikens", "hennen"]
+        pig_words = ["varken"]
+        sheep_words = ["schaap", "schapen"]
+        goat_words = ["geit"]
+        self.cattle = any(word in self.description for word in cattle_words)
+        self.chicken = any(word in self.description for word in chicken_words)
+        self.pig = any(word in self.description for word in pig_words)
+        self.sheep = any(word in self.description for word in sheep_words)
+        self.goat = any(word in self.description for word in goat_words)
 
 
 class Building(models.Model):
