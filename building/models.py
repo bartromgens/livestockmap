@@ -60,7 +60,7 @@ class Company(models.Model):
     def update_type(self) -> None:
         cattle_words = ["melkvee", "rundvee", "kalveren"]
         chicken_words = ["pluimvee", "kippen", "kuikens", "hennen"]
-        pig_words = ["varken"]
+        pig_words = ["varken", "zeug"]
         sheep_words = ["schaap", "schapen"]
         goat_words = ["geit"]
         description = self.description.lower()
