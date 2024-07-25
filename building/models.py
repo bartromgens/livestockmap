@@ -63,11 +63,12 @@ class Company(models.Model):
         pig_words = ["varken"]
         sheep_words = ["schaap", "schapen"]
         goat_words = ["geit"]
-        self.cattle = any(word in self.description for word in cattle_words)
-        self.chicken = any(word in self.description for word in chicken_words)
-        self.pig = any(word in self.description for word in pig_words)
-        self.sheep = any(word in self.description for word in sheep_words)
-        self.goat = any(word in self.description for word in goat_words)
+        description = self.description.lower()
+        self.cattle = any(word in description for word in cattle_words)
+        self.chicken = any(word in description for word in chicken_words)
+        self.pig = any(word in description for word in pig_words)
+        self.sheep = any(word in description for word in sheep_words)
+        self.goat = any(word in description for word in goat_words)
 
 
 class Building(models.Model):
