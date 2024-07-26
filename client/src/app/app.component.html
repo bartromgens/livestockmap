@@ -22,7 +22,7 @@
         <br/>
         <div class="mat-title-medium">Nearby addresses</div>
         <div *ngFor="let address of buildingSelected.addresses_nearby">
-          {{ address.toString() }}
+          {{ address.toString() }}, {{ address.coordinate.distanceTo(buildingSelected.center)| number:'1.0-0'}} m
         </div>
       </mat-card-content>
     </mat-card>
