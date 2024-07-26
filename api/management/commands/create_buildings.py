@@ -19,13 +19,19 @@ class Command(BaseCommand):
             52.109061883798304,
             5.592364638898419,
         )
+        test_bbox_brabant = (
+            51.6121757,
+            5.6340277,
+            51.6421757,
+            5.6640277,
+        )
         test_box_large = (
             51.998199003792266,
             5.337630742650022,
             52.261223462827274,
             5.809699529271116,
         )
-        buildings_raw = get_buildings_batches(test_bbox)
+        buildings_raw = get_buildings_batches(test_bbox_brabant)
         # print(json.dumps(buildings_raw, indent=2))
 
         buildings_osm: List[Building] = []
@@ -34,16 +40,9 @@ class Command(BaseCommand):
 
         self.stdout.write(f"{len(buildings_osm)} buildings found")
 
-        test_building_id = 271591630  # area 2905, 100x29
-        test_building = list(
-            filter(lambda build: build.id == test_building_id, buildings_osm)
-        )[0]
         buildings_osm_large = list(
             filter(lambda build: build.area_square_meters > 200, buildings_osm)
         )
-
-        self.stdout.write(f"area: {test_building.area_square_meters} m^2")
-        self.stdout.write(f"length width: {test_building.length_width} m")
 
         self.stdout.write(f"{len(buildings_osm_large)} buildings created")
 
