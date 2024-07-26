@@ -22,6 +22,9 @@ API options:
 - https://developers.kvk.nl/nl/apis (requires a KvK number)
 - https://overheid.io/documentatie/v3/openkvk (may not have the same information as the KvK API, more expensive)
 
+Websites:
+- https://www.uittrekselregister.nl/zoekresultaten?q=
+
 ### Tools
 
 #### Overpas-turbo

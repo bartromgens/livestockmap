@@ -2,12 +2,49 @@ from typing import Dict
 from typing import List
 
 from django.db import models
+from pydantic import BaseModel
 
 from osm.building import Building as OSMBuilding
 
 
+class Coordinate(BaseModel):
+    lat: float
+    lon: float
+
+
+class Address(models.Model):
+    node_id = models.IntegerField(unique=True, null=False, db_index=True)
+    lat = models.FloatField(null=False)
+    lon = models.FloatField(null=False)
+    street = models.CharField(max_length=200)
+    housenumber = models.CharField(max_length=200)
+    postcode = models.CharField(max_length=200, null=True)
+    city = models.CharField(max_length=200, null=True)
+
+    @staticmethod
+    def get_or_create_from_node(node) -> "Address":
+        tags = node["tags"]
+        street = tags.get("addr:street")
+        housenumber = tags.get("addr:housenumber")
+        postcode = tags.get("addr:postcode")
+        city = tags.get("addr:city")
+        address, _created = Address.objects.get_or_create(
+            node_id=node["id"],
+            street=street,
+            housenumber=housenumber,
+            postcode=postcode,
+            city=city,
+            lat=node["lat"],
+            lon=node["lon"],
+        )
+        return address
+
+    def __str__(self):
+        return f"{self.street} {self.housenumber}, {self.city}"
+
+
 class Building(models.Model):
-    way_id = models.IntegerField(unique=True, null=False)
+    way_id = models.IntegerField(unique=True, null=False, db_index=True)
     osm_raw = models.JSONField()
     area = models.FloatField()  # in m^2
     length = models.FloatField()  # in m
@@ -16,10 +53,17 @@ class Building(models.Model):
     lon_max = models.FloatField()
     lat_min = models.FloatField()
     lat_max = models.FloatField()
+    addresses_nearby = models.ManyToManyField(Address)
 
     @property
     def geometry(self) -> List[Dict[str, float]]:
         return self.osm_raw["geometry"]
+
+    @property
+    def center(self) -> Coordinate:
+        lat = abs(self.lat_max - self.lat_min) / 2 + self.lat_min
+        lon = abs(self.lon_max - self.lon_min) / 2 + self.lon_min
+        return Coordinate(lat=lat, lon=lon)
 
     @property
     def tags(self) -> Dict[str, str]:

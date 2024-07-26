@@ -12,8 +12,8 @@ from shapely.geometry import Point
 from shapely.geometry import Polygon
 from shapely.ops import transform
 
+from osm.core import api
 from osm.tile import generate_tiles
-from osm.overpass import api
 
 logger = logging.getLogger(__name__)
 
@@ -130,3 +130,14 @@ def get_buildings_batches(bbox, exclude_types=Building.EXCLUDE_TYPES_DEFAULT):
         logger.info(f"getting tile: {i+1}/{len(tiles)}")
         buildings += get_buildings(tile, exclude_types=exclude_types)["elements"]
     return buildings
+
+
+def get_address_nearby(lat: float, lon: float, distance: float):
+    query = f"""(
+        node["addr:housenumber"](around:{distance},{lat},{lon});
+    );
+    """
+    logger.info(
+        f"get nearby addresses for {lat}, {lon} within a distance of {distance} m"
+    )
+    return api.get(query, responseformat="json")["elements"]

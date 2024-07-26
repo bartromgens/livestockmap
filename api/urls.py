@@ -18,7 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include
 from django.urls import path
-from rest_framework import routers, serializers, viewsets
+from rest_framework import routers
 
 from building.views import BuildingViewSet
 

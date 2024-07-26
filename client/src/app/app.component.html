@@ -19,6 +19,11 @@
         <div *ngFor="let key of Object.keys(buildingSelected.tags)">
           {{ key }}: {{ buildingSelected.tags[key] }}
         </div>
+        <br/>
+        <div class="mat-title-medium">Nearby addresses</div>
+        <div *ngFor="let address of buildingSelected.addresses_nearby">
+          {{ address.toString() }}
+        </div>
       </mat-card-content>
     </mat-card>
   </mat-sidenav>
