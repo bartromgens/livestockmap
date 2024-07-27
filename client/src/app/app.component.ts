@@ -3,7 +3,7 @@ import { CommonModule } from "@angular/common";
 import { RouterOutlet } from '@angular/router';
 
 import { LeafletModule } from "@bluehalo/ngx-leaflet";
-import { latLng, LeafletMouseEvent, polygon, tileLayer, Map, Polygon } from "leaflet";
+import { latLng, LeafletMouseEvent, polygon, tileLayer, Map, Polygon, marker } from "leaflet";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatButtonModule } from "@angular/material/button";
@@ -13,7 +13,6 @@ import { MatCardModule } from "@angular/material/card";
 import { BuildingService } from "./core/building.service";
 import { Building } from "./core/building";
 import { CompanyService } from "./core/company.service";
-import { Company } from "./core/company";
 
 
 @Component({
@@ -94,9 +93,13 @@ export class AppComponent {
 
   private updateCompanies(): void {
     this.companyService.getCompanies().subscribe(companies => {
+      const layers: any[] = [];
       for (const company of companies) {
         console.log(company);
+        const layer: any = marker([company.address.lat, company.address.lon])
+        layers.push(layer);
       }
+      this.layers.push(...layers);
     })
   }
 
