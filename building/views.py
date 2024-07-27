@@ -33,6 +33,10 @@ class BuildingSerializer(serializers.HyperlinkedModelSerializer):
             "tags",
             "geometry",
             "addresses_nearby",
+            "lon_min",
+            "lon_max",
+            "lat_min",
+            "lat_max",
         ]
 
 
