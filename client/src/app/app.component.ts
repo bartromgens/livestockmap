@@ -31,6 +31,7 @@ import { Building } from "./core/building";
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
+  private readonly ZOOM_DEFAULT = 15;
   Object = Object;
   readonly title: string = 'livestockmap';
   options = {
@@ -38,7 +39,7 @@ export class AppComponent {
       tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         { maxZoom: 18, attribution: '...' })
     ],
-    zoom: 15,
+    zoom: this.ZOOM_DEFAULT,
     center: latLng(52.1, 5.58)
   };
   layers: any[] = [];
@@ -66,8 +67,8 @@ export class AppComponent {
   }
 
   private update(): void {
-    const layers : any[] = [];
     this.buildingService.getBuildings().subscribe(buildings => {
+      const layers : any[] = [];
       for (const building of buildings) {
         const coordinates : [number, number][] = [];
         for (const coordinate of building.geometry) {
@@ -79,8 +80,9 @@ export class AppComponent {
         layer.building = building;
         layers.push(layer);
       }
+      this.layers = layers;
+      this.map?.setView(latLng(buildings[0].center.lat, buildings[0].center.lon), this.ZOOM_DEFAULT);
     });
-    this.layers = layers;
   }
 
   onLayerClick(event: L.LeafletMouseEvent, layerClicked: L.Layer) {
