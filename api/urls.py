@@ -21,9 +21,11 @@ from django.urls import path
 from rest_framework import routers
 
 from building.views import BuildingViewSet
+from building.views import CompanyViewSet
 
 router = routers.DefaultRouter()
 router.register(r"buildings", BuildingViewSet)
+router.register(r"companies", CompanyViewSet)
 
 urlpatterns = [
     path("api/", include(router.urls)),

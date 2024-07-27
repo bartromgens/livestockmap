@@ -3,6 +3,7 @@ from rest_framework import viewsets
 
 from building.models import Address
 from building.models import Building
+from building.models import Company
 
 
 class AddressSerializer(serializers.HyperlinkedModelSerializer):
@@ -17,6 +18,29 @@ class AddressSerializer(serializers.HyperlinkedModelSerializer):
             "lat",
             "lon",
         ]
+
+
+class CompanySerializer(serializers.HyperlinkedModelSerializer):
+    address = AddressSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Company
+        fields = [
+            "id",
+            "description",
+            "active",
+            "address",
+            "chicken",
+            "pig",
+            "cattle",
+            "sheep",
+            "goat",
+        ]
+
+
+class CompanyViewSet(viewsets.ModelViewSet):
+    queryset = Company.objects.filter(active=True)
+    serializer_class = CompanySerializer
 
 
 class BuildingSerializer(serializers.HyperlinkedModelSerializer):

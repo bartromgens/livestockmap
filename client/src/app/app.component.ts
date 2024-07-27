@@ -12,6 +12,8 @@ import { MatCardModule } from "@angular/material/card";
 
 import { BuildingService } from "./core/building.service";
 import { Building } from "./core/building";
+import { CompanyService } from "./core/company.service";
+import { Company } from "./core/company";
 
 
 @Component({
@@ -60,7 +62,11 @@ export class AppComponent {
     'opacity': 1
   };
 
-  constructor(private buildingService: BuildingService, private zone: NgZone) {}
+  constructor(
+    private buildingService: BuildingService,
+    private companyService: CompanyService,
+    private zone: NgZone
+  ) {}
 
   ngOnInit(): void {
     this.update();
@@ -83,6 +89,15 @@ export class AppComponent {
       this.layers = layers;
       this.map?.setView(latLng(buildings[0].center.lat, buildings[0].center.lon), this.ZOOM_DEFAULT);
     });
+    this.updateCompanies();
+  }
+
+  private updateCompanies(): void {
+    this.companyService.getCompanies().subscribe(companies => {
+      for (const company of companies) {
+        console.log(company);
+      }
+    })
   }
 
   onLayerClick(event: L.LeafletMouseEvent, layerClicked: L.Layer) {
