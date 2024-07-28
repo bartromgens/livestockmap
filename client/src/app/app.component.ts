@@ -10,9 +10,10 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatCardModule } from "@angular/material/card";
 
-import { BuildingService } from "./core/building.service";
-import { Building } from "./core/building";
-import { CompanyService } from "./core/company.service";
+import { BuildingService } from "./core";
+import { Building } from "./core";
+import { CompanyService } from "./core";
+import { chickenIcon, cowIcon, pigIcon } from "./map";
 
 
 @Component({
@@ -95,9 +96,22 @@ export class AppComponent {
     this.companyService.getCompanies().subscribe(companies => {
       const layers: any[] = [];
       for (const company of companies) {
-        console.log(company);
-        const layer: any = marker([company.address.lat, company.address.lon])
-        layers.push(layer);
+        const coordinate = latLng([company.address.lat, company.address.lon]);
+        if (company.chicken) {
+          layers.push(marker(coordinate, {icon: chickenIcon}));
+        }
+        if (company.pig) {
+          layers.push(marker(coordinate, {icon: pigIcon}));
+        }
+        if (company.cattle) {
+          layers.push(marker(coordinate, {icon: cowIcon}));
+        }
+        // if (company.sheep) {
+        //   layers.push(marker(coordinate,{icon: chickenIcon}));
+        // }
+        // if (company.goat) {
+        //   layers.push(marker(coordinate,{icon: chickenIcon}));
+        // }
       }
       this.layers.push(...layers);
     })
