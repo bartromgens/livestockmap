@@ -40,3 +40,8 @@ out geom;
 #### geojson.io
 
 Use https://geojson.io to test visualizing geojson data on an interactive map.
+
+
+#### Icons
+
+https://www.vecteezy.com is used to find images and icons with a free license.

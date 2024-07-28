@@ -3,15 +3,17 @@ import { CommonModule } from "@angular/common";
 import { RouterOutlet } from '@angular/router';
 
 import { LeafletModule } from "@bluehalo/ngx-leaflet";
-import { latLng, LeafletMouseEvent, polygon, tileLayer, Map, Polygon } from "leaflet";
+import { latLng, LeafletMouseEvent, polygon, tileLayer, Map, Polygon, marker } from "leaflet";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatCardModule } from "@angular/material/card";
 
-import { BuildingService } from "./core/building.service";
-import { Building } from "./core/building";
+import { BuildingService } from "./core";
+import { Building } from "./core";
+import { CompanyService } from "./core";
+import { chickenIcon, cowIcon, pigIcon } from "./map";
 
 
 @Component({
@@ -60,7 +62,11 @@ export class AppComponent {
     'opacity': 1
   };
 
-  constructor(private buildingService: BuildingService, private zone: NgZone) {}
+  constructor(
+    private buildingService: BuildingService,
+    private companyService: CompanyService,
+    private zone: NgZone
+  ) {}
 
   ngOnInit(): void {
     this.update();
@@ -83,6 +89,32 @@ export class AppComponent {
       this.layers = layers;
       this.map?.setView(latLng(buildings[0].center.lat, buildings[0].center.lon), this.ZOOM_DEFAULT);
     });
+    this.updateCompanies();
+  }
+
+  private updateCompanies(): void {
+    this.companyService.getCompanies().subscribe(companies => {
+      const layers: any[] = [];
+      for (const company of companies) {
+        const coordinate = latLng([company.address.lat, company.address.lon]);
+        if (company.chicken) {
+          layers.push(marker(coordinate, {icon: chickenIcon}));
+        }
+        if (company.pig) {
+          layers.push(marker(coordinate, {icon: pigIcon}));
+        }
+        if (company.cattle) {
+          layers.push(marker(coordinate, {icon: cowIcon}));
+        }
+        // if (company.sheep) {
+        //   layers.push(marker(coordinate,{icon: chickenIcon}));
+        // }
+        // if (company.goat) {
+        //   layers.push(marker(coordinate,{icon: chickenIcon}));
+        // }
+      }
+      this.layers.push(...layers);
+    })
   }
 
   onLayerClick(event: L.LeafletMouseEvent, layerClicked: L.Layer) {
