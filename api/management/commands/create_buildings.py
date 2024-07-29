@@ -30,13 +30,15 @@ class Command(BaseCommand):
         )
         test_bbox_utrecht_rural = (52.0231300, 4.9633142, 52.0574780, 5.0250918)
         test_bbox_utrecht_city = (52.1081869, 5.0961645, 52.1228383, 5.1226157)
+        test_bbox_flevoland = (52.4443529, 5.5478277, 52.5737960, 5.8413397)
+        test_bbox_twente = (52.0039710, 6.3718900, 52.0631596, 6.5639037)
         test_box_large = (
             51.998199003792266,
             5.337630742650022,
             52.261223462827274,
             5.809699529271116,
         )
-        buildings_raw = get_buildings_batches(test_bbox_utrecht_city)
+        buildings_raw = get_buildings_batches(test_bbox_twente)
         # print(json.dumps(buildings_raw, indent=2))
 
         buildings_osm: List[OSMBuilding] = []
