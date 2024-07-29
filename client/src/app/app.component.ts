@@ -3,14 +3,14 @@ import { CommonModule } from "@angular/common";
 import { RouterOutlet } from '@angular/router';
 
 import { LeafletModule } from "@bluehalo/ngx-leaflet";
-import { latLng, LeafletMouseEvent, polygon, tileLayer, Map, Polygon, marker } from "leaflet";
+import { latLng, LeafletMouseEvent, polygon, tileLayer, Map, Polygon, marker, Layer, Marker } from "leaflet";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatCardModule } from "@angular/material/card";
 
-import { BuildingService } from "./core";
+import { BuildingService, Company } from "./core";
 import { Building } from "./core";
 import { CompanyService } from "./core";
 import { chickenIcon, cowIcon, pigIcon } from "./map";
@@ -48,10 +48,12 @@ export class AppComponent {
   opened: boolean = true;
 
   buildingSelected: Building|null = null;
-  layerSelected: Polygon|null = null;
+  layerBuildingSelected: Polygon|null = null;
+  companySelected: Company|null = null;
+  layerCompanySelected: Marker|null = null;
 
   private map: Map|null = null;
-  private readonly highlightStyle = {
+  private readonly highlightBuildingStyle = {
     'color': '#FF3388',
     'weight': 2,
     'opacity': 1
@@ -81,7 +83,7 @@ export class AppComponent {
           coordinates.push([coordinate.lat, coordinate.lon]);
         }
         const layer: any = polygon(coordinates);
-        layer.on('click', (event: L.LeafletMouseEvent) => this.onLayerClick(event, layer));
+        layer.on('click', (event: L.LeafletMouseEvent) => this.onBuildingLayerClick(event, layer));
         layer.buildingId = building.way_id;
         layer.building = building;
         layers.push(layer);
@@ -96,37 +98,44 @@ export class AppComponent {
     this.companyService.getCompanies().subscribe(companies => {
       const layers: any[] = [];
       for (const company of companies) {
+        const layersCompany: any[] = [];
         const coordinate = latLng([company.address.lat, company.address.lon]);
         if (company.chicken) {
-          layers.push(marker(coordinate, {icon: chickenIcon}));
+          layersCompany.push(marker(coordinate, {icon: chickenIcon}));
         }
         if (company.pig) {
-          layers.push(marker(coordinate, {icon: pigIcon}));
+          layersCompany.push(marker(coordinate, {icon: pigIcon}));
         }
         if (company.cattle) {
-          layers.push(marker(coordinate, {icon: cowIcon}));
+          layersCompany.push(marker(coordinate, {icon: cowIcon}));
         }
-        // if (company.sheep) {
-        //   layers.push(marker(coordinate,{icon: chickenIcon}));
-        // }
-        // if (company.goat) {
-        //   layers.push(marker(coordinate,{icon: chickenIcon}));
-        // }
+        for (const layer of layersCompany) {
+          layer.on('click', (event: L.LeafletMouseEvent) => this.onCompanyLayerClick(event, layer));
+          layer.company = company;
+        }
+        layers.push(...layersCompany);
       }
       this.layers.push(...layers);
     })
   }
 
-  onLayerClick(event: L.LeafletMouseEvent, layerClicked: L.Layer) {
+  onBuildingLayerClick(event: LeafletMouseEvent, layerClicked: Layer): void {
     // this.zone.run(() => {
     //   console.log('onLayerClick');
 		// });
-    this.layerSelected?.setStyle(this.defaultStyle);
+    this.layerBuildingSelected?.setStyle(this.defaultStyle);
     const layer: Polygon = (layerClicked as Polygon);
     const building: Building = (layer as any)["building"];
-    this.layerSelected = layer;
+    this.layerBuildingSelected = layer;
     this.buildingSelected = building;
-    layer.setStyle(this.highlightStyle);
+    layer.setStyle(this.highlightBuildingStyle);
+  }
+
+  onCompanyLayerClick(event: LeafletMouseEvent, layerClicked: Layer): void {
+    const layer: Marker = (layerClicked as Marker);
+    const company: Company = (layer as any)["company"];
+    console.log(company);
+    this.companySelected = company;
   }
 
   onMapClick(event: LeafletMouseEvent): void {
