@@ -1,5 +1,5 @@
 import { Component, NgZone } from '@angular/core';
-import { CommonModule } from "@angular/common";
+import {CommonModule, NgOptimizedImage} from "@angular/common";
 import { RouterOutlet } from '@angular/router';
 
 import { LeafletModule } from "@bluehalo/ngx-leaflet";
@@ -10,7 +10,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatCardModule } from "@angular/material/card";
 
-import { BuildingService, Company } from "./core";
+import {BuildingService, Company, Coordinate} from "./core";
 import { Building } from "./core";
 import { CompanyService } from "./core";
 import { chickenIcon, cowIcon, pigIcon } from "./map";
@@ -22,6 +22,7 @@ import { chickenIcon, cowIcon, pigIcon } from "./map";
   imports: [
     CommonModule,
     RouterOutlet,
+    NgOptimizedImage,
     LeafletModule,
     MatToolbarModule,
     MatIconModule,
@@ -120,22 +121,22 @@ export class AppComponent {
   }
 
   onBuildingLayerClick(event: LeafletMouseEvent, layerClicked: Layer): void {
-    // this.zone.run(() => {
-    //   console.log('onLayerClick');
-		// });
-    this.layerBuildingSelected?.setStyle(this.defaultStyle);
-    const layer: Polygon = (layerClicked as Polygon);
-    const building: Building = (layer as any)["building"];
-    this.layerBuildingSelected = layer;
-    this.buildingSelected = building;
-    layer.setStyle(this.highlightBuildingStyle);
+    this.zone.run(() => {
+      this.layerBuildingSelected?.setStyle(this.defaultStyle);
+      const layer: Polygon = (layerClicked as Polygon);
+      layer.setStyle(this.highlightBuildingStyle);
+      const building: Building = (layer as any)["building"];
+      this.layerBuildingSelected = layer;
+      this.buildingSelected = building;
+    });
   }
 
   onCompanyLayerClick(event: LeafletMouseEvent, layerClicked: Layer): void {
-    const layer: Marker = (layerClicked as Marker);
-    const company: Company = (layer as any)["company"];
-    console.log(company);
-    this.companySelected = company;
+    this.zone.run(() => {
+      const layer: Marker = (layerClicked as Marker);
+      const company: Company = (layer as any)["company"];
+      this.companySelected = company;
+    });
   }
 
   onMapClick(event: LeafletMouseEvent): void {
@@ -144,5 +145,9 @@ export class AppComponent {
 
   onMapReady(map: Map) {
 	  this.map = map;
+  }
+
+  googleCoordinateUrl(coordinate: Coordinate): string {
+    return `https://www.google.com/maps/place/${coordinate.lat},${coordinate.lon}`;
   }
 }
