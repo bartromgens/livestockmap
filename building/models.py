@@ -1,10 +1,16 @@
+import logging
 from typing import Dict
 from typing import List
 
 from django.db import models
 from pydantic import BaseModel
 
+from company.kvk import get_companies_for_address
 from osm.building import Building as OSMBuilding
+from osm.building import get_address_nearby
+
+
+logger = logging.getLogger(__name__)
 
 
 class Coordinate(BaseModel):
@@ -42,6 +48,20 @@ class Address(models.Model):
     def __str__(self):
         return f"{self.street} {self.housenumber}, {self.city}"
 
+    @classmethod
+    def update_companies(cls, addresses: List["Address"]) -> List["Company"]:
+        companies = []
+        # TODO BR: (optionally) only update addresses without related company
+        for i, address in enumerate(addresses):
+            logger.info(f"finding company for address {i+1}/{len(addresses)}")
+            companies_kvk = get_companies_for_address(str(address))
+            for c in companies_kvk:
+                company, _created = Company.objects.get_or_create(
+                    address=address, description=c.description, active=c.active
+                )
+                companies.append(company)
+        return companies
+
 
 class Company(models.Model):
     description = models.CharField(max_length=2000, null=False)
@@ -69,6 +89,13 @@ class Company(models.Model):
         self.pig = any(word in description for word in pig_words)
         self.sheep = any(word in description for word in sheep_words)
         self.goat = any(word in description for word in goat_words)
+
+    @classmethod
+    def update_types(cls, companies: List["Company"]) -> None:
+        for i, company in enumerate(companies):
+            logger.info(f"determining type for company {i+1}/{len(companies)}")
+            company.update_type()
+            company.save()
 
 
 class Building(models.Model):
@@ -100,7 +127,7 @@ class Building(models.Model):
     @classmethod
     def create_from_osm(cls, osm_building: OSMBuilding) -> "Building":
         length, width = osm_building.length_width
-        return Building.objects.create(
+        building, _created = Building.objects.get_or_create(
             way_id=osm_building.id,
             osm_raw=osm_building.raw,
             lon_min=osm_building.raw["bounds"]["minlon"],
@@ -111,3 +138,22 @@ class Building(models.Model):
             length=length,
             width=width,
         )
+        return building
+
+    @classmethod
+    def update_nearby_addresses(cls, buildings: List["Building"]) -> List[Address]:
+        addresses = []
+        for i, building in enumerate(buildings):
+            logger.info(f"finding address for building {i+1}/{len(buildings)}")
+            nodes = get_address_nearby(
+                building.center.lat, building.center.lon, distance=100
+            )
+            if len(nodes) == 0:
+                nodes = get_address_nearby(
+                    building.center.lat, building.center.lon, distance=200
+                )
+            addresses_nearby = [Address.get_or_create_from_node(node) for node in nodes]
+            addresses += addresses_nearby
+            building.addresses_nearby.set(addresses_nearby)
+            building.save()
+        return addresses

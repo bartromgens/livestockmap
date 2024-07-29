@@ -1,8 +1,12 @@
+import logging
 from typing import List
 
 import requests
 from lxml import html
 from pydantic import BaseModel
+
+
+logger = logging.getLogger(__name__)
 
 
 class Company(BaseModel):
@@ -12,7 +16,9 @@ class Company(BaseModel):
 
 def get_companies_for_address(address: str) -> List[Company]:
     url = f"https://www.uittrekselregister.nl/zoekresultaten?q={address}"
+    logger.info(f"Requesting {url}")
     response = requests.get(url)
+    logger.info(f"Received response for {url}")
     tree = html.fromstring(response.text)
 
     # Extract the content after the "Omschrijving" field and check for "Niet actief"
@@ -28,4 +34,5 @@ def get_companies_for_address(address: str) -> List[Company]:
         omschrijving_text = omschrijving[0].strip() if omschrijving else ""
         active = not bool(niet_actief)
         companies.append(Company(description=omschrijving_text, active=active))
+    logger.info(f"{len(companies)} companies found for {address}")
     return companies
