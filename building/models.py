@@ -189,14 +189,18 @@ class Building(models.Model):
                     building.center.lat, building.center.lon, distance=200
                 )
             addresses_nearby = [Address.get_or_create_from_node(node) for node in nodes]
-            count = min(limit, len(addresses_nearby))
-            addresses_nearby = sorted(
-                addresses_nearby,
-                key=lambda a: a.coordinate.distance_to(building.center),
-            )[:count]
-            for a in addresses_nearby:
-                logger.info(f"{a} | {a.coordinate.distance_to(building.center)} m")
+            addresses_nearby = cls.filter_nearest(building, addresses_nearby)
             building.addresses_nearby.set(addresses_nearby)
             building.save()
             addresses += addresses_nearby
         return addresses
+
+    @classmethod
+    def filter_nearest(
+        cls, building, addresses: List[Address], limit=5
+    ) -> List[Address]:
+        count = min(limit, len(addresses))
+        return sorted(
+            addresses,
+            key=lambda a: a.coordinate.distance_to(building.center),
+        )[:count]
