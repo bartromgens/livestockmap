@@ -1,5 +1,6 @@
 import logging
 import math
+import time
 from typing import Dict
 from typing import List
 
@@ -90,6 +91,7 @@ class Address(models.Model):
                     address=address, description=c.description, active=c.active
                 )
                 companies.append(company)
+            time.sleep(1.0)  # rate limit to prevent unintentional DOS
         return companies
 
 
