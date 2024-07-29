@@ -18,6 +18,7 @@ def get_companies_for_address(address: str) -> List[Company]:
     url = f"https://www.uittrekselregister.nl/zoekresultaten?q={address}"
     logger.info(f"Requesting {url}")
     response = requests.get(url)
+    assert response.status_code == 200, f"{response.status_code}"
     logger.info(f"Received response for {url}")
     tree = html.fromstring(response.text)
 
@@ -33,6 +34,7 @@ def get_companies_for_address(address: str) -> List[Company]:
 
         omschrijving_text = omschrijving[0].strip() if omschrijving else ""
         active = not bool(niet_actief)
-        companies.append(Company(description=omschrijving_text, active=active))
+        if omschrijving_text:
+            companies.append(Company(description=omschrijving_text, active=active))
     logger.info(f"{len(companies)} companies found for {address}")
     return companies
