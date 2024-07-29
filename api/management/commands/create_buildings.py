@@ -1,7 +1,10 @@
 from typing import List
 
 from django.core.management.base import BaseCommand
+
+from building.models import Address
 from building.models import Building
+from building.models import Company
 from osm.building import get_buildings_batches
 from osm.building import Building as OSMBuilding
 
@@ -31,7 +34,7 @@ class Command(BaseCommand):
             52.261223462827274,
             5.809699529271116,
         )
-        buildings_raw = get_buildings_batches(test_bbox_brabant)
+        buildings_raw = get_buildings_batches(test_bbox)
         # print(json.dumps(buildings_raw, indent=2))
 
         buildings_osm: List[Building] = []
@@ -50,6 +53,10 @@ class Command(BaseCommand):
             Building.create_from_osm(building_osm)
             for building_osm in buildings_osm_large
         ]
+
+        addresses = Building.update_nearby_addresses(buildings)
+        companies = Address.update_companies(addresses)
+        Company.update_types(companies)
 
         self.stdout.write(
             self.style.SUCCESS(f"Successfully created {len(buildings)} buildings")
