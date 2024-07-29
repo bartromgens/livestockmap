@@ -77,7 +77,7 @@ class Building:
     def area_square_meters(self) -> float:
         start = time.time()
         area = self._polygon_utm_projection.area
-        logger.info(f"area_square_meters took {int((time.time() - start) * 1000)} ms")
+        logger.debug(f"area_square_meters took {int((time.time() - start) * 1000)} ms")
         return area
 
     @property

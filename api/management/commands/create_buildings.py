@@ -28,13 +28,14 @@ class Command(BaseCommand):
             51.6421757,
             5.6640277,
         )
+        test_bbox_utrecht = (52.0231300, 4.9633142, 52.0574780, 5.0250918)
         test_box_large = (
             51.998199003792266,
             5.337630742650022,
             52.261223462827274,
             5.809699529271116,
         )
-        buildings_raw = get_buildings_batches(test_bbox)
+        buildings_raw = get_buildings_batches(test_bbox_utrecht)
         # print(json.dumps(buildings_raw, indent=2))
 
         buildings_osm: List[Building] = []
