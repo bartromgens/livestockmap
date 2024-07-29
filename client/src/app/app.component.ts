@@ -86,7 +86,7 @@ export class AppComponent {
         layer.building = building;
         layers.push(layer);
       }
-      this.layers = layers;
+      this.layers.push(...layers);
       this.map?.setView(latLng(buildings[0].center.lat, buildings[0].center.lon), this.ZOOM_DEFAULT);
     });
     this.updateCompanies();
