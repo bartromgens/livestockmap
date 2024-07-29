@@ -6,7 +6,7 @@ from building.models import Address
 from building.models import Building
 from building.models import Company
 from osm.building import get_buildings_batches
-from osm.building import Building as OSMBuilding
+from osm.building import OSMBuilding
 
 
 class Command(BaseCommand):
@@ -28,17 +28,18 @@ class Command(BaseCommand):
             51.6421757,
             5.6640277,
         )
-        test_bbox_utrecht = (52.0231300, 4.9633142, 52.0574780, 5.0250918)
+        test_bbox_utrecht_rural = (52.0231300, 4.9633142, 52.0574780, 5.0250918)
+        test_bbox_utrecht_city = (52.1081869, 5.0961645, 52.1228383, 5.1226157)
         test_box_large = (
             51.998199003792266,
             5.337630742650022,
             52.261223462827274,
             5.809699529271116,
         )
-        buildings_raw = get_buildings_batches(test_bbox_utrecht)
+        buildings_raw = get_buildings_batches(test_bbox_utrecht_city)
         # print(json.dumps(buildings_raw, indent=2))
 
-        buildings_osm: List[Building] = []
+        buildings_osm: List[OSMBuilding] = []
         for building_raw in buildings_raw:
             buildings_osm.append(OSMBuilding.create_from_osm_way(building_raw))
 

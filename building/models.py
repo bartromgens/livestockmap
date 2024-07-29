@@ -1,4 +1,5 @@
 import logging
+import math
 from typing import Dict
 from typing import List
 
@@ -6,7 +7,7 @@ from django.db import models
 from pydantic import BaseModel
 
 from company.kvk import get_companies_for_address
-from osm.building import Building as OSMBuilding
+from osm.building import OSMBuilding
 from osm.building import get_address_nearby
 
 
@@ -17,6 +18,31 @@ class Coordinate(BaseModel):
     lat: float
     lon: float
 
+    def distance_to(self, coordinate: "Coordinate") -> float:
+        return self.distance(self, coordinate)
+
+    @classmethod
+    def to_radians(cls, degrees: float) -> float:
+        return degrees * (math.pi / 180)
+
+    @classmethod
+    def distance(cls, coord1: "Coordinate", coord2: "Coordinate") -> float:
+        """
+        The haversine distance between two coordinates
+        """
+        R = 6371 * 1000  # Radius of the Earth in meters
+
+        dLat = cls.to_radians(coord2.lat - coord1.lat)
+        dLon = cls.to_radians(coord2.lon - coord1.lon)
+        rLat1 = cls.to_radians(coord1.lat)
+        rLat2 = cls.to_radians(coord2.lat)
+
+        a = math.sin(dLat / 2) * math.sin(dLat / 2) + math.sin(dLon / 2) * math.sin(
+            dLon / 2
+        ) * math.cos(rLat1) * math.cos(rLat2)
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        return R * c
+
 
 class Address(models.Model):
     node_id = models.IntegerField(unique=True, null=False, db_index=True)
@@ -26,6 +52,10 @@ class Address(models.Model):
     housenumber = models.CharField(max_length=200)
     postcode = models.CharField(max_length=200, null=True)
     city = models.CharField(max_length=200, null=True)
+
+    @property
+    def coordinate(self) -> Coordinate:
+        return Coordinate(lat=self.lat, lon=self.lon)
 
     @staticmethod
     def get_or_create_from_node(node) -> "Address":
@@ -76,6 +106,10 @@ class Company(models.Model):
     @property
     def has_type(self) -> bool:
         return any([self.chicken, self.pig, self.cattle, self.sheep, self.goat])
+
+    @property
+    def coordinate(self) -> Coordinate:
+        return self.address.coordinate
 
     def update_type(self) -> None:
         cattle_words = ["melkvee", "rundvee", "kalveren"]
@@ -141,7 +175,9 @@ class Building(models.Model):
         return building
 
     @classmethod
-    def update_nearby_addresses(cls, buildings: List["Building"]) -> List[Address]:
+    def update_nearby_addresses(
+        cls, buildings: List["Building"], limit=5
+    ) -> List[Address]:
         addresses = []
         for i, building in enumerate(buildings):
             logger.info(f"finding address for building {i+1}/{len(buildings)}")
@@ -153,7 +189,14 @@ class Building(models.Model):
                     building.center.lat, building.center.lon, distance=200
                 )
             addresses_nearby = [Address.get_or_create_from_node(node) for node in nodes]
-            addresses += addresses_nearby
+            count = min(limit, len(addresses_nearby))
+            addresses_nearby = sorted(
+                addresses_nearby,
+                key=lambda a: a.coordinate.distance_to(building.center),
+            )[:count]
+            for a in addresses_nearby:
+                logger.info(f"{a} | {a.coordinate.distance_to(building.center)} m")
             building.addresses_nearby.set(addresses_nearby)
             building.save()
+            addresses += addresses_nearby
         return addresses

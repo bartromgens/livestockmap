@@ -12,9 +12,6 @@ for more information on how these are to be used.
 
 ## Development
 
-### TODO
-- [ ] Limit nearby addresses to the first nearest N (3?) to limit the search for too many companies in case of a populated area.
-
 ### Ideas
 
 #### Company information (KvK)

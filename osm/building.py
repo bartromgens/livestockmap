@@ -22,7 +22,7 @@ warnings.filterwarnings(action="ignore", category=FutureWarning, module="shapely
 
 
 @dataclass
-class Building:
+class OSMBuilding:
     id: int
     tags: Dict[str, str]
     raw: Dict[Any, Any]
@@ -36,6 +36,7 @@ class Building:
         "castle",
         "commercial",
         "college",
+        "church",
         "industrial",
         "garage",
         "garages",
@@ -62,10 +63,10 @@ class Building:
     )
 
     @classmethod
-    def create_from_osm_way(cls, osm_way_json):
+    def create_from_osm_way(cls, osm_way_json) -> "OSMBuilding":
         points = [(point["lon"], point["lat"]) for point in osm_way_json["geometry"]]
         polygon = Polygon(points)
-        return Building(
+        return OSMBuilding(
             raw=osm_way_json,
             id=osm_way_json["id"],
             tags=osm_way_json["tags"],
@@ -95,7 +96,7 @@ class Building:
         return length, width
 
     @classmethod
-    def calculate_utm_zone(cls, lon):
+    def calculate_utm_zone(cls, lon) -> int:
         return int((lon + 180) / 6) + 1
 
     @property
@@ -120,7 +121,7 @@ def get_buildings(bbox, exclude_types):
     )  # use verbosity = geom to get way geometry in geojson
 
 
-def get_buildings_batches(bbox, exclude_types=Building.EXCLUDE_TYPES_DEFAULT):
+def get_buildings_batches(bbox, exclude_types=OSMBuilding.EXCLUDE_TYPES_DEFAULT):
     tiles = generate_tiles(
         bbox[0], bbox[1], bbox[2], bbox[3], delta_lat=0.07, delta_lon=0.07
     )

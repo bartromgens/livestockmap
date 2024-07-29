@@ -65,7 +65,7 @@ export class Coordinate {
               Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(rLat1) * Math.cos(rLat2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    return R * c; // Distance in kilometers
+    return R * c;
   }
 }
 
