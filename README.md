@@ -45,3 +45,10 @@ Use https://geojson.io to test visualizing geojson data on an interactive map.
 #### Icons
 
 https://www.vecteezy.com is used to find images and icons with a free license.
+
+#### Colors
+
+https://paletton.com to select [3 colors](https://paletton.com/#uid=5000A0kRrUXo7Tmv7UvUjxWSNph):
+- FF8300
+- FF0000
+- F300B0

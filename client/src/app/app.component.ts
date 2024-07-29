@@ -36,7 +36,7 @@ import { chickenIcon, cowIcon, pigIcon } from "./map";
 export class AppComponent {
   private readonly ZOOM_DEFAULT = 15;
   Object = Object;
-  readonly title: string = 'livestockmap';
+  readonly title: string = 'veekaart.nl';
   options = {
     layers: [
       tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -46,7 +46,7 @@ export class AppComponent {
     center: latLng(52.1, 5.58)
   };
   layers: any[] = [];
-  opened: boolean = true;
+  sidebarOpened: boolean = false;
 
   buildingSelected: Building|null = null;
   layerBuildingSelected: Polygon|null = null;
@@ -122,6 +122,7 @@ export class AppComponent {
 
   onBuildingLayerClick(event: LeafletMouseEvent, layerClicked: Layer): void {
     this.zone.run(() => {
+      this.sidebarOpened = true;
       this.layerBuildingSelected?.setStyle(this.defaultStyle);
       const layer: Polygon = (layerClicked as Polygon);
       layer.setStyle(this.highlightBuildingStyle);
@@ -133,6 +134,7 @@ export class AppComponent {
 
   onCompanyLayerClick(event: LeafletMouseEvent, layerClicked: Layer): void {
     this.zone.run(() => {
+      this.sidebarOpened = true;
       const layer: Marker = (layerClicked as Marker);
       const company: Company = (layer as any)["company"];
       this.companySelected = company;

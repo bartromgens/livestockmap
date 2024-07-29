@@ -1,8 +1,9 @@
 <mat-toolbar>
-  <span>{{ title }}</span>
+  <img ngSrc="/assets/logo.png" alt="chicken" width=90 height=26 />
+  <span [ngStyle]="{'margin-left': '8px'}">{{ title }}</span>
 </mat-toolbar>
 <mat-sidenav-container>
-  <mat-sidenav #sidenav mode="side" [(opened)]="opened" class="custom-sidebar">
+  <mat-sidenav #sidenav mode="side" [(opened)]="sidebarOpened" class="custom-sidebar">
     <mat-card *ngIf=buildingSelected appearance="outlined" class="card-sidebar">
       <mat-card-header>
         <mat-card-title>Building</mat-card-title>
@@ -30,9 +31,9 @@
       <mat-card-header>
         <mat-card-title>Company</mat-card-title>
         <mat-card-subtitle>
-          <img *ngIf="companySelected.chicken" ngSrc="/assets/chicken60x60.png" alt="chicken" width=30 height=30/>
-          <img *ngIf="companySelected.cattle" ngSrc="/assets/cow60x38.png" alt="chicken" width=30 height=19/>
-          <img *ngIf="companySelected.pig" ngSrc="/assets/pig60x40.png" alt="chicken" width=30 height=20/>
+          <img *ngIf="companySelected.chicken" ngSrc="/assets/chicken60x60.png" alt="chicken" width=30 height=30 />
+          <img *ngIf="companySelected.cattle" ngSrc="/assets/cow60x38.png" alt="chicken" width=30 height=19 />
+          <img *ngIf="companySelected.pig" ngSrc="/assets/pig60x40.png" alt="chicken" width=30 height=20 />
         </mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
@@ -58,10 +59,10 @@
   </mat-sidenav-content>
 </mat-sidenav-container>
 
-<div class="toggle-sidebar" [ngClass]="{ 'collapsed': !opened }" [ngStyle]="{'background-color': 'white', 'z-index': 99}">
+<div class="toggle-sidebar" [ngClass]="{ 'collapsed': !sidebarOpened }" [ngStyle]="{'background-color': 'white', 'z-index': 99}">
   <div class="btn-toggle-sidebar" (click)="sidenav.toggle()">
-    <mat-icon *ngIf="opened">chevron_left</mat-icon>
-    <mat-icon *ngIf="!opened">chevron_right</mat-icon>
+    <mat-icon *ngIf="sidebarOpened">chevron_left</mat-icon>
+    <mat-icon *ngIf="!sidebarOpened">chevron_right</mat-icon>
   </div>
 </div>
 
