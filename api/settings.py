@@ -215,22 +215,22 @@ LOGGING = {
         },
         "api": {
             "handlers": ["file_debug", "file_error", "console"],
-            "propagate": True,
+            "propagate": False,
             "level": "DEBUG",
         },
         "building": {
             "handlers": ["file_debug", "file_error", "console"],
-            "propagate": True,
+            "propagate": False,
             "level": "DEBUG",
         },
         "company": {
             "handlers": ["file_debug", "file_error", "console"],
-            "propagate": True,
+            "propagate": False,
             "level": "DEBUG",
         },
         "osm": {
             "handlers": ["file_debug", "file_error", "console"],
-            "propagate": True,
+            "propagate": False,
             "level": "DEBUG",
         },
     },
