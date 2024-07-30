@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from django.core.management.base import BaseCommand
@@ -8,37 +9,34 @@ from building.models import Company
 from osm.building import get_buildings_batches
 from osm.building import OSMBuilding
 
+logger = logging.getLogger(__name__)
+
+REGIONS = {
+    "flevoland": (52.4443529, 5.5478277, 52.5737960, 5.8413397),
+    "lunteren": (52.092612, 5.5628603, 52.109061, 5.5923646),
+    "montfoort": (52.1081869, 5.0961645, 52.1228383, 5.1226157),
+    "twente": (52.0039710, 6.3718900, 52.0631596, 6.5639037),
+    "uden": (51.612175, 5.6340277, 51.6421757, 5.6640277),
+    "utrecht": (52.0231300, 4.9633142, 52.0574780, 5.0250918),
+}
+
 
 class Command(BaseCommand):
     help = "Create livestock buildings from OSM"
 
-    # def add_arguments(self, parser):
-    #     parser.add_argument("area", nargs="+", type=int)
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--region",
+            type=str,
+            default="lunteren",
+            help="The region to create buildings for",
+        )
 
     def handle(self, *args, **options):
-        test_bbox = (
-            52.09261214198491,
-            5.562860339734603,
-            52.109061883798304,
-            5.592364638898419,
-        )
-        test_bbox_brabant = (
-            51.6121757,
-            5.6340277,
-            51.6421757,
-            5.6640277,
-        )
-        test_bbox_utrecht_rural = (52.0231300, 4.9633142, 52.0574780, 5.0250918)
-        test_bbox_utrecht_city = (52.1081869, 5.0961645, 52.1228383, 5.1226157)
-        test_bbox_flevoland = (52.4443529, 5.5478277, 52.5737960, 5.8413397)
-        test_bbox_twente = (52.0039710, 6.3718900, 52.0631596, 6.5639037)
-        test_box_large = (
-            51.998199003792266,
-            5.337630742650022,
-            52.261223462827274,
-            5.809699529271116,
-        )
-        buildings_raw = get_buildings_batches(test_bbox_twente)
+        region = options["region"]
+        region_bbox = REGIONS[region]
+        logger.info(f"Creating buildings for region: {region}")
+        buildings_raw = get_buildings_batches(region_bbox)
         # print(json.dumps(buildings_raw, indent=2))
 
         buildings_osm: List[OSMBuilding] = []
