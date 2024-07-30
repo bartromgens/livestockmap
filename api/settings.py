@@ -235,3 +235,9 @@ LOGGING = {
         },
     },
 }
+
+# Local settings
+# Allow any settings to be defined in settings_local.py which should be
+# ignored in your version control system allowing for settings to be
+# defined per machine.
+from api.settings_local import *
