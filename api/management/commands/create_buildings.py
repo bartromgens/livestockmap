@@ -49,7 +49,7 @@ class Command(BaseCommand):
             filter(lambda build: build.area_square_meters > 200, buildings_osm)
         )
 
-        logger.info(f"{len(buildings_osm_large)} buildings created")
+        logger.info(f"{len(buildings_osm_large)} buildings selected as large enough")
 
         buildings: List[Building] = [
             Building.create_from_osm(building_osm)
