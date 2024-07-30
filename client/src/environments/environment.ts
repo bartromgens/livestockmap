@@ -1,4 +1,4 @@
 export const environment = {
-  production: false,
-  apiBaseUrl: 'http://localhost:8000/api',
+  production: true,
+  apiBaseUrl: 'https://api.veekaart.nl/api',
 };
