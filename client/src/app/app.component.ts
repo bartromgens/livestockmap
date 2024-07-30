@@ -90,7 +90,9 @@ export class AppComponent {
         layers.push(layer);
       }
       this.layers.push(...layers);
-      this.map?.setView(latLng(buildings[0].center.lat, buildings[0].center.lon), this.ZOOM_DEFAULT);
+      if (buildings.length > 0) {
+        this.map?.setView(latLng(buildings[0].center.lat, buildings[0].center.lon), this.ZOOM_DEFAULT);
+      }
     });
     this.updateCompanies();
   }

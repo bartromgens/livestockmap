@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -138,25 +139,105 @@ REST_FRAMEWORK = {
 # corsheaders
 CORS_ORIGIN_ALLOW_ALL = True
 
-# Logging
+###########
+# LOGGING #
+###########
+
+# Directory of the logfiles
+LOG_DIR = os.path.join(BASE_DIR, "log")
+
+# Max. logfile size
+LOGFILE_MAXSIZE = 10 * 1024 * 1024
+
+# Number of old log files that are stored before they are deleted
+# see https://docs.python.org/3/library/logging.handlers.html#rotatingfilehandler
+LOGFILE_BACKUP_COUNT = 3
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "console": {
-            "format": "%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
+        "verbose": {
+            "format": "[%(asctime)s] %(levelname)s [%(name)s::%(funcName)s() (%(lineno)s)]: %(message)s",
+            "datefmt": "%d/%b/%Y %H:%M:%S",
+        },
+    },
+    "filters": {
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
         },
     },
     "handlers": {
         "console": {
+            "level": "DEBUG",
             "class": "logging.StreamHandler",
-            "formatter": "console",
+            "filters": ["require_debug_true"],
+            "formatter": "verbose",
+        },
+        "file_django": {
+            "level": "ERROR",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOG_DIR, "django.log"),
+            "maxBytes": LOGFILE_MAXSIZE,
+            "backupCount": LOGFILE_BACKUP_COUNT,
+            "formatter": "verbose",
+        },
+        "file_error": {
+            "level": "ERROR",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOG_DIR, "error.log"),
+            "maxBytes": LOGFILE_MAXSIZE,
+            "backupCount": LOGFILE_BACKUP_COUNT,
+            "formatter": "verbose",
+        },
+        "file_debug": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOG_DIR, "debug.log"),
+            "maxBytes": LOGFILE_MAXSIZE,
+            "backupCount": LOGFILE_BACKUP_COUNT,
+            "formatter": "verbose",
         },
     },
     "loggers": {
         "": {
-            "level": "INFO",
-            "handlers": ["console"],
+            "handlers": ["file_error", "console"],
+            "propagate": True,
+            "level": "ERROR",
+        },
+        "django": {
+            "handlers": ["file_django", "console"],
+            "propagate": True,
+            "level": "ERROR",
+        },
+        "api": {
+            "handlers": ["file_debug", "file_error", "console"],
+            "propagate": False,
+            "level": "DEBUG",
+        },
+        "building": {
+            "handlers": ["file_debug", "file_error", "console"],
+            "propagate": False,
+            "level": "DEBUG",
+        },
+        "company": {
+            "handlers": ["file_debug", "file_error", "console"],
+            "propagate": False,
+            "level": "DEBUG",
+        },
+        "osm": {
+            "handlers": ["file_debug", "file_error", "console"],
+            "propagate": False,
+            "level": "DEBUG",
         },
     },
 }
+
+# Local settings
+# Allow any settings to be defined in settings_local.py which should be
+# ignored in your version control system allowing for settings to be
+# defined per machine.
+from api.settings_local import *

@@ -91,7 +91,7 @@ class Address(models.Model):
                     address=address, description=c.description, active=c.active
                 )
                 companies.append(company)
-            time.sleep(1.0)  # rate limit to prevent unintentional DOS
+            time.sleep(0.5)  # rate limit to prevent unintentional DOS
         return companies
 
 

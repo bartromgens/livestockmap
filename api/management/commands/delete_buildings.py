@@ -1,7 +1,9 @@
-from typing import List
+import logging
 
 from django.core.management.base import BaseCommand
 from building.models import Building
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -11,6 +13,6 @@ class Command(BaseCommand):
         buildings = Building.objects.all()
         building_count = buildings.count()
         buildings.delete()
-        self.stdout.write(
+        logging.info(
             self.style.SUCCESS(f"Successfully deleted {building_count} buildings")
         )
