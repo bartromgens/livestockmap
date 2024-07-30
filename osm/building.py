@@ -76,10 +76,7 @@ class OSMBuilding:
 
     @property
     def area_square_meters(self) -> float:
-        start = time.time()
-        area = self._polygon_utm_projection.area
-        logger.debug(f"area_square_meters took {int((time.time() - start) * 1000)} ms")
-        return area
+        return self._polygon_utm_projection.area
 
     @property
     def length_width(self):
