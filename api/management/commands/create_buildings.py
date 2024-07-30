@@ -43,13 +43,13 @@ class Command(BaseCommand):
         for building_raw in buildings_raw:
             buildings_osm.append(OSMBuilding.create_from_osm_way(building_raw))
 
-        self.stdout.write(f"{len(buildings_osm)} buildings found")
+        logger.info(f"{len(buildings_osm)} buildings found")
 
         buildings_osm_large = list(
             filter(lambda build: build.area_square_meters > 200, buildings_osm)
         )
 
-        self.stdout.write(f"{len(buildings_osm_large)} buildings created")
+        logger.info(f"{len(buildings_osm_large)} buildings created")
 
         buildings: List[Building] = [
             Building.create_from_osm(building_osm)
@@ -60,6 +60,6 @@ class Command(BaseCommand):
         companies = Address.update_companies(addresses)
         Company.update_types(companies)
 
-        self.stdout.write(
+        logger.info(
             self.style.SUCCESS(f"Successfully created {len(buildings)} buildings")
         )
