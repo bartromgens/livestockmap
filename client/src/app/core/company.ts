@@ -1,4 +1,4 @@
-import { Address, AddressResource } from "./building";
+import {Address, AddressResource, Coordinate} from "./building";
 
 export interface CompanyResource {
   "id": number;
@@ -24,6 +24,10 @@ export class Company {
     public sheep: boolean,
     public goat: boolean,
   ) {
+  }
+
+  get coordinate(): Coordinate {
+    return this.address.coordinate;
   }
 
   static fromResource(resource: CompanyResource): Company {

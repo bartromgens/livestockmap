@@ -1,9 +1,10 @@
 <mat-toolbar>
-  <span>{{ title }}</span>
+  <img ngSrc="/assets/logo.png" alt="chicken" width=90 height=26 />
+  <span [ngStyle]="{'margin-left': '8px'}">{{ title }}</span>
 </mat-toolbar>
 <mat-sidenav-container>
-  <mat-sidenav #sidenav mode="side" [(opened)]="opened" class="custom-sidebar">
-    <mat-card *ngIf=buildingSelected appearance="outlined" class="card-building">
+  <mat-sidenav #sidenav mode="side" [(opened)]="sidebarOpened" class="custom-sidebar">
+    <mat-card *ngIf=buildingSelected appearance="outlined" class="card-sidebar">
       <mat-card-header>
         <mat-card-title>Building</mat-card-title>
         <mat-card-subtitle>
@@ -13,7 +14,7 @@
       <mat-card-content>
         <div>Area: {{ buildingSelected.area | number:'1.0-0' }} m<sup>2</sup></div>
         <div>Size: {{ buildingSelected.length | number:'1.0-0' }} x {{ buildingSelected.width | number:'1.0-0' }} m</div>
-        <div>Coordinates: {{ buildingSelected.geometry[0].lon }}, {{ buildingSelected.geometry[0].lat }}</div>
+        <div>{{ buildingSelected.center.lat }}, {{ buildingSelected.center.lon }}</div>
         <br/>
         <div class="mat-title-medium">Tags</div>
         <div *ngFor="let key of Object.keys(buildingSelected.tags)">
@@ -23,6 +24,25 @@
         <div class="mat-title-medium">Nearby addresses</div>
         <div *ngFor="let address of buildingSelected.addresses_nearby">
           {{ address.toString() }}, {{ address.coordinate.distanceTo(buildingSelected.center)| number:'1.0-0'}} m
+        </div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card *ngIf=companySelected appearance="outlined" class="card-sidebar">
+      <mat-card-header>
+        <mat-card-title>Company</mat-card-title>
+        <mat-card-subtitle>
+          <img *ngIf="companySelected.chicken" ngSrc="/assets/chicken60x60.png" alt="chicken" width=30 height=30 />
+          <img *ngIf="companySelected.cattle" ngSrc="/assets/cow60x38.png" alt="chicken" width=30 height=19 />
+          <img *ngIf="companySelected.pig" ngSrc="/assets/pig60x40.png" alt="chicken" width=30 height=20 />
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div>{{ companySelected.description }}, {{ companySelected.description}}</div>
+        <br/>
+        <div>
+          <a [href]=googleCoordinateUrl(companySelected.coordinate)>
+            {{ companySelected.coordinate.lat }}, {{ companySelected.coordinate.lon }}
+          </a>
         </div>
       </mat-card-content>
     </mat-card>
@@ -36,14 +56,13 @@
          (leafletMapReady)="onMapReady($event)"
     >
     </div>
-    Main content
   </mat-sidenav-content>
 </mat-sidenav-container>
 
-<div class="toggle-sidebar" [ngClass]="{ 'collapsed': !opened }" [ngStyle]="{'background-color': 'white', 'z-index': 99}">
+<div class="toggle-sidebar" [ngClass]="{ 'collapsed': !sidebarOpened }" [ngStyle]="{'background-color': 'white', 'z-index': 99}">
   <div class="btn-toggle-sidebar" (click)="sidenav.toggle()">
-    <mat-icon *ngIf="opened">chevron_left</mat-icon>
-    <mat-icon *ngIf="!opened">chevron_right</mat-icon>
+    <mat-icon *ngIf="sidebarOpened">chevron_left</mat-icon>
+    <mat-icon *ngIf="!sidebarOpened">chevron_right</mat-icon>
   </div>
 </div>
 
