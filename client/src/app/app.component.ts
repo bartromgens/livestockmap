@@ -40,7 +40,7 @@ export class AppComponent {
   options = {
     layers: [
       tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        { maxZoom: 18, attribution: '...' })
+        { maxZoom: 20, attribution: '...' })
     ],
     zoom: this.ZOOM_DEFAULT,
     center: latLng(52.1, 5.58)
