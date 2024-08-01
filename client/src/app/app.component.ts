@@ -1,16 +1,18 @@
 import { Component, NgZone } from '@angular/core';
-import {CommonModule, NgOptimizedImage} from "@angular/common";
+import { CommonModule, NgOptimizedImage } from "@angular/common";
 import { RouterOutlet } from '@angular/router';
-
-import { LeafletModule } from "@bluehalo/ngx-leaflet";
-import { latLng, LeafletMouseEvent, polygon, tileLayer, Map, Polygon, marker, Layer, Marker } from "leaflet";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatCardModule } from "@angular/material/card";
 
-import {BuildingService, Company, Coordinate} from "./core";
+import { LeafletModule } from "@bluehalo/ngx-leaflet";
+import 'leaflet.markercluster';  // a leaflet plugin
+import { latLng, LeafletMouseEvent, polygon, tileLayer, Map, Polygon, Layer } from "leaflet";
+import { Marker, marker, markerClusterGroup, divIcon } from 'leaflet';
+
+import { BuildingService, Company, Coordinate } from "./core";
 import { Building } from "./core";
 import { CompanyService } from "./core";
 import { chickenIcon, cowIcon, pigIcon } from "./map";
@@ -118,7 +120,14 @@ export class AppComponent {
         }
         layers.push(...layersCompany);
       }
-      this.layers.push(...layers);
+      const markers = markerClusterGroup({
+        disableClusteringAtZoom: 13,
+        // iconCreateFunction: function(cluster) {
+        //   return divIcon({ html: '<b>' + cluster.getChildCount() + '</b>' }); // use getAllChildMarkers() to get type
+        // }
+      });
+      markers.addLayers(layers);
+      this.layers.push(markers);
     })
   }
 
