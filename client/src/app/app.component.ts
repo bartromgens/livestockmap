@@ -10,7 +10,7 @@ import { MatCardModule } from "@angular/material/card";
 import { LeafletModule } from "@bluehalo/ngx-leaflet";
 import 'leaflet.markercluster';  // a leaflet plugin
 import { latLng, LeafletMouseEvent, polygon, tileLayer, Map, Polygon, Layer } from "leaflet";
-import { Marker, marker, markerClusterGroup, divIcon } from 'leaflet';
+import { Marker, marker, markerClusterGroup, divIcon, MarkerCluster } from 'leaflet';
 
 import { BuildingService, Company, Coordinate } from "./core";
 import { Building } from "./core";
@@ -36,7 +36,8 @@ import { chickenIcon, cowIcon, pigIcon } from "./map";
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  private readonly ZOOM_DEFAULT = 15;
+  private readonly ZOOM_DEFAULT: number = 15;
+  private readonly CLUSTER_AT_ZOOM: number = 14
   Object = Object;
   readonly title: string = 'veekaart.nl';
   options = {
@@ -86,7 +87,7 @@ export class AppComponent {
           coordinates.push([coordinate.lat, coordinate.lon]);
         }
         const layer: any = polygon(coordinates);
-        layer.on('click', (event: L.LeafletMouseEvent) => this.onBuildingLayerClick(event, layer));
+        layer.on('click', (event: LeafletMouseEvent) => this.onBuildingLayerClick(event, layer));
         layer.buildingId = building.way_id;
         layer.building = building;
         layers.push(layer);
@@ -115,20 +116,32 @@ export class AppComponent {
           layersCompany.push(marker(coordinate, {icon: cowIcon}));
         }
         for (const layer of layersCompany) {
-          layer.on('click', (event: L.LeafletMouseEvent) => this.onCompanyLayerClick(event, layer));
+          layer.on('click', (event: LeafletMouseEvent) => this.onCompanyLayerClick(event, layer));
           layer.company = company;
         }
         layers.push(...layersCompany);
       }
       const markers = markerClusterGroup({
-        disableClusteringAtZoom: 13,
-        // iconCreateFunction: function(cluster) {
-        //   return divIcon({ html: '<b>' + cluster.getChildCount() + '</b>' }); // use getAllChildMarkers() to get type
-        // }
+        disableClusteringAtZoom: this.CLUSTER_AT_ZOOM,
+        iconCreateFunction: this.createMarkerGroupIcon,
+        showCoverageOnHover: false,
+        maxClusterRadius: 40,
       });
       markers.addLayers(layers);
       this.layers.push(markers);
     })
+  }
+
+  private createMarkerGroupIcon(cluster: MarkerCluster) {
+    let cattleCount = 0;
+    for (const marker of cluster.getAllChildMarkers()) {
+      const company: Company = (marker as any)["company"];
+      if (company.cattle) {
+        cattleCount += 1;
+      }
+    }
+    const iconHtml: string = `<img src="/assets/cow60x38.png" width=30 height=19><b>${cattleCount}</b>`;
+    return divIcon({ html: iconHtml, iconSize: [0, 0] }); // use getAllChildMarkers() to get type
   }
 
   onBuildingLayerClick(event: LeafletMouseEvent, layerClicked: Layer): void {
