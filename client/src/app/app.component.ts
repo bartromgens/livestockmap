@@ -38,6 +38,7 @@ import { chickenIcon, cowIcon, pigIcon } from "./map";
 export class AppComponent {
   private readonly ZOOM_DEFAULT: number = 15;
   private readonly CLUSTER_AT_ZOOM: number = 14
+  private readonly MAX_CLUSTER_RADIUS: number = 15;
   Object = Object;
   readonly title: string = 'veekaart.nl';
   options = {
@@ -54,7 +55,6 @@ export class AppComponent {
   buildingSelected: Building|null = null;
   layerBuildingSelected: Polygon|null = null;
   companySelected: Company|null = null;
-  layerCompanySelected: Marker|null = null;
 
   private map: Map|null = null;
   private readonly highlightBuildingStyle = {
@@ -106,6 +106,7 @@ export class AppComponent {
       for (const company of companies) {
         const layersCompany: any[] = [];
         const coordinate = latLng([company.address.lat, company.address.lon]);
+        // TODO BR: remove switch with polymorphism
         if (company.chicken) {
           layersCompany.push(marker(coordinate, {icon: chickenIcon}));
         }
@@ -125,7 +126,7 @@ export class AppComponent {
         disableClusteringAtZoom: this.CLUSTER_AT_ZOOM,
         iconCreateFunction: this.createMarkerGroupIcon,
         showCoverageOnHover: false,
-        maxClusterRadius: 40,
+        maxClusterRadius: this.MAX_CLUSTER_RADIUS,
       });
       markers.addLayers(layers);
       this.layers.push(markers);
@@ -133,15 +134,36 @@ export class AppComponent {
   }
 
   private createMarkerGroupIcon(cluster: MarkerCluster) {
+    // TODO BR: remove switch with polymorphism
     let cattleCount = 0;
+    let chickenCount = 0;
+    let pigCount = 0;
     for (const marker of cluster.getAllChildMarkers()) {
       const company: Company = (marker as any)["company"];
       if (company.cattle) {
         cattleCount += 1;
       }
+      if (company.chicken) {
+        chickenCount += 1;
+      }
+      if (company.pig) {
+        pigCount += 1;
+      }
     }
-    const iconHtml: string = `<img src="/assets/cow60x38.png" width=30 height=19><b>${cattleCount}</b>`;
-    return divIcon({ html: iconHtml, iconSize: [0, 0] }); // use getAllChildMarkers() to get type
+    const totalCount = cattleCount + chickenCount + pigCount;
+    const sizeFactorCow = Math.sqrt(cattleCount/totalCount);
+    const sizeCow = [30*sizeFactorCow, 19*sizeFactorCow];
+    const sizeFactorChicken = Math.sqrt(chickenCount/totalCount);
+    const sizeChicken = [30*sizeFactorChicken, 30*sizeFactorChicken];
+    const sizeFactorPig = Math.sqrt(pigCount/totalCount);
+    const sizePig = [30*sizeFactorPig, 20*sizeFactorPig];
+    const iconImageStyle = `display: inline-block;`;
+    let iconHtml: string = `<div style="width: 60px;">`;
+    iconHtml += `<img src="/assets/pig60x40.png" width=${sizePig[0]} height=${sizePig[1]} style="${iconImageStyle}">`;
+    iconHtml += `<img src="/assets/cow60x38.png" width=${sizeCow[0]} height=${sizeCow[1]} style="${iconImageStyle}">`;
+    iconHtml += `<img src="/assets/chicken60x60.png" width=${sizeChicken[0]} height=${sizeChicken[1]} style="">`;
+    iconHtml += `</div>`;
+    return divIcon({ html: iconHtml, iconSize: [0, 0], iconAnchor: [15, 15] }); // use getAllChildMarkers() to get type
   }
 
   onBuildingLayerClick(event: LeafletMouseEvent, layerClicked: Layer): void {
