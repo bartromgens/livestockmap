@@ -9,7 +9,8 @@ import { MatCardModule } from "@angular/material/card";
 
 import { LeafletModule } from "@bluehalo/ngx-leaflet";
 import 'leaflet.markercluster';  // a leaflet plugin
-import { latLng, LeafletMouseEvent, polygon, tileLayer, Map, Polygon, Layer } from "leaflet";
+import { latLng, Map, LeafletMouseEvent, LeafletEvent } from "leaflet";
+import { polygon, tileLayer, Polygon, Layer, LayerGroup, layerGroup } from "leaflet";
 import { Marker, marker, markerClusterGroup, divIcon, MarkerCluster } from 'leaflet';
 
 import { BuildingService, Company, Coordinate } from "./core";
@@ -36,9 +37,10 @@ import { chickenIcon, cowIcon, pigIcon } from "./map";
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  private readonly ZOOM_DEFAULT: number = 15;
-  private readonly CLUSTER_AT_ZOOM: number = 14
-  private readonly MAX_CLUSTER_RADIUS: number = 15;
+  private readonly ZOOM_DEFAULT: number = 14;
+  private readonly CLUSTER_AT_ZOOM: number = 13;
+  private readonly MAX_CLUSTER_RADIUS: number = 20;
+  private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM;
   Object = Object;
   readonly title: string = 'veekaart.nl';
   options = {
@@ -55,6 +57,7 @@ export class AppComponent {
   buildingSelected: Building|null = null;
   layerBuildingSelected: Polygon|null = null;
   companySelected: Company|null = null;
+  buildingLayer: LayerGroup|null = null;
 
   private map: Map|null = null;
   private readonly highlightBuildingStyle = {
@@ -79,6 +82,11 @@ export class AppComponent {
   }
 
   private update(): void {
+    this.updateCompanies();
+    this.updateBuildings();
+  }
+
+  private updateBuildings(): void {
     this.buildingService.getBuildings().subscribe(buildings => {
       const layers : any[] = [];
       for (const building of buildings) {
@@ -92,12 +100,9 @@ export class AppComponent {
         layer.building = building;
         layers.push(layer);
       }
-      this.layers.push(...layers);
-      if (buildings.length > 0) {
-        this.map?.setView(latLng(buildings[0].center.lat, buildings[0].center.lon), this.ZOOM_DEFAULT);
-      }
+      this.buildingLayer = layerGroup(layers);
+      this.layers.push(this.buildingLayer);
     });
-    this.updateCompanies();
   }
 
   private updateCompanies(): void {
@@ -130,10 +135,14 @@ export class AppComponent {
       });
       markers.addLayers(layers);
       this.layers.push(markers);
+
+      if (companies.length > 0) {
+        this.map?.setView(latLng(companies[0].address.lat, companies[0].address.lon), this.ZOOM_DEFAULT);
+      }
     })
   }
 
-  private createMarkerGroupIcon(cluster: MarkerCluster) {
+  private createMarkerGroupIcon(cluster: MarkerCluster): void {
     // TODO BR: remove switch with polymorphism
     let cattleCount = 0;
     let chickenCount = 0;
@@ -163,7 +172,7 @@ export class AppComponent {
     iconHtml += `<img src="/assets/cow60x38.png" width=${sizeCow[0]} height=${sizeCow[1]} style="${iconImageStyle}">`;
     iconHtml += `<img src="/assets/chicken60x60.png" width=${sizeChicken[0]} height=${sizeChicken[1]} style="">`;
     iconHtml += `</div>`;
-    return divIcon({ html: iconHtml, iconSize: [0, 0], iconAnchor: [15, 15] }); // use getAllChildMarkers() to get type
+    return divIcon({ html: iconHtml, iconSize: [0, 0], iconAnchor: [15, 15], className: '' }); // use getAllChildMarkers() to get type
   }
 
   onBuildingLayerClick(event: LeafletMouseEvent, layerClicked: Layer): void {
@@ -191,8 +200,24 @@ export class AppComponent {
     console.log('mapClick');
   }
 
-  onMapReady(map: Map) {
-	  this.map = map;
+  onMapReady(map: Map): void {
+    this.map = map;
+    this.map.on('zoomend', (event: LeafletEvent) => this.onZoom(event));
+  }
+
+  private onZoom(event: LeafletEvent): void {
+    this.zone.run(() => {
+      if (!this.map || !this.buildingLayer) {
+        return;
+      }
+      console.log(this.map.getZoom());
+      if (this.map.getZoom() < this.BUILDINGS_AT_ZOOM && this.map.hasLayer(this.buildingLayer)) {
+        this.map.removeLayer(this.buildingLayer);
+      }
+      if (this.map.getZoom() >= this.BUILDINGS_AT_ZOOM && !this.map.hasLayer(this.buildingLayer)) {
+        this.map.addLayer(this.buildingLayer);
+      }
+    });
   }
 
   googleCoordinateUrl(coordinate: Coordinate): string {
