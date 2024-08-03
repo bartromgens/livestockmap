@@ -210,7 +210,7 @@ export class AppComponent {
       if (!this.map || !this.buildingLayer) {
         return;
       }
-      console.log(this.map.getZoom());
+      console.log('companies in view', this.getCompaniesInView().length);
       if (this.map.getZoom() < this.BUILDINGS_AT_ZOOM && this.map.hasLayer(this.buildingLayer)) {
         this.map.removeLayer(this.buildingLayer);
       }
@@ -222,5 +222,25 @@ export class AppComponent {
 
   googleCoordinateUrl(coordinate: Coordinate): string {
     return `https://www.google.com/maps/place/${coordinate.lat},${coordinate.lon}`;
+  }
+
+  private getCompaniesInView(): Company[] {
+    if (!this.map) {
+      return [];
+    }
+    const companies: Company[] = [];
+    this.map.eachLayer( (layer: Layer) => {
+      if (layer instanceof MarkerCluster) {
+        if (this.map?.getBounds().contains(layer.getLatLng())) {
+          companies.push(...layer.getAllChildMarkers().map(child => (child as any)["company"]));
+        }
+      } else if (layer instanceof Marker) {
+        if (this.map?.getBounds().contains(layer.getLatLng())) {
+          const company = (layer as any)["company"];
+          companies.push(company);
+        }
+      }
+    });
+    return companies;
   }
 }
