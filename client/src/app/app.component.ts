@@ -11,7 +11,7 @@ import { LeafletModule } from "@bluehalo/ngx-leaflet";
 import 'leaflet.markercluster';  // a leaflet plugin
 import { latLng, Map, LeafletMouseEvent, LeafletEvent } from "leaflet";
 import { polygon, tileLayer, Polygon, Layer, LayerGroup, layerGroup } from "leaflet";
-import { Marker, marker, markerClusterGroup, divIcon, MarkerCluster } from 'leaflet';
+import { Marker, marker, markerClusterGroup, MarkerCluster, divIcon, DivIcon} from 'leaflet';
 
 import { BuildingService, Company, Coordinate } from "./core";
 import { Building } from "./core";
@@ -142,7 +142,7 @@ export class AppComponent {
     })
   }
 
-  private createMarkerGroupIcon(cluster: MarkerCluster): void {
+  private createMarkerGroupIcon(cluster: MarkerCluster): DivIcon {
     // TODO BR: remove switch with polymorphism
     let cattleCount = 0;
     let chickenCount = 0;
