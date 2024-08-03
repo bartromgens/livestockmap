@@ -40,7 +40,7 @@ export class AppComponent {
   private readonly ZOOM_DEFAULT: number = 14;
   private readonly CLUSTER_AT_ZOOM: number = 13;
   private readonly MAX_CLUSTER_RADIUS: number = 20;
-  private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM;
+  private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM - 1;
   Object = Object;
   readonly title: string = 'veekaart.nl';
   options = {
