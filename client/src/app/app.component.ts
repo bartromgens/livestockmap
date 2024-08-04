@@ -13,7 +13,7 @@ import { latLng, Map, LeafletMouseEvent, LeafletEvent } from "leaflet";
 import { polygon, tileLayer, Polygon, Layer, LayerGroup, layerGroup } from "leaflet";
 import { Marker, marker, markerClusterGroup, MarkerCluster, divIcon, DivIcon} from 'leaflet';
 
-import { BuildingService, Company, Coordinate } from "./core";
+import { BuildingService, CompaniesStats, Company, Coordinate } from "./core";
 import { Building } from "./core";
 import { CompanyService } from "./core";
 import { chickenIcon, cowIcon, pigIcon } from "./map";
@@ -202,15 +202,19 @@ export class AppComponent {
 
   onMapReady(map: Map): void {
     this.map = map;
-    this.map.on('zoomend', (event: LeafletEvent) => this.onZoom(event));
   }
 
-  private onZoom(event: LeafletEvent): void {
+  onMove(event: LeafletEvent): void {
+    console.log("onMove");
+    this.logCompanyInViewStats();
+  }
+
+  onZoom(event: LeafletEvent): void {
+    console.log("zoom level", this.map?.getZoom());
     this.zone.run(() => {
       if (!this.map || !this.buildingLayer) {
         return;
       }
-      console.log('companies in view', this.getCompaniesInView().length);
       if (this.map.getZoom() < this.BUILDINGS_AT_ZOOM && this.map.hasLayer(this.buildingLayer)) {
         this.map.removeLayer(this.buildingLayer);
       }
@@ -218,6 +222,11 @@ export class AppComponent {
         this.map.addLayer(this.buildingLayer);
       }
     });
+  }
+
+  private logCompanyInViewStats(): void {
+    const stats = new CompaniesStats(this.getCompaniesInView());
+    console.log('companies in view', stats.companies.length, `cow: ${stats.cattleCompanies.length}, chicken: ${stats.chickenCompanies.length}, pigs: ${stats.pigCompanies.length}`);
   }
 
   googleCoordinateUrl(coordinate: Coordinate): string {
