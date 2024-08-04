@@ -31,6 +31,7 @@ import { BuildingService, CompaniesStats, Company, Coordinate } from './core';
 import { Building } from './core';
 import { CompanyService } from './core';
 import { chickenIcon, cowIcon, pigIcon } from './map';
+import { PolygonUtils } from './utils';
 
 @Component({
   selector: 'app-root',
@@ -211,6 +212,12 @@ export class AppComponent implements OnInit {
       const building: Building = (layer as any)['building'];
       this.layerBuildingSelected = layer;
       this.buildingSelected = building;
+      const inside = PolygonUtils.isMarkerInsidePolygon(
+        building.center.lat,
+        building.center.lon,
+        layer,
+      );
+      console.log('building center is inside building:', inside);
     });
   }
 
@@ -224,7 +231,7 @@ export class AppComponent implements OnInit {
   }
 
   onMapClick(event: LeafletMouseEvent): void {
-    console.log('mapClick');
+    // console.log('mapClick');
   }
 
   onMapReady(map: Map): void {
