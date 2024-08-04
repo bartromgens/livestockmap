@@ -191,7 +191,9 @@ class Building(models.Model):
                     building.center.lat, building.center.lon, distance=200
                 )
             addresses_nearby = [Address.get_or_create_from_node(node) for node in nodes]
-            addresses_nearby = cls.filter_nearest(building, addresses_nearby)
+            addresses_nearby = cls.filter_nearest(
+                building, addresses_nearby, limit=limit
+            )
             building.addresses_nearby.set(addresses_nearby)
             building.save()
             addresses += addresses_nearby

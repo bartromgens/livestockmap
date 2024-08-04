@@ -15,7 +15,8 @@ REGIONS = {
     "flevoland": (52.4443529, 5.5478277, 52.5737960, 5.8413397),
     "lunteren": (52.092612, 5.5628603, 52.109061, 5.5923646),
     "montfoort": (52.0231300, 4.9633142, 52.0574780, 5.0250918),
-    "twente": (52.0039710, 6.3718900, 52.0631596, 6.5639037),
+    "twente": (52.2856251, 6.5833896, 52.4216656, 7.0134352),
+    "achterhoek": (52.0039710, 6.3718900, 52.0631596, 6.5639037),
     "uden": (51.612175, 5.6340277, 51.6421757, 5.6640277),
     "utrecht": (52.1081869, 5.0961645, 52.1228383, 5.1226157),
 }
@@ -45,9 +46,13 @@ class Command(BaseCommand):
 
         logger.info(f"{len(buildings_osm)} buildings found")
 
-        buildings_osm_large = list(
-            filter(lambda build: build.area_square_meters > 200, buildings_osm)
-        )
+        buildings_osm_large = []
+        for i, building in enumerate(buildings_osm):
+            if i % 1000 == 0:
+                logger.info(f"filtering large buildings {i + 1}/{len(buildings_osm)}")
+            if building.area_square_meters < 200:
+                continue
+            buildings_osm_large.append(building)
 
         logger.info(f"{len(buildings_osm_large)} buildings selected as large enough")
 
