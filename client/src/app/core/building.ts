@@ -1,3 +1,5 @@
+import { LatLng, Point } from 'leaflet';
+
 export interface CoordinateResource {
   lat: number;
   lon: number;
@@ -118,6 +120,10 @@ export class Building {
     public geometry: Coordinate[],
     public addresses_nearby: Address[],
     public center: Coordinate,
+    public latMin: number,
+    public latMax: number,
+    public lonMin: number,
+    public lonMax: number,
   ) {
     this.addresses_nearby.sort(
       (a: Address, b: Address) =>
@@ -146,6 +152,10 @@ export class Building {
       coordinates,
       addresses_nearby,
       new Coordinate(lat, lon),
+      resource.lat_min,
+      resource.lat_max,
+      resource.lon_min,
+      resource.lon_max,
     );
   }
 
@@ -155,5 +165,21 @@ export class Building {
 
   get osmUrl(): string {
     return `https://www.openstreetmap.org/way/${this.way_id}`;
+  }
+
+  get bboxFillPoints(): Coordinate[] {
+    const points: Coordinate[] = [];
+    const dLat = (this.latMax - this.latMin) / 100;
+    const dLon = (this.lonMax - this.lonMin) / 20;
+    let lat = this.latMin;
+    while (lat < this.latMax) {
+      let lon = this.lonMin;
+      while (lon < this.lonMax) {
+        points.push(new Coordinate(lat, lon));
+        lon += dLon;
+      }
+      lat += dLat;
+    }
+    return points;
   }
 }

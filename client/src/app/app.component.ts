@@ -9,7 +9,13 @@ import { MatCardModule } from '@angular/material/card';
 
 import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import 'leaflet.markercluster'; // a leaflet plugin
-import { latLng, Map, LeafletMouseEvent, LeafletEvent } from 'leaflet';
+import {
+  latLng,
+  Map,
+  LeafletMouseEvent,
+  LeafletEvent,
+  circleMarker,
+} from 'leaflet';
 import {
   polygon,
   tileLayer,
@@ -218,6 +224,14 @@ export class AppComponent implements OnInit {
         layer,
       );
       console.log('building center is inside building:', inside);
+      const circleMarkers = [];
+      for (const point of building.bboxFillPoints) {
+        const circleOptions = { radius: 1 };
+        circleMarkers.push(
+          circleMarker(latLng(point.lat, point.lon), circleOptions),
+        );
+      }
+      this.layers.push(layerGroup(circleMarkers));
     });
   }
 
