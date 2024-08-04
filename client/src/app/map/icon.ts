@@ -1,6 +1,6 @@
 import { icon } from "leaflet";
 
-const ICON_SIZE_SCALE_FACTOR: number = 0.45;
+const ICON_SIZE_SCALE_FACTOR = 0.45;
 
 export const chickenIcon = icon({
   iconUrl: "assets/chicken60x60.png",

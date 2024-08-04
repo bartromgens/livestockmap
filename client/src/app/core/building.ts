@@ -18,7 +18,7 @@ export interface BuildingResource {
   area: number;
   length: number;
   width: number;
-  tags: {[key: string]: string};
+  tags: Record<string, string>;
   geometry: CoordinateResource[];
   addresses_nearby: AddressResource[];
   lon_min: number;
@@ -112,7 +112,7 @@ export class Building {
     public area: number,
     public length: number,
     public width: number,
-    public tags: {[key: string]: string},
+    public tags: Record<string, string>,
     public geometry: Coordinate[],
     public addresses_nearby: Address[],
     public center: Coordinate

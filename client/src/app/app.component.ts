@@ -1,4 +1,4 @@
-import { Component, NgZone } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from "@angular/common";
 import { RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from "@angular/material/toolbar";
@@ -36,7 +36,7 @@ import { chickenIcon, cowIcon, pigIcon } from "./map";
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   private readonly ZOOM_DEFAULT: number = 14;
   private readonly CLUSTER_AT_ZOOM: number = 13;
   private readonly MAX_CLUSTER_RADIUS: number = 20;
@@ -52,7 +52,7 @@ export class AppComponent {
     center: latLng(52.1, 5.58)
   };
   layers: any[] = [];
-  sidebarOpened: boolean = false;
+  sidebarOpened = false;
 
   buildingSelected: Building|null = null;
   layerBuildingSelected: Polygon|null = null;
@@ -167,7 +167,7 @@ export class AppComponent {
     const sizeFactorPig = Math.sqrt(pigCount/totalCount);
     const sizePig = [30*sizeFactorPig, 20*sizeFactorPig];
     const iconImageStyle = `display: inline-block;`;
-    let iconHtml: string = `<div style="width: 60px;">`;
+    let iconHtml = `<div style="width: 60px;">`;
     iconHtml += `<img src="/assets/pig60x40.png" width=${sizePig[0]} height=${sizePig[1]} style="${iconImageStyle}">`;
     iconHtml += `<img src="/assets/cow60x38.png" width=${sizeCow[0]} height=${sizeCow[1]} style="${iconImageStyle}">`;
     iconHtml += `<img src="/assets/chicken60x60.png" width=${sizeChicken[0]} height=${sizeChicken[1]} style="">`;
