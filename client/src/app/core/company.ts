@@ -1,15 +1,15 @@
-import {Address, AddressResource, Coordinate} from "./building";
+import { Address, AddressResource, Coordinate } from './building';
 
 export interface CompanyResource {
-  "id": number;
-  "description": string;
-  "active": boolean;
-  "address": AddressResource;
-  "chicken": boolean;
-  "pig": boolean;
-  "cattle": boolean;
-  "sheep": boolean;
-  "goat": boolean;
+  id: number;
+  description: string;
+  active: boolean;
+  address: AddressResource;
+  chicken: boolean;
+  pig: boolean;
+  cattle: boolean;
+  sheep: boolean;
+  goat: boolean;
 }
 
 export class Company {
@@ -23,8 +23,7 @@ export class Company {
     public cattle: boolean,
     public sheep: boolean,
     public goat: boolean,
-  ) {
-  }
+  ) {}
 
   get coordinate(): Coordinate {
     return this.address.coordinate;
@@ -41,11 +40,11 @@ export class Company {
       resource.cattle,
       resource.sheep,
       resource.goat,
-    )
+    );
   }
 
   static fromResources(resources: CompanyResource[]): Company[] {
-    return resources.map(resource => Company.fromResource(resource));
+    return resources.map((resource) => Company.fromResource(resource));
   }
 }
 
