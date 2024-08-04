@@ -4,13 +4,13 @@ export interface CoordinateResource {
 }
 
 export interface AddressResource {
-  "node_id": number;
-  "street": string;
-  "housenumber": string;
-  "postcode": string;
-  "city": string;
-  "lat": number;
-  "lon": number;
+  node_id: number;
+  street: string;
+  housenumber: string;
+  postcode: string;
+  city: string;
+  lat: number;
+  lon: number;
 }
 
 export interface BuildingResource {
@@ -30,16 +30,15 @@ export interface BuildingResource {
 export class Coordinate {
   constructor(
     public lat: number,
-    public lon: number
-  ) {
-  }
+    public lon: number,
+  ) {}
 
   static fromResource(resource: CoordinateResource): Coordinate {
     return new Coordinate(resource.lat, resource.lon);
   }
 
   static fromResources(resources: CoordinateResource[]): Coordinate[] {
-    return resources.map(resource => Coordinate.fromResource(resource));
+    return resources.map((resource) => Coordinate.fromResource(resource));
   }
 
   static toRadians(degrees: number): number {
@@ -61,8 +60,12 @@ export class Coordinate {
     const rLat1 = this.toRadians(coord1.lat);
     const rLat2 = this.toRadians(coord2.lat);
 
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(rLat1) * Math.cos(rLat2);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.sin(dLon / 2) *
+        Math.sin(dLon / 2) *
+        Math.cos(rLat1) *
+        Math.cos(rLat2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return R * c;
@@ -78,8 +81,7 @@ export class Address {
     public city: string,
     public lat: number,
     public lon: number,
-  ) {
-  }
+  ) {}
 
   static fromResource(resource: AddressResource): Address {
     return new Address(
@@ -89,16 +91,16 @@ export class Address {
       resource.postcode,
       resource.city,
       Number(resource.lat),
-      Number(resource.lon)
-    )
+      Number(resource.lon),
+    );
   }
 
   static fromResources(resources: AddressResource[]): Address[] {
-    return resources.map(resource => Address.fromResource(resource));
+    return resources.map((resource) => Address.fromResource(resource));
   }
 
   toString(): string {
-    return `${this.street} ${this.housenumber} ${this.city}`
+    return `${this.street} ${this.housenumber} ${this.city}`;
   }
 
   get coordinate(): Coordinate {
@@ -115,16 +117,26 @@ export class Building {
     public tags: Record<string, string>,
     public geometry: Coordinate[],
     public addresses_nearby: Address[],
-    public center: Coordinate
+    public center: Coordinate,
   ) {
-    this.addresses_nearby.sort((a: Address, b: Address) => a.coordinate.distanceTo(this.center) - b.coordinate.distanceTo(this.center))
+    this.addresses_nearby.sort(
+      (a: Address, b: Address) =>
+        a.coordinate.distanceTo(this.center) -
+        b.coordinate.distanceTo(this.center),
+    );
   }
 
   static fromResource(resource: BuildingResource): Building {
-    const coordinates: Coordinate[] = Coordinate.fromResources(resource.geometry);
-    const addresses_nearby: Address[] = Address.fromResources(resource.addresses_nearby);
-    const lat = Math.abs(resource.lat_max - resource.lat_min) / 2 + resource.lat_min
-    const lon = Math.abs(resource.lon_max - resource.lon_min) / 2 + resource.lon_min
+    const coordinates: Coordinate[] = Coordinate.fromResources(
+      resource.geometry,
+    );
+    const addresses_nearby: Address[] = Address.fromResources(
+      resource.addresses_nearby,
+    );
+    const lat =
+      Math.abs(resource.lat_max - resource.lat_min) / 2 + resource.lat_min;
+    const lon =
+      Math.abs(resource.lon_max - resource.lon_min) / 2 + resource.lon_min;
     return new Building(
       resource.way_id,
       resource.area,
@@ -133,15 +145,15 @@ export class Building {
       resource.tags,
       coordinates,
       addresses_nearby,
-      new Coordinate(lat, lon)
+      new Coordinate(lat, lon),
     );
   }
 
   static fromResources(resources: BuildingResource[]): Building[] {
-    return resources.map(resource => Building.fromResource(resource))
+    return resources.map((resource) => Building.fromResource(resource));
   }
 
   get osmUrl(): string {
-    return `https://www.openstreetmap.org/way/${this.way_id}`
+    return `https://www.openstreetmap.org/way/${this.way_id}`;
   }
 }
