@@ -54,6 +54,8 @@
          [leafletLayers]="layers"
          (leafletClick)="onMapClick($event)"
          (leafletMapReady)="onMapReady($event)"
+         (leafletMapMoveEnd)="onMove($event)"
+         (leafletMapZoomEnd)="onZoom($event)"
     >
     </div>
   </mat-sidenav-content>
