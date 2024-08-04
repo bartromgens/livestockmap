@@ -168,6 +168,8 @@ export class Building {
   }
 
   get bboxFillPoints(): Coordinate[] {
+    // TODO BR: position them inside the building with a force-directed graph
+    // see: https://stackoverflow.com/a/12778394/607041 for more info
     const points: Coordinate[] = [];
     const dLat = (this.latMax - this.latMin) / 100;
     const dLon = (this.lonMax - this.lonMin) / 20;
