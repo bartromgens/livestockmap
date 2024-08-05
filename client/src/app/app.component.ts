@@ -112,11 +112,7 @@ export class AppComponent implements OnInit {
     this.buildingService.getBuildings().subscribe((buildings) => {
       const layers: any[] = [];
       for (const building of buildings) {
-        const coordinates: [number, number][] = [];
-        for (const coordinate of building.geometry) {
-          coordinates.push([coordinate.lat, coordinate.lon]);
-        }
-        const layer: any = polygon(coordinates);
+        const layer: any = building.polygon;
         layer.on('click', (event: LeafletMouseEvent) =>
           this.onBuildingLayerClick(event, layer),
         );
@@ -225,7 +221,7 @@ export class AppComponent implements OnInit {
       );
       console.log('building center is inside building:', inside);
       const circleMarkers = [];
-      for (const point of building.bboxFillPoints) {
+      for (const point of building.fillPoints) {
         const circleOptions = { radius: 1 };
         circleMarkers.push(
           circleMarker(latLng(point.lat, point.lon), circleOptions),

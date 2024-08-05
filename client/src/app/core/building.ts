@@ -1,4 +1,5 @@
-import { LatLng, Point } from 'leaflet';
+import { PolygonUtils } from '../utils';
+import { LatLng, Polygon, polygon } from 'leaflet';
 
 export interface CoordinateResource {
   lat: number;
@@ -167,12 +168,21 @@ export class Building {
     return `https://www.openstreetmap.org/way/${this.way_id}`;
   }
 
-  get bboxFillPoints(): Coordinate[] {
+  get polygon(): Polygon {
+    // TODO BR: use member variable as cache for performance?
+    const coordinates: [number, number][] = [];
+    for (const coordinate of this.geometry) {
+      coordinates.push([coordinate.lat, coordinate.lon]);
+    }
+    return polygon(coordinates);
+  }
+
+  get fillPoints(): Coordinate[] {
     // TODO BR: position them inside the building with a force-directed graph
     // see: https://stackoverflow.com/a/12778394/607041 for more info
     const points: Coordinate[] = [];
-    const dLat = (this.latMax - this.latMin) / 100;
-    const dLon = (this.lonMax - this.lonMin) / 20;
+    const dLat = (this.latMax - this.latMin) / 10;
+    const dLon = (this.lonMax - this.lonMin) / 10;
     let lat = this.latMin;
     while (lat < this.latMax) {
       let lon = this.lonMin;
@@ -181,6 +191,30 @@ export class Building {
         lon += dLon;
       }
       lat += dLat;
+    }
+    // move the points inside the polygon
+    for (const point of points) {
+      const polygonBuilding = this.polygon;
+      if (
+        !PolygonUtils.isMarkerInsidePolygon(
+          point.lat,
+          point.lon,
+          polygonBuilding,
+        )
+      ) {
+        const points: [number, number][] = [];
+        const polyPointsAll: LatLng[][] =
+          polygonBuilding.getLatLngs() as LatLng[][];
+        for (const point of polyPointsAll[0]) {
+          points.push([point.lat, point.lng]);
+        }
+        const closestPoint = PolygonUtils.closestPointOnPolygon(
+          [point.lat, point.lon],
+          points,
+        );
+        point.lat = closestPoint[0][0];
+        point.lon = closestPoint[0][1];
+      }
     }
     return points;
   }
