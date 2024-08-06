@@ -181,41 +181,71 @@ export class Building {
     // TODO BR: position them inside the building with a force-directed graph
     // see: https://stackoverflow.com/a/12778394/607041 for more info
     const points: Coordinate[] = [];
-    const dLat = (this.latMax - this.latMin) / 10;
-    const dLon = (this.lonMax - this.lonMin) / 10;
-    let lat = this.latMin;
-    while (lat < this.latMax) {
-      let lon = this.lonMin;
-      while (lon < this.lonMax) {
+    const maxAnimals = this.area * 0.8;
+    const maxTries = maxAnimals * 5;
+    // const dLat = (this.latMax - this.latMin) / 10;
+    // const dLon = (this.lonMax - this.lonMin) / 10;
+    let nTries = 0;
+    const polygonBuilding = this.polygon;
+    while (points.length < maxAnimals && nTries < maxTries) {
+      const lat = Math.random() * (this.latMax - this.latMin) + this.latMin;
+      const lon = Math.random() * (this.lonMax - this.lonMin) + this.lonMin;
+      if (PolygonUtils.isMarkerInsidePolygon(lat, lon, polygonBuilding)) {
         points.push(new Coordinate(lat, lon));
-        lon += dLon;
       }
-      lat += dLat;
+      nTries++;
     }
-    // move the points inside the polygon
-    for (const point of points) {
-      const polygonBuilding = this.polygon;
-      if (
-        !PolygonUtils.isMarkerInsidePolygon(
-          point.lat,
-          point.lon,
-          polygonBuilding,
-        )
-      ) {
-        const points: [number, number][] = [];
-        const polyPointsAll: LatLng[][] =
-          polygonBuilding.getLatLngs() as LatLng[][];
-        for (const point of polyPointsAll[0]) {
-          points.push([point.lat, point.lng]);
-        }
-        const closestPoint = PolygonUtils.closestPointOnPolygon(
-          [point.lat, point.lon],
-          points,
-        );
-        point.lat = closestPoint[0][0];
-        point.lon = closestPoint[0][1];
-      }
-    }
+    console.log('points created');
+    // while (lat < this.latMax) {
+    //   let lon = this.lonMin;
+    //   while (lon < this.lonMax) {
+    //     points.push(new Coordinate(lat, lon));
+    //     lon += dLon;
+    //   }
+    //   lat += dLat;
+    // }
+    // // move the points inside the polygon
+    // for (const point of points) {
+    //   const polygonBuilding = this.polygon;
+    //   if (
+    //     !PolygonUtils.isMarkerInsidePolygon(
+    //       point.lat,
+    //       point.lon,
+    //       polygonBuilding,
+    //     )
+    //   ) {
+    //     const points: [number, number][] = [];
+    //     const polyPointsAll: LatLng[][] =
+    //       polygonBuilding.getLatLngs() as LatLng[][];
+    //     for (const point of polyPointsAll[0]) {
+    //       points.push([point.lat, point.lng]);
+    //     }
+    //     const closestPoint = PolygonUtils.closestPointOnPolygon(
+    //       [point.lat, point.lon],
+    //       points,
+    //     );
+    //     point.lat = closestPoint[0][0];
+    //     point.lon = closestPoint[0][1];
+    //   }
+    //
+    //   for (const pointA of points) {
+    //     for (const pointB of points) {
+    //       if (pointA == pointB) {
+    //         continue;
+    //       }
+    //       const pA: [number, number] = [pointA.lat, pointA.lon];
+    //       const pB: [number, number] = [pointB.lat, pointB.lon];
+    //       // const dAB = PolygonUtils.distanceBetweenPoints(pA, pB);
+    //       const forceSize = 1 / 100;
+    //       const ab = PolygonUtils.vsub(pA, pB);
+    //       const force = PolygonUtils.vscale(ab, forceSize);
+    //       console.log(force);
+    //       const pAnew = PolygonUtils.vadd(pA, force);
+    //       pointA.lat = pAnew[0];
+    //       pointA.lon = pAnew[1];
+    //     }
+    //   }
+    // }
     return points;
   }
 }

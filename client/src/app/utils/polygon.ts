@@ -36,6 +36,15 @@ export namespace PolygonUtils {
     return inside;
   }
 
+  export function distanceBetweenPoints(
+    pointA: [number, number],
+    pointB: [number, number],
+  ): number {
+    const dx = pointA[0] - pointB[0];
+    const dy = pointA[1] - pointA[1];
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
   /**
    * Source: https://gis.stackexchange.com/a/170225
    */
@@ -106,15 +115,24 @@ export namespace PolygonUtils {
     return [-v[0], -v[1]];
   }
 
-  function vadd(v1: [number, number], v2: [number, number]): [number, number] {
+  export function vadd(
+    v1: [number, number],
+    v2: [number, number],
+  ): [number, number] {
     return [v1[0] + v2[0], v1[1] + v2[1]];
   }
 
-  function vsub(v1: [number, number], v2: [number, number]): [number, number] {
+  export function vsub(
+    v1: [number, number],
+    v2: [number, number],
+  ): [number, number] {
     return [v1[0] - v2[0], v1[1] - v2[1]];
   }
 
-  function vscale(vector: [number, number], factor: number): [number, number] {
+  export function vscale(
+    vector: [number, number],
+    factor: number,
+  ): [number, number] {
     return [vector[0] * factor, vector[1] * factor];
   }
 

@@ -16,14 +16,7 @@ import {
   LeafletEvent,
   circleMarker,
 } from 'leaflet';
-import {
-  polygon,
-  tileLayer,
-  Polygon,
-  Layer,
-  LayerGroup,
-  layerGroup,
-} from 'leaflet';
+import { tileLayer, Polygon, Layer, LayerGroup, layerGroup } from 'leaflet';
 import {
   Marker,
   marker,
@@ -222,7 +215,12 @@ export class AppComponent implements OnInit {
       console.log('building center is inside building:', inside);
       const circleMarkers = [];
       for (const point of building.fillPoints) {
-        const circleOptions = { radius: 1 };
+        const circleOptions = {
+          radius: 1,
+          stroke: false,
+          fillOpacity: 1,
+          fillColor: 'red',
+        };
         circleMarkers.push(
           circleMarker(latLng(point.lat, point.lon), circleOptions),
         );
