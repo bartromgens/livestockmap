@@ -40,11 +40,33 @@ export class Coordinate {
   private static readonly TMERC = `+proj=tmerc +lat_0=${this.COORDS_UTRECHT[0]} +lon_0=${this.COORDS_UTRECHT[1]}`;
   private _x: number | null = null;
   private _y: number | null = null;
+  private _lat: number;
+  private _lon: number;
 
-  constructor(
-    public lat: number,
-    public lon: number,
-  ) {}
+  constructor(lat: number, lon: number) {
+    this._lat = lat;
+    this._lon = lon;
+  }
+
+  set lat(lat: number) {
+    this._lat = lat;
+    this._x = null;
+    this._y = null;
+  }
+
+  set lon(lon: number) {
+    this._lon = lon;
+    this._x = null;
+    this._y = null;
+  }
+
+  get lat(): number {
+    return this._lat;
+  }
+
+  get lon(): number {
+    return this._lon;
+  }
 
   get x(): number {
     if (this._x !== null) {
@@ -219,13 +241,9 @@ export class Building {
   }
 
   get fillPoints(): Coordinate[] {
-    // TODO BR: position them inside the building with a force-directed graph
-    // see: https://stackoverflow.com/a/12778394/607041 for more info
     const points: Coordinate[] = [];
-    const maxPoints = (this.area * 0.8) / 100;
+    const maxPoints = this.area * 0.8;
     const maxTries = maxPoints * 5;
-    // const dLat = (this.latMax - this.latMin) / 10;
-    // const dLon = (this.lonMax - this.lonMin) / 10;
     let nTries = 0;
     const polygonBuilding = this.polygon;
     while (points.length < maxPoints && nTries < maxTries) {
@@ -237,6 +255,10 @@ export class Building {
       nTries++;
     }
     console.log(`${points.length} points created in ${nTries} tries`);
+
+    // TODO BR: improve performance by optimize finding nearest neighbours
+    // Move points away from each other if too close
+    const distanceToMove = Math.sqrt(this.area) / 10;
     for (const pointA of points) {
       for (const pointB of points) {
         if (pointA == pointB) {
@@ -248,60 +270,25 @@ export class Building {
         if (distance > 1) {
           continue;
         }
-        console.log('distance', distance);
         const dAB: [number, number] = PolygonUtils.vsub(pA, pB);
+        const newdAB = PolygonUtils.vscale(
+          dAB,
+          (distanceToMove - distance) / PolygonUtils.vlen(dAB),
+        );
+        const pANew = PolygonUtils.vadd(pA, newdAB);
+        const newCoordsWGS84 = Coordinate.toWGS84(pANew[0], pANew[1]);
+        if (
+          PolygonUtils.isMarkerInsidePolygon(
+            newCoordsWGS84[0],
+            newCoordsWGS84[1],
+            polygonBuilding,
+          )
+        ) {
+          pointA.lat = newCoordsWGS84[0];
+          pointA.lon = newCoordsWGS84[1];
+        }
       }
     }
-    // while (lat < this.latMax) {
-    //   let lon = this.lonMin;
-    //   while (lon < this.lonMax) {
-    //     points.push(new Coordinate(lat, lon));
-    //     lon += dLon;
-    //   }
-    //   lat += dLat;
-    // }
-    // // move the points inside the polygon
-    // for (const point of points) {
-    //   const polygonBuilding = this.polygon;
-    //   if (
-    //     !PolygonUtils.isMarkerInsidePolygon(
-    //       point.lat,
-    //       point.lon,
-    //       polygonBuilding,
-    //     )
-    //   ) {
-    //     const points: [number, number][] = [];
-    //     const polyPointsAll: LatLng[][] =
-    //       polygonBuilding.getLatLngs() as LatLng[][];
-    //     for (const point of polyPointsAll[0]) {
-    //       points.push([point.lat, point.lng]);
-    //     }
-    //     const closestPoint = PolygonUtils.closestPointOnPolygon(
-    //       [point.lat, point.lon],
-    //       points,
-    //     );
-    //     point.lat = closestPoint[0][0];
-    //     point.lon = closestPoint[0][1];
-    //   }
-    //
-    //   for (const pointA of points) {
-    //     for (const pointB of points) {
-    //       if (pointA == pointB) {
-    //         continue;
-    //       }
-    //       const pA: [number, number] = [pointA.lat, pointA.lon];
-    //       const pB: [number, number] = [pointB.lat, pointB.lon];
-    //       // const dAB = PolygonUtils.distanceBetweenPoints(pA, pB);
-    //       const forceSize = 1 / 100;
-    //       const ab = PolygonUtils.vsub(pA, pB);
-    //       const force = PolygonUtils.vscale(ab, forceSize);
-    //       console.log(force);
-    //       const pAnew = PolygonUtils.vadd(pA, force);
-    //       pointA.lat = pAnew[0];
-    //       pointA.lon = pAnew[1];
-    //     }
-    //   }
-    // }
     return points;
   }
 }

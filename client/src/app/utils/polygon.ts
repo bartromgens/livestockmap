@@ -41,7 +41,7 @@ export namespace PolygonUtils {
     pointB: [number, number],
   ): number {
     const dx = pointA[0] - pointB[0];
-    const dy = pointA[1] - pointA[1];
+    const dy = pointA[1] - pointB[1];
     return Math.sqrt(dx * dx + dy * dy);
   }
 
@@ -107,7 +107,7 @@ export namespace PolygonUtils {
     return [closestPointOnPoly, shortestDist];
   }
 
-  function vlen(vector: [number, number]): number {
+  export function vlen(vector: [number, number]): number {
     return Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
   }
 
