@@ -216,7 +216,7 @@ export class AppComponent implements OnInit {
       );
       console.log('building center is inside building:', inside);
       const circleMarkers = [];
-      for (const point of building.fillPoints) {
+      for (const point of building.animalCoordinates) {
         const circleOptions = {
           radius: 1,
           stroke: false,
@@ -288,14 +288,9 @@ export class AppComponent implements OnInit {
     }
 
     const circleMarkers = [];
+    const circleOptions = this.getAnimalCircleOptions();
     for (const building of this.getBuildingsInView()) {
-      for (const point of building.fillPoints) {
-        const circleOptions = {
-          radius: 1,
-          stroke: false,
-          fillOpacity: 1,
-          fillColor: 'blue',
-        };
+      for (const point of building.animalCoordinates) {
         circleMarkers.push(
           circleMarker(latLng(point.lat, point.lon), circleOptions),
         );
@@ -303,6 +298,19 @@ export class AppComponent implements OnInit {
     }
     this.animalsLayer = layerGroup(circleMarkers);
     this.layers.push(this.animalsLayer);
+  }
+
+  private getAnimalCircleOptions(): any {
+    let radius = 1;
+    if (this.map) {
+      radius = this.map.getZoom() >= 19 ? 2 : 1;
+    }
+    return {
+      radius: radius,
+      stroke: false,
+      fillOpacity: 1,
+      fillColor: 'blue',
+    };
   }
 
   private logCompanyInViewStats(): void {

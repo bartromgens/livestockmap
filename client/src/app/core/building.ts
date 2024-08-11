@@ -175,6 +175,8 @@ export class Address {
 }
 
 export class Building {
+  private animals: Coordinate[] | null = null;
+
   constructor(
     public way_id: number,
     public area: number,
@@ -240,7 +242,11 @@ export class Building {
     return polygon(coordinates);
   }
 
-  get fillPoints(): Coordinate[] {
+  get animalCoordinates(): Coordinate[] {
+    if (this.animals) {
+      return this.animals;
+    }
+
     const points: Coordinate[] = [];
     const maxPoints = this.area * 0.8;
     const maxTries = maxPoints * 5;
@@ -289,6 +295,7 @@ export class Building {
         }
       }
     }
-    return points;
+    this.animals = points;
+    return this.animals;
   }
 }
