@@ -1,5 +1,6 @@
 import { PolygonUtils } from '../utils';
-import { LatLng, Polygon, polygon } from 'leaflet';
+import { Polygon, polygon } from 'leaflet';
+import proj4 from 'proj4';
 
 export interface CoordinateResource {
   lat: number;
@@ -30,11 +31,51 @@ export interface BuildingResource {
   lat_max: number;
 }
 
+/**
+ * Latitude and longitude in WGS84.
+ * x and y in Transverse Mercator with natural origin at Utrecht, the Netherlands
+ */
 export class Coordinate {
+  private static readonly COORDS_UTRECHT = [52.0907006, 5.1215634];
+  private static readonly TMERC = `+proj=tmerc +lat_0=${this.COORDS_UTRECHT[0]} +lon_0=${this.COORDS_UTRECHT[1]}`;
+  private _x: number | null = null;
+  private _y: number | null = null;
+
   constructor(
     public lat: number,
     public lon: number,
   ) {}
+
+  get x(): number {
+    if (this._x !== null) {
+      return this._x;
+    }
+    return this.setTransverseMercatorCoordinates()[0];
+  }
+
+  get y(): number {
+    if (this._y !== null) {
+      return this._y;
+    }
+    return this.setTransverseMercatorCoordinates()[1];
+  }
+
+  private setTransverseMercatorCoordinates(): [number, number] {
+    const coords = Coordinate.toTransverseMercator(this.lat, this.lon);
+    this._x = coords[0];
+    this._y = coords[1];
+    return [this._x, this._y];
+  }
+
+  static toTransverseMercator(lat: number, lon: number): [number, number] {
+    // TODO BR: add test for coordinate transformations.
+    // See https://proj.org/en/9.4/operations/projections/tmerc.html for projection arguments
+    return proj4(this.TMERC, [lat, lon]);
+  }
+
+  static toWGS84(x: number, y: number): [number, number] {
+    return proj4(this.TMERC, 'WGS84', [x, y]);
+  }
 
   static fromResource(resource: CoordinateResource): Coordinate {
     return new Coordinate(resource.lat, resource.lon);
@@ -181,13 +222,13 @@ export class Building {
     // TODO BR: position them inside the building with a force-directed graph
     // see: https://stackoverflow.com/a/12778394/607041 for more info
     const points: Coordinate[] = [];
-    const maxAnimals = this.area * 0.8;
-    const maxTries = maxAnimals * 5;
+    const maxPoints = (this.area * 0.8) / 100;
+    const maxTries = maxPoints * 5;
     // const dLat = (this.latMax - this.latMin) / 10;
     // const dLon = (this.lonMax - this.lonMin) / 10;
     let nTries = 0;
     const polygonBuilding = this.polygon;
-    while (points.length < maxAnimals && nTries < maxTries) {
+    while (points.length < maxPoints && nTries < maxTries) {
       const lat = Math.random() * (this.latMax - this.latMin) + this.latMin;
       const lon = Math.random() * (this.lonMax - this.lonMin) + this.lonMin;
       if (PolygonUtils.isMarkerInsidePolygon(lat, lon, polygonBuilding)) {
@@ -195,7 +236,22 @@ export class Building {
       }
       nTries++;
     }
-    console.log('points created');
+    console.log(`${points.length} points created in ${nTries} tries`);
+    for (const pointA of points) {
+      for (const pointB of points) {
+        if (pointA == pointB) {
+          continue;
+        }
+        const pA: [number, number] = [pointA.x, pointA.y];
+        const pB: [number, number] = [pointB.x, pointB.y];
+        const distance: number = PolygonUtils.distanceBetweenPoints(pA, pB);
+        if (distance > 1) {
+          continue;
+        }
+        console.log('distance', distance);
+        const dAB: [number, number] = PolygonUtils.vsub(pA, pB);
+      }
+    }
     // while (lat < this.latMax) {
     //   let lon = this.lonMin;
     //   while (lon < this.lonMax) {
