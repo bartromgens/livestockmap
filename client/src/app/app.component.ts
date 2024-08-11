@@ -54,6 +54,7 @@ export class AppComponent implements OnInit {
   private readonly CLUSTER_AT_ZOOM: number = 13;
   private readonly MAX_CLUSTER_RADIUS: number = 20;
   private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM - 1;
+  private readonly ANIMALS_AT_ZOOM: number = 18;
   Object = Object;
   readonly title: string = 'veekaart.nl';
   options = {
@@ -73,6 +74,7 @@ export class AppComponent implements OnInit {
   layerBuildingSelected: Polygon | null = null;
   companySelected: Company | null = null;
   buildingLayer: LayerGroup | null = null;
+  animalsLayer: LayerGroup | null = null;
 
   private map: Map | null = null;
   private readonly highlightBuildingStyle = {
@@ -219,7 +221,7 @@ export class AppComponent implements OnInit {
           radius: 1,
           stroke: false,
           fillOpacity: 1,
-          fillColor: 'red',
+          fillColor: 'blue',
         };
         circleMarkers.push(
           circleMarker(latLng(point.lat, point.lon), circleOptions),
@@ -249,6 +251,7 @@ export class AppComponent implements OnInit {
   onMove(event: LeafletEvent): void {
     console.log('onMove');
     this.logCompanyInViewStats();
+    this.updateAnimals();
   }
 
   onZoom(event: LeafletEvent): void {
@@ -269,7 +272,37 @@ export class AppComponent implements OnInit {
       ) {
         this.map.addLayer(this.buildingLayer);
       }
+      this.updateAnimals();
     });
+  }
+
+  private updateAnimals(): void {
+    if (!this.map) {
+      return;
+    }
+    if (this.animalsLayer) {
+      this.map.removeLayer(this.animalsLayer);
+    }
+    if (this.map.getZoom() < this.ANIMALS_AT_ZOOM) {
+      return;
+    }
+
+    const circleMarkers = [];
+    for (const building of this.getBuildingsInView()) {
+      for (const point of building.fillPoints) {
+        const circleOptions = {
+          radius: 1,
+          stroke: false,
+          fillOpacity: 1,
+          fillColor: 'blue',
+        };
+        circleMarkers.push(
+          circleMarker(latLng(point.lat, point.lon), circleOptions),
+        );
+      }
+    }
+    this.animalsLayer = layerGroup(circleMarkers);
+    this.layers.push(this.animalsLayer);
   }
 
   private logCompanyInViewStats(): void {
@@ -307,5 +340,21 @@ export class AppComponent implements OnInit {
       }
     });
     return companies;
+  }
+
+  private getBuildingsInView(): Building[] {
+    if (!this.map) {
+      return [];
+    }
+    const buildings: Building[] = [];
+    this.map.eachLayer((layer: Layer) => {
+      if (layer instanceof Polygon) {
+        if (this.map?.getBounds().contains(layer.getCenter())) {
+          const building = (layer as any)['building'];
+          buildings.push(building);
+        }
+      }
+    });
+    return buildings;
   }
 }
