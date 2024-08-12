@@ -249,7 +249,7 @@ export class Building {
 
     const points: Coordinate[] = [];
     const maxPoints = this.area * 0.8;
-    const maxTries = maxPoints * 5;
+    const maxTries = maxPoints * 10;
     let nTries = 0;
     const polygonBuilding = this.polygon;
     while (points.length < maxPoints && nTries < maxTries) {

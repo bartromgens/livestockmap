@@ -303,7 +303,7 @@ export class AppComponent implements OnInit {
   private getAnimalCircleOptions(): any {
     let radius = 1;
     if (this.map) {
-      radius = this.map.getZoom() >= 19 ? 2 : 1;
+      radius = this.map.getZoom() >= 20 ? 2 : radius;
     }
     return {
       radius: radius,
