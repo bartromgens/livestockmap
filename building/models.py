@@ -47,8 +47,8 @@ class Coordinate(BaseModel):
 
 class Address(models.Model):
     node_id = models.IntegerField(unique=True, null=False, db_index=True)
-    lat = models.FloatField(null=False)
-    lon = models.FloatField(null=False)
+    lat = models.FloatField(null=False, db_index=True)
+    lon = models.FloatField(null=False, db_index=True)
     street = models.CharField(max_length=200)
     housenumber = models.CharField(max_length=200)
     postcode = models.CharField(max_length=200, null=True)
