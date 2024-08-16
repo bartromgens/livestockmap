@@ -1,3 +1,7 @@
+import { PolygonUtils } from '../utils';
+import { Polygon, polygon } from 'leaflet';
+import proj4 from 'proj4';
+
 export interface CoordinateResource {
   lat: number;
   lon: number;
@@ -27,11 +31,73 @@ export interface BuildingResource {
   lat_max: number;
 }
 
+/**
+ * Latitude and longitude in WGS84.
+ * x and y in Transverse Mercator with natural origin at Utrecht, the Netherlands
+ */
 export class Coordinate {
-  constructor(
-    public lat: number,
-    public lon: number,
-  ) {}
+  private static readonly COORDS_UTRECHT = [52.0907006, 5.1215634];
+  private static readonly TMERC = `+proj=tmerc +lat_0=${this.COORDS_UTRECHT[0]} +lon_0=${this.COORDS_UTRECHT[1]}`;
+  private _x: number | null = null;
+  private _y: number | null = null;
+  private _lat: number;
+  private _lon: number;
+
+  constructor(lat: number, lon: number) {
+    this._lat = lat;
+    this._lon = lon;
+  }
+
+  set lat(lat: number) {
+    this._lat = lat;
+    this._x = null;
+    this._y = null;
+  }
+
+  set lon(lon: number) {
+    this._lon = lon;
+    this._x = null;
+    this._y = null;
+  }
+
+  get lat(): number {
+    return this._lat;
+  }
+
+  get lon(): number {
+    return this._lon;
+  }
+
+  get x(): number {
+    if (this._x !== null) {
+      return this._x;
+    }
+    return this.setTransverseMercatorCoordinates()[0];
+  }
+
+  get y(): number {
+    if (this._y !== null) {
+      return this._y;
+    }
+    return this.setTransverseMercatorCoordinates()[1];
+  }
+
+  private setTransverseMercatorCoordinates(): [number, number] {
+    const coords = Coordinate.toTransverseMercator(this.lat, this.lon);
+    this._x = coords[0];
+    this._y = coords[1];
+    return [this._x, this._y];
+  }
+
+  static toTransverseMercator(lat: number, lon: number): [number, number] {
+    // TODO BR: add test for coordinate transformations.
+    // See https://proj.org/en/9.4/operations/projections/tmerc.html for projection arguments
+    return proj4(this.TMERC, [lat, lon]);
+  }
+
+  static toWGS84(x: number, y: number): [number, number] {
+    return proj4(this.TMERC, 'WGS84', [x, y]);
+  }
 
   static fromResource(resource: CoordinateResource): Coordinate {
     return new Coordinate(resource.lat, resource.lon);
@@ -109,6 +175,8 @@ export class Address {
 }
 
 export class Building {
+  private animals: Coordinate[] | null = null;
+
   constructor(
     public way_id: number,
     public area: number,
@@ -118,6 +186,10 @@ export class Building {
     public geometry: Coordinate[],
     public addresses_nearby: Address[],
     public center: Coordinate,
+    public latMin: number,
+    public latMax: number,
+    public lonMin: number,
+    public lonMax: number,
   ) {
     this.addresses_nearby.sort(
       (a: Address, b: Address) =>
@@ -146,6 +218,10 @@ export class Building {
       coordinates,
       addresses_nearby,
       new Coordinate(lat, lon),
+      resource.lat_min,
+      resource.lat_max,
+      resource.lon_min,
+      resource.lon_max,
     );
   }
 
@@ -155,5 +231,71 @@ export class Building {
 
   get osmUrl(): string {
     return `https://www.openstreetmap.org/way/${this.way_id}`;
+  }
+
+  get polygon(): Polygon {
+    // TODO BR: use member variable as cache for performance?
+    const coordinates: [number, number][] = [];
+    for (const coordinate of this.geometry) {
+      coordinates.push([coordinate.lat, coordinate.lon]);
+    }
+    return polygon(coordinates);
+  }
+
+  get animalCoordinates(): Coordinate[] {
+    if (this.animals) {
+      return this.animals;
+    }
+
+    const points: Coordinate[] = [];
+    const maxPoints = this.area * 0.8;
+    const maxTries = maxPoints * 10;
+    let nTries = 0;
+    const polygonBuilding = this.polygon;
+    while (points.length < maxPoints && nTries < maxTries) {
+      const lat = Math.random() * (this.latMax - this.latMin) + this.latMin;
+      const lon = Math.random() * (this.lonMax - this.lonMin) + this.lonMin;
+      if (PolygonUtils.isMarkerInsidePolygon(lat, lon, polygonBuilding)) {
+        points.push(new Coordinate(lat, lon));
+      }
+      nTries++;
+    }
+    console.log(`${points.length} points created in ${nTries} tries`);
+
+    // TODO BR: improve performance by optimize finding nearest neighbours
+    // Move points away from each other if too close
+    const distanceToMove = Math.sqrt(this.area) / 10;
+    for (const pointA of points) {
+      for (const pointB of points) {
+        if (pointA == pointB) {
+          continue;
+        }
+        const pA: [number, number] = [pointA.x, pointA.y];
+        const pB: [number, number] = [pointB.x, pointB.y];
+        const distance: number = PolygonUtils.distanceBetweenPoints(pA, pB);
+        if (distance > 1) {
+          continue;
+        }
+        const dAB: [number, number] = PolygonUtils.vsub(pA, pB);
+        const newdAB = PolygonUtils.vscale(
+          dAB,
+          (distanceToMove - distance) / PolygonUtils.vlen(dAB),
+        );
+        const pANew = PolygonUtils.vadd(pA, newdAB);
+        const newCoordsWGS84 = Coordinate.toWGS84(pANew[0], pANew[1]);
+        if (
+          PolygonUtils.isMarkerInsidePolygon(
+            newCoordsWGS84[0],
+            newCoordsWGS84[1],
+            polygonBuilding,
+          )
+        ) {
+          pointA.lat = newCoordsWGS84[0];
+          pointA.lon = newCoordsWGS84[1];
+        }
+      }
+    }
+    this.animals = points;
+    return this.animals;
   }
 }

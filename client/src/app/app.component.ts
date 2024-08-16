@@ -9,15 +9,14 @@ import { MatCardModule } from '@angular/material/card';
 
 import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import 'leaflet.markercluster'; // a leaflet plugin
-import { latLng, Map, LeafletMouseEvent, LeafletEvent } from 'leaflet';
 import {
-  polygon,
-  tileLayer,
-  Polygon,
-  Layer,
-  LayerGroup,
-  layerGroup,
+  latLng,
+  Map,
+  LeafletMouseEvent,
+  LeafletEvent,
+  circleMarker,
 } from 'leaflet';
+import { tileLayer, Polygon, Layer, LayerGroup, layerGroup } from 'leaflet';
 import {
   Marker,
   marker,
@@ -55,6 +54,7 @@ export class AppComponent implements OnInit {
   private readonly CLUSTER_AT_ZOOM: number = 13;
   private readonly MAX_CLUSTER_RADIUS: number = 20;
   private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM - 1;
+  private readonly ANIMALS_AT_ZOOM: number = 18;
   Object = Object;
   readonly title: string = 'veekaart.nl';
   options = {
@@ -74,6 +74,7 @@ export class AppComponent implements OnInit {
   layerBuildingSelected: Polygon | null = null;
   companySelected: Company | null = null;
   buildingLayer: LayerGroup | null = null;
+  animalsLayer: LayerGroup | null = null;
 
   private map: Map | null = null;
   private readonly highlightBuildingStyle = {
@@ -106,11 +107,7 @@ export class AppComponent implements OnInit {
     this.buildingService.getBuildings().subscribe((buildings) => {
       const layers: any[] = [];
       for (const building of buildings) {
-        const coordinates: [number, number][] = [];
-        for (const coordinate of building.geometry) {
-          coordinates.push([coordinate.lat, coordinate.lon]);
-        }
-        const layer: any = polygon(coordinates);
+        const layer: any = building.polygon;
         layer.on('click', (event: LeafletMouseEvent) =>
           this.onBuildingLayerClick(event, layer),
         );
@@ -218,6 +215,19 @@ export class AppComponent implements OnInit {
         layer,
       );
       console.log('building center is inside building:', inside);
+      const circleMarkers = [];
+      for (const point of building.animalCoordinates) {
+        const circleOptions = {
+          radius: 1,
+          stroke: false,
+          fillOpacity: 1,
+          fillColor: 'blue',
+        };
+        circleMarkers.push(
+          circleMarker(latLng(point.lat, point.lon), circleOptions),
+        );
+      }
+      this.layers.push(layerGroup(circleMarkers));
     });
   }
 
@@ -241,6 +251,7 @@ export class AppComponent implements OnInit {
   onMove(event: LeafletEvent): void {
     console.log('onMove');
     this.logCompanyInViewStats();
+    this.updateAnimals();
   }
 
   onZoom(event: LeafletEvent): void {
@@ -261,7 +272,45 @@ export class AppComponent implements OnInit {
       ) {
         this.map.addLayer(this.buildingLayer);
       }
+      this.updateAnimals();
     });
+  }
+
+  private updateAnimals(): void {
+    if (!this.map) {
+      return;
+    }
+    if (this.animalsLayer) {
+      this.map.removeLayer(this.animalsLayer);
+    }
+    if (this.map.getZoom() < this.ANIMALS_AT_ZOOM) {
+      return;
+    }
+
+    const circleMarkers = [];
+    const circleOptions = this.getAnimalCircleOptions();
+    for (const building of this.getBuildingsInView()) {
+      for (const point of building.animalCoordinates) {
+        circleMarkers.push(
+          circleMarker(latLng(point.lat, point.lon), circleOptions),
+        );
+      }
+    }
+    this.animalsLayer = layerGroup(circleMarkers);
+    this.layers.push(this.animalsLayer);
+  }
+
+  private getAnimalCircleOptions(): any {
+    let radius = 1;
+    if (this.map) {
+      radius = this.map.getZoom() >= 20 ? 2 : radius;
+    }
+    return {
+      radius: radius,
+      stroke: false,
+      fillOpacity: 1,
+      fillColor: 'blue',
+    };
   }
 
   private logCompanyInViewStats(): void {
@@ -299,5 +348,21 @@ export class AppComponent implements OnInit {
       }
     });
     return companies;
+  }
+
+  private getBuildingsInView(): Building[] {
+    if (!this.map) {
+      return [];
+    }
+    const buildings: Building[] = [];
+    this.map.eachLayer((layer: Layer) => {
+      if (layer instanceof Polygon) {
+        if (this.map?.getBounds().contains(layer.getCenter())) {
+          const building = (layer as any)['building'];
+          buildings.push(building);
+        }
+      }
+    });
+    return buildings;
   }
 }
