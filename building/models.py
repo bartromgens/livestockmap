@@ -137,13 +137,13 @@ class Company(models.Model):
 class Building(models.Model):
     way_id = models.IntegerField(unique=True, null=False, db_index=True)
     osm_raw = models.JSONField()
-    area = models.FloatField()  # in m^2
+    area = models.FloatField(db_index=True)  # in m^2
     length = models.FloatField()  # in m
     width = models.FloatField()  # in m
-    lon_min = models.FloatField()
-    lon_max = models.FloatField()
-    lat_min = models.FloatField()
-    lat_max = models.FloatField()
+    lon_min = models.FloatField(db_index=True)
+    lon_max = models.FloatField(db_index=True)
+    lat_min = models.FloatField(db_index=True)
+    lat_max = models.FloatField(db_index=True)
     addresses_nearby = models.ManyToManyField(Address)
 
     @property
