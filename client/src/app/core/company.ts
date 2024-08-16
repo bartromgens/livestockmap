@@ -1,4 +1,5 @@
-import { Address, AddressResource, Coordinate } from './building';
+import { Address, AddressResource } from './building';
+import { Coordinate } from './geo';
 
 export interface CompanyResource {
   id: number;
