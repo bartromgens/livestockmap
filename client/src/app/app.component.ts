@@ -96,25 +96,23 @@ export class AppComponent implements OnInit {
     private zone: NgZone,
   ) {}
 
-  ngOnInit(): void {
-    // this.update();
-  }
+  ngOnInit(): void {}
 
   private update(): void {
     if (!this.map) {
       console.assert(false, 'map is not defined');
       return;
     }
+
     const bounds: LatLngBounds = this.map.getBounds();
-    this.updateCompanies();
-    this.updateBuildings(
-      new BBox(
-        bounds.getWest(),
-        bounds.getSouth(),
-        bounds.getEast(),
-        bounds.getNorth(),
-      ),
+    const bbox = new BBox(
+      bounds.getWest(),
+      bounds.getSouth(),
+      bounds.getEast(),
+      bounds.getNorth(),
     );
+    this.updateCompanies(bbox);
+    this.updateBuildings(bbox);
   }
 
   private updateBuildings(bbox: BBox): void {
@@ -134,8 +132,8 @@ export class AppComponent implements OnInit {
     });
   }
 
-  private updateCompanies(): void {
-    this.companyService.getCompanies().subscribe((companies) => {
+  private updateCompanies(bbox: BBox): void {
+    this.companyService.getCompanies(bbox).subscribe((companies) => {
       const layers: any[] = [];
       for (const company of companies) {
         const layersCompany: any[] = [];
