@@ -47,8 +47,8 @@ class Coordinate(BaseModel):
 
 class Address(models.Model):
     node_id = models.IntegerField(unique=True, null=False, db_index=True)
-    lat = models.FloatField(null=False)
-    lon = models.FloatField(null=False)
+    lat = models.FloatField(null=False, db_index=True)
+    lon = models.FloatField(null=False, db_index=True)
     street = models.CharField(max_length=200)
     housenumber = models.CharField(max_length=200)
     postcode = models.CharField(max_length=200, null=True)
@@ -137,13 +137,13 @@ class Company(models.Model):
 class Building(models.Model):
     way_id = models.IntegerField(unique=True, null=False, db_index=True)
     osm_raw = models.JSONField()
-    area = models.FloatField()  # in m^2
+    area = models.FloatField(db_index=True)  # in m^2
     length = models.FloatField()  # in m
     width = models.FloatField()  # in m
-    lon_min = models.FloatField()
-    lon_max = models.FloatField()
-    lat_min = models.FloatField()
-    lat_max = models.FloatField()
+    lon_min = models.FloatField(db_index=True)
+    lon_max = models.FloatField(db_index=True)
+    lat_min = models.FloatField(db_index=True)
+    lat_max = models.FloatField(db_index=True)
     addresses_nearby = models.ManyToManyField(Address)
 
     @property

@@ -15,6 +15,7 @@ import {
   LeafletMouseEvent,
   LeafletEvent,
   circleMarker,
+  LatLngBounds,
 } from 'leaflet';
 import { tileLayer, Polygon, Layer, LayerGroup, layerGroup } from 'leaflet';
 import {
@@ -31,6 +32,7 @@ import { Building } from './core';
 import { CompanyService } from './core';
 import { chickenIcon, cowIcon, pigIcon } from './map';
 import { PolygonUtils } from './utils';
+import { BBox } from './core/geo';
 
 @Component({
   selector: 'app-root',
@@ -94,17 +96,27 @@ export class AppComponent implements OnInit {
     private zone: NgZone,
   ) {}
 
-  ngOnInit(): void {
-    this.update();
-  }
+  ngOnInit(): void {}
 
   private update(): void {
-    this.updateCompanies();
-    this.updateBuildings();
+    if (!this.map) {
+      console.assert(false, 'map is not defined');
+      return;
+    }
+
+    const bounds: LatLngBounds = this.map.getBounds();
+    const bbox = new BBox(
+      bounds.getWest(),
+      bounds.getSouth(),
+      bounds.getEast(),
+      bounds.getNorth(),
+    );
+    this.updateCompanies(bbox);
+    this.updateBuildings(bbox);
   }
 
-  private updateBuildings(): void {
-    this.buildingService.getBuildings().subscribe((buildings) => {
+  private updateBuildings(bbox: BBox): void {
+    this.buildingService.getBuildings(bbox).subscribe((buildings) => {
       const layers: any[] = [];
       for (const building of buildings) {
         const layer: any = building.polygon;
@@ -120,8 +132,8 @@ export class AppComponent implements OnInit {
     });
   }
 
-  private updateCompanies(): void {
-    this.companyService.getCompanies().subscribe((companies) => {
+  private updateCompanies(bbox: BBox): void {
+    this.companyService.getCompanies(bbox).subscribe((companies) => {
       const layers: any[] = [];
       for (const company of companies) {
         const layersCompany: any[] = [];
@@ -153,12 +165,12 @@ export class AppComponent implements OnInit {
       markers.addLayers(layers);
       this.layers.push(markers);
 
-      if (companies.length > 0) {
-        this.map?.setView(
-          latLng(companies[0].address.lat, companies[0].address.lon),
-          this.ZOOM_DEFAULT,
-        );
-      }
+      // if (companies.length > 0) {
+      //   this.map?.setView(
+      //     latLng(companies[0].address.lat, companies[0].address.lon),
+      //     this.ZOOM_DEFAULT,
+      //   );
+      // }
     });
   }
 
@@ -246,12 +258,14 @@ export class AppComponent implements OnInit {
 
   onMapReady(map: Map): void {
     this.map = map;
+    this.update();
   }
 
   onMove(event: LeafletEvent): void {
     console.log('onMove');
     this.logCompanyInViewStats();
     this.updateAnimals();
+    this.update();
   }
 
   onZoom(event: LeafletEvent): void {
