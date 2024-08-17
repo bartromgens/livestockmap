@@ -14,7 +14,7 @@ export class CompanyService {
   constructor(private httpClient: HttpClient) {}
 
   public getCompanies(bbox: BBox): Observable<Company[]> {
-    const url = `${environment.apiBaseUrl}/companies/?${bbox.toString()}`;
+    const url = `${environment.apiBaseUrl}/companies/?bbox=${bbox.toString()}`;
     return new Observable<Company[]>((observer) => {
       this.httpClient.get<CompanyResource[]>(url).subscribe((resources) => {
         observer.next(Company.fromResources(resources));
