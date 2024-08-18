@@ -120,7 +120,7 @@ class Address(models.Model):
         # TODO BR: (optionally) only update addresses without related company
         for i, address in enumerate(addresses):
             logger.info(f"finding company for address {i+1}/{len(addresses)}")
-            if i % 10 == 0:
+            if i % 20 == 0:
                 if not UittrekselRegisterScraper.check_is_working():
                     raise ScraperMalfunction("Scraper is not giving expected results!")
             companies_kvk = UittrekselRegisterScraper.get_companies_for_address(
