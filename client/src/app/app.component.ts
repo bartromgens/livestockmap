@@ -55,7 +55,7 @@ export class AppComponent implements OnInit {
   private readonly ZOOM_DEFAULT: number = 14;
   private readonly CLUSTER_AT_ZOOM: number = 13;
   private readonly MAX_CLUSTER_RADIUS: number = 20;
-  private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM - 1;
+  private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM;
   private readonly ANIMALS_AT_ZOOM: number = 18;
   Object = Object;
   readonly title: string = 'veekaart.nl';
@@ -104,15 +104,12 @@ export class AppComponent implements OnInit {
       return;
     }
 
-    const bounds: LatLngBounds = this.map.getBounds();
-    const bbox = new BBox(
-      bounds.getWest(),
-      bounds.getSouth(),
-      bounds.getEast(),
-      bounds.getNorth(),
-    );
-    this.updateCompanies(bbox);
-    this.updateBuildings(bbox);
+    this.layers = [];
+    this.updateCompanies(this.bbox);
+
+    if (this.map.getZoom() >= this.BUILDINGS_AT_ZOOM) {
+      this.updateBuildings(this.bbox);
+    }
   }
 
   private updateBuildings(bbox: BBox): void {
@@ -129,6 +126,7 @@ export class AppComponent implements OnInit {
       }
       this.buildingLayer = layerGroup(layers);
       this.layers.push(this.buildingLayer);
+      this.updateAnimals();
     });
   }
 
@@ -172,6 +170,21 @@ export class AppComponent implements OnInit {
       //   );
       // }
     });
+  }
+
+  private get bbox(): BBox {
+    if (!this.map) {
+      console.assert(false, 'map is not defined');
+      return new BBox(0, 0, 0, 0);
+    }
+
+    const bounds: LatLngBounds = this.map.getBounds();
+    return new BBox(
+      bounds.getWest(),
+      bounds.getSouth(),
+      bounds.getEast(),
+      bounds.getNorth(),
+    );
   }
 
   private createMarkerGroupIcon(cluster: MarkerCluster): DivIcon {
@@ -264,30 +277,11 @@ export class AppComponent implements OnInit {
   onMove(event: LeafletEvent): void {
     console.log('onMove');
     this.logCompanyInViewStats();
-    this.updateAnimals();
     this.update();
   }
 
   onZoom(event: LeafletEvent): void {
-    console.log('zoom level', this.map?.getZoom());
-    this.zone.run(() => {
-      if (!this.map || !this.buildingLayer) {
-        return;
-      }
-      if (
-        this.map.getZoom() < this.BUILDINGS_AT_ZOOM &&
-        this.map.hasLayer(this.buildingLayer)
-      ) {
-        this.map.removeLayer(this.buildingLayer);
-      }
-      if (
-        this.map.getZoom() >= this.BUILDINGS_AT_ZOOM &&
-        !this.map.hasLayer(this.buildingLayer)
-      ) {
-        this.map.addLayer(this.buildingLayer);
-      }
-      this.updateAnimals();
-    });
+    console.log('onZoom: level', this.map?.getZoom());
   }
 
   private updateAnimals(): void {
