@@ -8,6 +8,7 @@ from django.core.management.base import BaseCommand
 
 from building.models import Address
 from building.models import Tile
+from company.kvk import ScraperMalfunction
 from geo.utils import BBox
 from building.models import Building
 from building.models import Company
@@ -48,13 +49,19 @@ class Command(BaseCommand):
     def create_tiles(self):
         tiles = Tile.objects.filter(complete=False).all()
         for tile in tiles:
-            start = time.time()
-            buildings, companies = self.create_for_bbox(tile.to_bbox())
-            tile.duration = time.time() - start
-            tile.complete = True
-            tile.building_count = len(buildings)
-            tile.company_count = len(companies)
-            tile.save()
+            try:
+                self.create_tile(tile)
+            except ScraperMalfunction as e:
+                logger.exception(e)
+
+    def create_tile(self, tile: Tile):
+        start = time.time()
+        buildings, companies = self.create_for_bbox(tile.to_bbox())
+        tile.duration = time.time() - start
+        tile.building_count = len(buildings)
+        tile.company_count = len(companies)
+        tile.complete = True
+        tile.save()
 
     def create_for_bbox(self, bbox: BBox) -> Tuple[List[Building], List[Company]]:
         buildings_raw = get_buildings_batches(bbox)

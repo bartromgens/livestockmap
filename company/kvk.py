@@ -9,6 +9,10 @@ from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 
+class ScraperMalfunction(RuntimeError):
+    pass
+
+
 class Company(BaseModel):
     description: str
     active: bool

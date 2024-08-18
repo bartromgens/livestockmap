@@ -7,6 +7,7 @@ from typing import List
 from django.db import models
 from pydantic import BaseModel
 
+from company.kvk import ScraperMalfunction
 from company.kvk import UittrekselRegisterScraper
 from geo.utils import BBox
 from osm.building import OSMBuilding
@@ -121,7 +122,7 @@ class Address(models.Model):
             logger.info(f"finding company for address {i+1}/{len(addresses)}")
             if i % 10 == 0:
                 if not UittrekselRegisterScraper.check_is_working():
-                    raise RuntimeError("Scraper is not giving expected results!")
+                    raise ScraperMalfunction("Scraper is not giving expected results!")
             companies_kvk = UittrekselRegisterScraper.get_companies_for_address(
                 str(address)
             )
