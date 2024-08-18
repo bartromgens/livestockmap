@@ -13,8 +13,6 @@ class TestGetAddressNearby(TestCase):
         lon = 5.5681605
         distance = 100
         nodes = get_address_nearby(lat, lon, distance)
-        for node in nodes:
-            print(node)
         self.assertEqual(len(nodes), 3)
 
     def test_get_address_nodes_nearby_belgium(self):

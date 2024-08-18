@@ -7,7 +7,7 @@ from typing import List
 from django.db import models
 from pydantic import BaseModel
 
-from company.kvk import get_companies_for_address
+from company.kvk import UittrekselRegisterScraper
 from geo.utils import BBox
 from osm.building import OSMBuilding
 from osm.building import get_address_nearby
@@ -119,13 +119,18 @@ class Address(models.Model):
         # TODO BR: (optionally) only update addresses without related company
         for i, address in enumerate(addresses):
             logger.info(f"finding company for address {i+1}/{len(addresses)}")
-            companies_kvk = get_companies_for_address(str(address))
+            if i % 10 == 0:
+                if not UittrekselRegisterScraper.check_is_working():
+                    raise RuntimeError("Scraper is not giving expected results!")
+            companies_kvk = UittrekselRegisterScraper.get_companies_for_address(
+                str(address)
+            )
             for c in companies_kvk:
                 company, _created = Company.objects.get_or_create(
                     address=address, description=c.description, active=c.active
                 )
                 companies.append(company)
-            time.sleep(0.2)  # rate limit to prevent unintentional DOS
+            time.sleep(0.5)  # rate limit to prevent unintentional DOS
         return companies
 
 
