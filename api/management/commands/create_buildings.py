@@ -53,6 +53,9 @@ class Command(BaseCommand):
                 self.create_tile(tile)
             except ScraperMalfunction as e:
                 logger.exception(e)
+                tile.failed = True
+                tile.error = str(e)
+                tile.save()
 
     def create_tile(self, tile: Tile):
         start = time.time()

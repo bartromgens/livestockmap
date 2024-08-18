@@ -47,10 +47,11 @@ class CompanyAdmin(admin.ModelAdmin):
 
 
 class TileAdmin(admin.ModelAdmin):
-    list_filter = ["complete"]
+    list_filter = ["complete", "failed"]
     list_display = [
         "id",
         "complete",
+        "failed",
         "level",
         "lon_min",
         "lon_max",
@@ -61,6 +62,7 @@ class TileAdmin(admin.ModelAdmin):
         "duration",
         "building_count",
         "company_count",
+        "error",
     ]
 
 
