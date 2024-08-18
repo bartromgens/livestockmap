@@ -117,11 +117,12 @@ class OSMBuilding:
         return buildings_osm_large
 
 
-def get_buildings(bbox, exclude_types):
-    bbox = f"({bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]});"
+def get_buildings(bbox, exclude_types, country_code: str):
+    bbox = f"({bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]})"
     exclude_str = "|".join(exclude_types)
     query = f"""(
-        way[building]["building"!~"^({exclude_str})$"]{bbox}
+        area["ISO3166-1"="{country_code}"];
+        way[building]["building"!~"^({exclude_str})$"]{bbox}(area);
     )   
     """
     logger.info(f"get buildings for {bbox}")
@@ -130,7 +131,9 @@ def get_buildings(bbox, exclude_types):
     )  # use verbosity = geom to get way geometry in geojson
 
 
-def get_buildings_batches(bbox: BBox, exclude_types=OSMBuilding.EXCLUDE_TYPES_DEFAULT):
+def get_buildings_batches(
+    bbox: BBox, exclude_types=OSMBuilding.EXCLUDE_TYPES_DEFAULT, country_code="NL"
+):
     tiles = generate_tiles(
         min_lat=bbox.lat_min,
         min_lon=bbox.lon_min,
@@ -143,7 +146,10 @@ def get_buildings_batches(bbox: BBox, exclude_types=OSMBuilding.EXCLUDE_TYPES_DE
     buildings = []
     for i, tile in enumerate(tiles):
         logger.info(f"getting tile: {i+1}/{len(tiles)}")
-        buildings += get_buildings(tile, exclude_types=exclude_types)["elements"]
+        buildings += get_buildings(
+            tile, exclude_types=exclude_types, country_code=country_code
+        )["elements"]
+    buildings = [building for building in buildings if building["type"] == "way"]
     return buildings
 
 

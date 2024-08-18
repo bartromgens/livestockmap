@@ -2,6 +2,7 @@ import logging
 import time
 from typing import List
 from typing import Optional
+from typing import Tuple
 
 from django.core.management.base import BaseCommand
 
@@ -48,14 +49,15 @@ class Command(BaseCommand):
         tiles = Tile.objects.filter(complete=False).all()
         for tile in tiles:
             start = time.time()
-            self.create_for_bbox(tile.to_bbox())
+            buildings, companies = self.create_for_bbox(tile.to_bbox())
             tile.duration = time.time() - start
             tile.complete = True
+            tile.building_count = len(buildings)
+            tile.company_count = len(companies)
             tile.save()
 
-    def create_for_bbox(self, bbox: BBox):
+    def create_for_bbox(self, bbox: BBox) -> Tuple[List[Building], List[Company]]:
         buildings_raw = get_buildings_batches(bbox)
-        # print(json.dumps(buildings_raw, indent=2))
 
         buildings_osm: List[OSMBuilding] = []
         for building_raw in buildings_raw:
@@ -77,6 +79,7 @@ class Command(BaseCommand):
         logger.info(
             self.style.SUCCESS(f"Successfully created {len(buildings)} buildings")
         )
+        return buildings, companies
 
     @classmethod
     def get_region_bbox(cls, options) -> Optional[BBox]:
