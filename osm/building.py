@@ -12,6 +12,7 @@ from shapely.geometry import Point
 from shapely.geometry import Polygon
 from shapely.ops import transform
 
+from geo.utils import BBox
 from osm.core import api
 from osm.tile import generate_tiles
 
@@ -118,11 +119,16 @@ def get_buildings(bbox, exclude_types):
     )  # use verbosity = geom to get way geometry in geojson
 
 
-def get_buildings_batches(bbox, exclude_types=OSMBuilding.EXCLUDE_TYPES_DEFAULT):
+def get_buildings_batches(bbox: BBox, exclude_types=OSMBuilding.EXCLUDE_TYPES_DEFAULT):
     tiles = generate_tiles(
-        bbox[0], bbox[1], bbox[2], bbox[3], delta_lat=0.07, delta_lon=0.07
+        min_lat=bbox.lat_min,
+        min_lon=bbox.lon_min,
+        max_lat=bbox.lat_max,
+        max_lon=bbox.lon_max,
+        delta_lat=0.07,
+        delta_lon=0.07,
     )
-    logger.info(f"{len(tiles)} tiles create")
+    logger.info(f"{len(tiles)} tiles created")
     buildings = []
     for i, tile in enumerate(tiles):
         logger.info(f"getting tile: {i+1}/{len(tiles)}")

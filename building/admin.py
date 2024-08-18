@@ -3,6 +3,7 @@ from django.contrib import admin
 from building.models import Address
 from building.models import Building
 from building.models import Company
+from building.models import Tile
 
 
 class BuildingAdmin(admin.ModelAdmin):
@@ -45,7 +46,24 @@ class CompanyAdmin(admin.ModelAdmin):
     ]
 
 
+class TileAdmin(admin.ModelAdmin):
+    list_filter = ["complete"]
+    list_display = [
+        "id",
+        "complete",
+        "level",
+        "lon_min",
+        "lon_max",
+        "lat_min",
+        "lat_max",
+        "datetime_created",
+        "datetime_updated",
+        "duration",
+    ]
+
+
 # Register your models here.
 admin.site.register(Building, BuildingAdmin)
 admin.site.register(Address, AddressAdmin)
 admin.site.register(Company, CompanyAdmin)
+admin.site.register(Tile, TileAdmin)

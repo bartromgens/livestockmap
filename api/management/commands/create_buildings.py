@@ -1,9 +1,13 @@
 import logging
+import time
 from typing import List
+from typing import Optional
 
 from django.core.management.base import BaseCommand
 
 from building.models import Address
+from building.models import Tile
+from geo.utils import BBox
 from building.models import Building
 from building.models import Company
 from osm.building import get_buildings_batches
@@ -29,15 +33,28 @@ class Command(BaseCommand):
         parser.add_argument(
             "--region",
             type=str,
-            default="lunteren",
+            # default="lunteren",
             help="The region to create buildings for",
         )
 
     def handle(self, *args, **options):
-        region = options["region"]
-        region_bbox = REGIONS[region]
-        logger.info(f"Creating buildings for region: {region}")
-        buildings_raw = get_buildings_batches(region_bbox)
+        region_bbox = self.get_region_bbox(options)
+        if region_bbox is not None:
+            self.create_for_bbox(region_bbox)
+        else:
+            self.create_tiles()
+
+    def create_tiles(self):
+        tiles = Tile.objects.filter(complete=False).all()
+        for tile in tiles:
+            start = time.time()
+            self.create_for_bbox(tile.to_bbox())
+            tile.duration = time.time() - start
+            tile.complete = True
+            tile.save()
+
+    def create_for_bbox(self, bbox: BBox):
+        buildings_raw = get_buildings_batches(bbox)
         # print(json.dumps(buildings_raw, indent=2))
 
         buildings_osm: List[OSMBuilding] = []
@@ -68,3 +85,17 @@ class Command(BaseCommand):
         logger.info(
             self.style.SUCCESS(f"Successfully created {len(buildings)} buildings")
         )
+
+    @classmethod
+    def get_region_bbox(cls, options) -> Optional[BBox]:
+        region = options.get("region")
+        if region is not None:
+            logger.info(f"Creating buildings for region: {region}")
+            region_bbox = REGIONS[region]
+            return BBox(
+                lon_min=region_bbox[1],
+                lon_max=region_bbox[3],
+                lat_min=region_bbox[0],
+                lat_max=region_bbox[2],
+            )
+        return None

@@ -13,6 +13,6 @@ class Command(BaseCommand):
         buildings = Building.objects.all()
         building_count = buildings.count()
         buildings.delete()
-        logging.info(
+        logger.info(
             self.style.SUCCESS(f"Successfully deleted {building_count} buildings")
         )

@@ -8,6 +8,7 @@ from django.db import models
 from pydantic import BaseModel
 
 from company.kvk import get_companies_for_address
+from geo.utils import BBox
 from osm.building import OSMBuilding
 from osm.building import get_address_nearby
 
@@ -43,6 +44,37 @@ class Coordinate(BaseModel):
         ) * math.cos(rLat1) * math.cos(rLat2)
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         return R * c
+
+
+class Tile(models.Model):
+    level = models.IntegerField(null=False, db_index=True)
+    lon_min = models.FloatField(null=False, db_index=True)
+    lon_max = models.FloatField(null=False, db_index=True)
+    lat_min = models.FloatField(null=False, db_index=True)
+    lat_max = models.FloatField(null=False, db_index=True)
+    complete = models.BooleanField(default=False, db_index=True)
+    duration = models.FloatField(null=True)
+    datetime_created = models.DateTimeField(auto_now_add=True, null=False)
+    datetime_updated = models.DateTimeField(auto_now=True, null=False)
+    LEVEL_DEFAULT = 10
+
+    @classmethod
+    def from_bbox(cls, bbox: BBox) -> "Tile":
+        return cls.objects.create(
+            level=cls.LEVEL_DEFAULT,
+            lon_min=bbox.lon_min,
+            lon_max=bbox.lon_max,
+            lat_min=bbox.lat_min,
+            lat_max=bbox.lat_max,
+        )
+
+    def to_bbox(self) -> BBox:
+        return BBox(
+            lon_min=self.lon_min,
+            lon_max=self.lon_max,
+            lat_min=self.lat_min,
+            lat_max=self.lat_max,
+        )
 
 
 class Address(models.Model):

@@ -1,28 +1,11 @@
-from dataclasses import dataclass
-
 from django.db.models import Q
 from rest_framework import serializers
 from rest_framework import viewsets
 
 from building.models import Address
+from geo.utils import BBox
 from building.models import Building
 from building.models import Company
-
-
-@dataclass
-class BBox:
-    lon_min: float
-    lon_max: float
-    lat_min: float
-    lat_max: float
-
-    @classmethod
-    def parse_bbox(cls, bbox_str) -> "BBox":
-        values = bbox_str.split(",")
-        assert len(values) == 4
-        return BBox(
-            lon_min=values[0], lat_min=values[1], lon_max=values[2], lat_max=values[3]
-        )
 
 
 class AddressSerializer(serializers.HyperlinkedModelSerializer):
