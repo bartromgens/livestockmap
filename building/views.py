@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from django.db.models import Q
 from rest_framework import serializers
 from rest_framework import viewsets
 
@@ -57,7 +58,9 @@ class CompanySerializer(serializers.HyperlinkedModelSerializer):
 
 
 class CompanyViewSet(viewsets.ModelViewSet):
-    queryset = Company.objects.filter(active=True)
+    queryset = Company.objects.filter(active=True).filter(
+        Q(chicken=True) | Q(pig=True) | Q(cattle=True)
+    )
     serializer_class = CompanySerializer
 
     def get_queryset(self):
