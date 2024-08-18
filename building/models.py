@@ -97,13 +97,13 @@ class Address(models.Model):
 
 class Company(models.Model):
     description = models.CharField(max_length=2000, null=False)
-    active = models.BooleanField(default=True, null=False)
+    active = models.BooleanField(default=True, null=False, db_index=True)
     address = models.ForeignKey(Address, null=False, on_delete=models.CASCADE)
-    chicken = models.BooleanField(default=False, null=False)
-    pig = models.BooleanField(default=False, null=False)
-    cattle = models.BooleanField(default=False, null=False)
-    sheep = models.BooleanField(default=False, null=False)
-    goat = models.BooleanField(default=False, null=False)
+    chicken = models.BooleanField(default=False, null=False, db_index=True)
+    pig = models.BooleanField(default=False, null=False, db_index=True)
+    cattle = models.BooleanField(default=False, null=False, db_index=True)
+    sheep = models.BooleanField(default=False, null=False, db_index=True)
+    goat = models.BooleanField(default=False, null=False, db_index=True)
 
     @property
     def has_type(self) -> bool:
