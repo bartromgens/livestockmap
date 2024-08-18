@@ -8,6 +8,22 @@ from building.models import Building
 from building.models import Company
 
 
+@dataclass
+class BBox:
+    lon_min: float
+    lon_max: float
+    lat_min: float
+    lat_max: float
+
+    @classmethod
+    def parse_bbox(cls, bbox_str) -> "BBox":
+        values = bbox_str.split(",")
+        assert len(values) == 4
+        return BBox(
+            lon_min=values[0], lat_min=values[1], lon_max=values[2], lat_max=values[3]
+        )
+
+
 class AddressSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Address
@@ -45,7 +61,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
     serializer_class = CompanySerializer
 
     def get_queryset(self):
-        queryset = Company.objects.all()
+        queryset = self.queryset
         bbox_str = self.request.query_params.get("bbox")
         # bbox = min longitude, min latitude, max longitude, max latitude
         if bbox_str is not None:
@@ -57,22 +73,6 @@ class CompanyViewSet(viewsets.ModelViewSet):
                 .filter(address__lat__lt=bbox.lat_max)
             )
         return queryset.prefetch_related("address")
-
-
-@dataclass
-class BBox:
-    lon_min: float
-    lon_max: float
-    lat_min: float
-    lat_max: float
-
-    @classmethod
-    def parse_bbox(cls, bbox_str) -> "BBox":
-        values = bbox_str.split(",")
-        assert len(values) == 4
-        return BBox(
-            lon_min=values[0], lat_min=values[1], lon_max=values[2], lat_max=values[3]
-        )
 
 
 class BuildingSerializer(serializers.HyperlinkedModelSerializer):
@@ -101,7 +101,7 @@ class BuildingViewSet(viewsets.ModelViewSet):
     serializer_class = BuildingSerializer
 
     def get_queryset(self):
-        queryset = Building.objects.all()
+        queryset = self.queryset
         bbox_str = self.request.query_params.get("bbox")
         # bbox = min longitude, min latitude, max longitude, max latitude
         if bbox_str is not None:
