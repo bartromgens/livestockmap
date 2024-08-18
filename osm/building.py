@@ -105,6 +105,17 @@ class OSMBuilding:
         proj_transformed = transform(proj, self.polygon)
         return proj_transformed
 
+    @classmethod
+    def filter_by_area(cls, buildings_osm: List["OSMBuilding"]) -> List["OSMBuilding"]:
+        buildings_osm_large = []
+        for i, building in enumerate(buildings_osm):
+            if i % 1000 == 0:
+                logger.info(f"filtering large buildings {i + 1}/{len(buildings_osm)}")
+            if building.area_square_meters < 200:
+                continue
+            buildings_osm_large.append(building)
+        return buildings_osm_large
+
 
 def get_buildings(bbox, exclude_types):
     bbox = f"({bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]});"

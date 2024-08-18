@@ -62,15 +62,7 @@ class Command(BaseCommand):
             buildings_osm.append(OSMBuilding.create_from_osm_way(building_raw))
 
         logger.info(f"{len(buildings_osm)} buildings found")
-
-        buildings_osm_large = []
-        for i, building in enumerate(buildings_osm):
-            if i % 1000 == 0:
-                logger.info(f"filtering large buildings {i + 1}/{len(buildings_osm)}")
-            if building.area_square_meters < 200:
-                continue
-            buildings_osm_large.append(building)
-
+        buildings_osm_large = OSMBuilding.filter_by_area(buildings_osm)
         logger.info(f"{len(buildings_osm_large)} buildings selected as large enough")
 
         buildings: List[Building] = [
