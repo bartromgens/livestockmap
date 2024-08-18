@@ -59,6 +59,8 @@ class TileAdmin(admin.ModelAdmin):
         "datetime_created",
         "datetime_updated",
         "duration",
+        "building_count",
+        "company_count",
     ]
 
 

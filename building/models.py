@@ -54,6 +54,8 @@ class Tile(models.Model):
     lat_max = models.FloatField(null=False, db_index=True)
     complete = models.BooleanField(default=False, db_index=True)
     duration = models.FloatField(null=True)
+    building_count = models.IntegerField(null=True)
+    company_count = models.IntegerField(null=True)
     datetime_created = models.DateTimeField(auto_now_add=True, null=False)
     datetime_updated = models.DateTimeField(auto_now=True, null=False)
     LEVEL_DEFAULT = 10
