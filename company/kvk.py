@@ -25,7 +25,8 @@ class UittrekselRegisterScraper:
         url = f"https://www.uittrekselregister.nl/zoekresultaten?q={address}"
         logger.info(f"Requesting {url}")
         response = requests.get(url)
-        assert response.status_code == 200, f"{response.status_code}"
+        if response.status_code != 200:
+            raise ScraperMalfunction(response.status_code)
         logger.info(f"Received response for {url}")
         tree = html.fromstring(response.text)
 
