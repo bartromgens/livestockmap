@@ -40,7 +40,8 @@ Example query:
 
 ```osmquery
 [out:json][timeout:25];
-way[building]["building"!~"^(house|apartments)$"]({{bbox}});
+area["ISO3166-1"="NL"];
+way[building]["building"!~"^(house|apartments)$"]({{bbox}})(area);
 out geom;
 ```
 

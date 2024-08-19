@@ -7,7 +7,9 @@ from typing import List
 from django.db import models
 from pydantic import BaseModel
 
-from company.kvk import get_companies_for_address
+from company.kvk import ScraperMalfunction
+from company.kvk import UittrekselRegisterScraper
+from geo.utils import BBox
 from osm.building import OSMBuilding
 from osm.building import get_address_nearby
 
@@ -45,6 +47,42 @@ class Coordinate(BaseModel):
         return R * c
 
 
+class Tile(models.Model):
+    level = models.IntegerField(null=False, db_index=True)
+    lon_min = models.FloatField(null=False, db_index=True)
+    lon_max = models.FloatField(null=False, db_index=True)
+    lat_min = models.FloatField(null=False, db_index=True)
+    lat_max = models.FloatField(null=False, db_index=True)
+    complete = models.BooleanField(default=False, db_index=True)
+    failed = models.BooleanField(default=False, db_index=True)
+    error = models.CharField(null=False, default="", max_length=2000)
+    duration = models.FloatField(null=True)
+    building_count = models.IntegerField(null=True)
+    company_count = models.IntegerField(null=True)
+    datetime_created = models.DateTimeField(auto_now_add=True, null=False)
+    datetime_updated = models.DateTimeField(auto_now=True, null=False)
+
+    LEVEL_DEFAULT = 10
+
+    @classmethod
+    def from_bbox(cls, bbox: BBox) -> "Tile":
+        return cls.objects.create(
+            level=cls.LEVEL_DEFAULT,
+            lon_min=bbox.lon_min,
+            lon_max=bbox.lon_max,
+            lat_min=bbox.lat_min,
+            lat_max=bbox.lat_max,
+        )
+
+    def to_bbox(self) -> BBox:
+        return BBox(
+            lon_min=self.lon_min,
+            lon_max=self.lon_max,
+            lat_min=self.lat_min,
+            lat_max=self.lat_max,
+        )
+
+
 class Address(models.Model):
     node_id = models.IntegerField(unique=True, null=False, db_index=True)
     lat = models.FloatField(null=False, db_index=True)
@@ -53,6 +91,7 @@ class Address(models.Model):
     housenumber = models.CharField(max_length=200)
     postcode = models.CharField(max_length=200, null=True)
     city = models.CharField(max_length=200, null=True)
+    addresses_nearby_count = models.IntegerField(null=True)
 
     @property
     def coordinate(self) -> Coordinate:
@@ -79,19 +118,40 @@ class Address(models.Model):
     def __str__(self):
         return f"{self.street} {self.housenumber}, {self.city}"
 
+    def __key(self):
+        return self.street, self.housenumber, self.city
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        if isinstance(other, Address):
+            return self.__key() == other.__key()
+        return NotImplemented
+
+    def update_addresses_nearby_count(self):
+        nodes = get_address_nearby(self.lat, self.lon, distance=100)
+        self.addresses_nearby_count = len(nodes)
+        self.save()
+
     @classmethod
     def update_companies(cls, addresses: List["Address"]) -> List["Company"]:
         companies = []
         # TODO BR: (optionally) only update addresses without related company
         for i, address in enumerate(addresses):
             logger.info(f"finding company for address {i+1}/{len(addresses)}")
-            companies_kvk = get_companies_for_address(str(address))
+            if i % 20 == 0:
+                if not UittrekselRegisterScraper.check_is_working():
+                    raise ScraperMalfunction("Scraper is not giving expected results!")
+            companies_kvk = UittrekselRegisterScraper.get_companies_for_address(
+                str(address)
+            )
             for c in companies_kvk:
                 company, _created = Company.objects.get_or_create(
                     address=address, description=c.description, active=c.active
                 )
                 companies.append(company)
-            time.sleep(0.2)  # rate limit to prevent unintentional DOS
+            time.sleep(0.5)  # rate limit to prevent unintentional DOS
         return companies
 
 
@@ -145,6 +205,9 @@ class Building(models.Model):
     lat_min = models.FloatField(db_index=True)
     lat_max = models.FloatField(db_index=True)
     addresses_nearby = models.ManyToManyField(Address)
+    addresses_nearby_count = models.IntegerField(null=False, default=0)
+
+    MAX_ADDRESSES_NEARBY = 10
 
     @property
     def geometry(self) -> List[Dict[str, float]]:
@@ -194,6 +257,7 @@ class Building(models.Model):
             addresses_nearby = cls.filter_nearest(
                 building, addresses_nearby, limit=limit
             )
+            building.addresses_nearby_count = len(nodes)
             building.addresses_nearby.set(addresses_nearby)
             building.save()
             addresses += addresses_nearby

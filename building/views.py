@@ -1,28 +1,12 @@
-from dataclasses import dataclass
-
 from django.db.models import Q
 from rest_framework import serializers
 from rest_framework import viewsets
 
 from building.models import Address
+from building.models import Tile
+from geo.utils import BBox
 from building.models import Building
 from building.models import Company
-
-
-@dataclass
-class BBox:
-    lon_min: float
-    lon_max: float
-    lat_min: float
-    lat_max: float
-
-    @classmethod
-    def parse_bbox(cls, bbox_str) -> "BBox":
-        values = bbox_str.split(",")
-        assert len(values) == 4
-        return BBox(
-            lon_min=values[0], lat_min=values[1], lon_max=values[2], lat_max=values[3]
-        )
 
 
 class AddressSerializer(serializers.HyperlinkedModelSerializer):
@@ -104,7 +88,9 @@ class BuildingViewSet(viewsets.ModelViewSet):
     serializer_class = BuildingSerializer
 
     def get_queryset(self):
-        queryset = self.queryset
+        queryset = self.queryset.filter(
+            addresses_nearby_count__lte=Building.MAX_ADDRESSES_NEARBY
+        )
         bbox_str = self.request.query_params.get("bbox")
         # bbox = min longitude, min latitude, max longitude, max latitude
         if bbox_str is not None:
@@ -116,3 +102,22 @@ class BuildingViewSet(viewsets.ModelViewSet):
                 .filter(lat_max__lt=bbox.lat_max)
             )
         return queryset.prefetch_related("addresses_nearby")
+
+
+class TileSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Tile
+        fields = [
+            "level",
+            "lon_min",
+            "lon_max",
+            "lat_min",
+            "lat_max",
+            "complete",
+            "failed",
+        ]
+
+
+class TileViewSet(viewsets.ModelViewSet):
+    queryset = Tile.objects.all()
+    serializer_class = TileSerializer

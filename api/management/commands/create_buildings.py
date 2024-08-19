@@ -1,9 +1,15 @@
 import logging
+import time
 from typing import List
+from typing import Optional
+from typing import Tuple
 
 from django.core.management.base import BaseCommand
 
 from building.models import Address
+from building.models import Tile
+from company.kvk import ScraperMalfunction
+from geo.utils import BBox
 from building.models import Building
 from building.models import Company
 from osm.building import get_buildings_batches
@@ -29,31 +35,47 @@ class Command(BaseCommand):
         parser.add_argument(
             "--region",
             type=str,
-            default="lunteren",
+            # default="lunteren",
             help="The region to create buildings for",
         )
 
     def handle(self, *args, **options):
-        region = options["region"]
-        region_bbox = REGIONS[region]
-        logger.info(f"Creating buildings for region: {region}")
-        buildings_raw = get_buildings_batches(region_bbox)
-        # print(json.dumps(buildings_raw, indent=2))
+        region_bbox = self.get_region_bbox(options)
+        if region_bbox is not None:
+            self.create_for_bbox(region_bbox)
+        else:
+            self.create_tiles()
+
+    def create_tiles(self):
+        tiles = Tile.objects.filter(complete=False).all()
+        for tile in tiles:
+            try:
+                self.create_tile(tile)
+            except ScraperMalfunction as e:
+                logger.exception(e)
+                tile.failed = True
+                tile.error = str(e)
+                tile.save()
+                time.sleep(120)
+
+    def create_tile(self, tile: Tile):
+        start = time.time()
+        buildings, companies = self.create_for_bbox(tile.to_bbox())
+        tile.duration = time.time() - start
+        tile.building_count = len(buildings)
+        tile.company_count = len(companies)
+        tile.complete = True
+        tile.save()
+
+    def create_for_bbox(self, bbox: BBox) -> Tuple[List[Building], List[Company]]:
+        buildings_raw = get_buildings_batches(bbox)
 
         buildings_osm: List[OSMBuilding] = []
         for building_raw in buildings_raw:
             buildings_osm.append(OSMBuilding.create_from_osm_way(building_raw))
 
         logger.info(f"{len(buildings_osm)} buildings found")
-
-        buildings_osm_large = []
-        for i, building in enumerate(buildings_osm):
-            if i % 1000 == 0:
-                logger.info(f"filtering large buildings {i + 1}/{len(buildings_osm)}")
-            if building.area_square_meters < 200:
-                continue
-            buildings_osm_large.append(building)
-
+        buildings_osm_large = OSMBuilding.filter_by_area(buildings_osm)
         logger.info(f"{len(buildings_osm_large)} buildings selected as large enough")
 
         buildings: List[Building] = [
@@ -62,9 +84,42 @@ class Command(BaseCommand):
         ]
 
         addresses = Building.update_nearby_addresses(buildings)
+        addresses_before = len(addresses)
+        addresses = list(set(addresses))
+        logger.info(f"removed {addresses_before - len(addresses)} duplicate addresses")
+        for i, address in enumerate(addresses):
+            logger.info(
+                f"finding nearby address count for address {i+1}/{len(addresses)}"
+            )
+            address.update_addresses_nearby_count()
+
+        addresses_before = len(addresses)
+        addresses = [
+            address
+            for address in addresses
+            if address.addresses_nearby_count < Building.MAX_ADDRESSES_NEARBY
+        ]
+        logger.info(
+            f"removed {addresses_before - len(addresses)} addresses in a populated area"
+        )
         companies = Address.update_companies(addresses)
         Company.update_types(companies)
 
         logger.info(
             self.style.SUCCESS(f"Successfully created {len(buildings)} buildings")
         )
+        return buildings, companies
+
+    @classmethod
+    def get_region_bbox(cls, options) -> Optional[BBox]:
+        region = options.get("region")
+        if region is not None:
+            logger.info(f"Creating buildings for region: {region}")
+            region_bbox = REGIONS[region]
+            return BBox(
+                lon_min=region_bbox[1],
+                lon_max=region_bbox[3],
+                lat_min=region_bbox[0],
+                lat_max=region_bbox[2],
+            )
+        return None

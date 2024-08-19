@@ -12,6 +12,7 @@ from shapely.geometry import Point
 from shapely.geometry import Polygon
 from shapely.ops import transform
 
+from geo.utils import BBox
 from osm.core import api
 from osm.tile import generate_tiles
 
@@ -104,12 +105,24 @@ class OSMBuilding:
         proj_transformed = transform(proj, self.polygon)
         return proj_transformed
 
+    @classmethod
+    def filter_by_area(cls, buildings_osm: List["OSMBuilding"]) -> List["OSMBuilding"]:
+        buildings_osm_large = []
+        for i, building in enumerate(buildings_osm):
+            if i % 1000 == 0:
+                logger.info(f"filtering large buildings {i + 1}/{len(buildings_osm)}")
+            if building.area_square_meters < 200:
+                continue
+            buildings_osm_large.append(building)
+        return buildings_osm_large
 
-def get_buildings(bbox, exclude_types):
-    bbox = f"({bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]});"
+
+def get_buildings(bbox, exclude_types, country_code: str):
+    bbox = f"({bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]})"
     exclude_str = "|".join(exclude_types)
     query = f"""(
-        way[building]["building"!~"^({exclude_str})$"]{bbox}
+        area["ISO3166-1"="{country_code}"];
+        way[building]["building"!~"^({exclude_str})$"]{bbox}(area);
     )   
     """
     logger.info(f"get buildings for {bbox}")
@@ -118,15 +131,25 @@ def get_buildings(bbox, exclude_types):
     )  # use verbosity = geom to get way geometry in geojson
 
 
-def get_buildings_batches(bbox, exclude_types=OSMBuilding.EXCLUDE_TYPES_DEFAULT):
+def get_buildings_batches(
+    bbox: BBox, exclude_types=OSMBuilding.EXCLUDE_TYPES_DEFAULT, country_code="NL"
+):
     tiles = generate_tiles(
-        bbox[0], bbox[1], bbox[2], bbox[3], delta_lat=0.07, delta_lon=0.07
+        min_lat=bbox.lat_min,
+        min_lon=bbox.lon_min,
+        max_lat=bbox.lat_max,
+        max_lon=bbox.lon_max,
+        delta_lat=0.07,
+        delta_lon=0.07,
     )
-    logger.info(f"{len(tiles)} tiles create")
+    logger.info(f"{len(tiles)} tiles created")
     buildings = []
     for i, tile in enumerate(tiles):
         logger.info(f"getting tile: {i+1}/{len(tiles)}")
-        buildings += get_buildings(tile, exclude_types=exclude_types)["elements"]
+        buildings += get_buildings(
+            tile, exclude_types=exclude_types, country_code=country_code
+        )["elements"]
+    buildings = [building for building in buildings if building["type"] == "way"]
     return buildings
 
 
