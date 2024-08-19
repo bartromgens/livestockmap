@@ -29,6 +29,7 @@ class AddressAdmin(admin.ModelAdmin):
         "city",
         "lat",
         "lon",
+        "addresses_nearby_count",
     ]
 
 

@@ -91,6 +91,7 @@ class Address(models.Model):
     housenumber = models.CharField(max_length=200)
     postcode = models.CharField(max_length=200, null=True)
     city = models.CharField(max_length=200, null=True)
+    addresses_nearby_count = models.IntegerField(null=True)
 
     @property
     def coordinate(self) -> Coordinate:
@@ -116,6 +117,22 @@ class Address(models.Model):
 
     def __str__(self):
         return f"{self.street} {self.housenumber}, {self.city}"
+
+    def __key(self):
+        return self.street, self.housenumber, self.city
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        if isinstance(other, Address):
+            return self.__key() == other.__key()
+        return NotImplemented
+
+    def update_addresses_nearby_count(self):
+        nodes = get_address_nearby(self.lat, self.lon, distance=100)
+        self.addresses_nearby_count = len(nodes)
+        self.save()
 
     @classmethod
     def update_companies(cls, addresses: List["Address"]) -> List["Company"]:
@@ -189,6 +206,8 @@ class Building(models.Model):
     lat_max = models.FloatField(db_index=True)
     addresses_nearby = models.ManyToManyField(Address)
     addresses_nearby_count = models.IntegerField(null=False, default=0)
+
+    MAX_ADDRESSES_NEARBY = 10
 
     @property
     def geometry(self) -> List[Dict[str, float]]:

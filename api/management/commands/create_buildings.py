@@ -84,6 +84,24 @@ class Command(BaseCommand):
         ]
 
         addresses = Building.update_nearby_addresses(buildings)
+        addresses_before = len(addresses)
+        addresses = list(set(addresses))
+        logger.info(f"removed {addresses_before - len(addresses)} duplicate addresses")
+        for i, address in enumerate(addresses):
+            logger.info(
+                f"finding nearby address count for address {i+1}/{len(addresses)}"
+            )
+            address.update_addresses_nearby_count()
+
+        addresses_before = len(addresses)
+        addresses = [
+            address
+            for address in addresses
+            if address.addresses_nearby_count < Building.MAX_ADDRESSES_NEARBY
+        ]
+        logger.info(
+            f"removed {addresses_before - len(addresses)} addresses in a populated area"
+        )
         companies = Address.update_companies(addresses)
         Company.update_types(companies)
 

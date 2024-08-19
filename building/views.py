@@ -87,7 +87,9 @@ class BuildingViewSet(viewsets.ModelViewSet):
     serializer_class = BuildingSerializer
 
     def get_queryset(self):
-        queryset = self.queryset
+        queryset = self.queryset.filter(
+            addresses_nearby_count__lte=Building.MAX_ADDRESSES_NEARBY
+        )
         bbox_str = self.request.query_params.get("bbox")
         # bbox = min longitude, min latitude, max longitude, max latitude
         if bbox_str is not None:
