@@ -17,6 +17,8 @@ import {
   circleMarker,
   LatLngBounds,
   circle,
+  polygon,
+  PolylineOptions,
 } from 'leaflet';
 import { tileLayer, Polygon, Layer, LayerGroup, layerGroup } from 'leaflet';
 import {
@@ -28,7 +30,14 @@ import {
   DivIcon,
 } from 'leaflet';
 
-import { BuildingService, CompaniesStats, Company, Coordinate } from './core';
+import {
+  BuildingService,
+  CompaniesStats,
+  Company,
+  Coordinate,
+  Tile,
+  TileService,
+} from './core';
 import { Building } from './core';
 import { CompanyService } from './core';
 import { chickenIcon, cowIcon, pigIcon } from './map';
@@ -80,6 +89,8 @@ export class AppComponent implements OnInit {
   buildingLayer: LayerGroup | null = null;
   animalsLayer: LayerGroup | null = null;
 
+  private tiles: Tile[] | null = null;
+
   private map: Map | null = null;
   private readonly highlightBuildingStyle = {
     color: '#FF3388',
@@ -95,10 +106,15 @@ export class AppComponent implements OnInit {
   constructor(
     private buildingService: BuildingService,
     private companyService: CompanyService,
+    private tileService: TileService,
     private zone: NgZone,
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.tileService.getTiles().subscribe((tiles) => {
+      this.tiles = tiles;
+    });
+  }
 
   private update(): void {
     if (!this.map) {
@@ -111,6 +127,10 @@ export class AppComponent implements OnInit {
 
     if (this.map.getZoom() >= this.BUILDINGS_AT_ZOOM) {
       this.updateBuildings(this.bbox);
+    }
+
+    if (!environment.production) {
+      this.updateTiles();
     }
   }
 
@@ -172,6 +192,29 @@ export class AppComponent implements OnInit {
       //   );
       // }
     });
+  }
+
+  private updateTiles(): void {
+    if (!this.tiles) {
+      return;
+    }
+
+    const layers: any[] = [];
+    for (const tile of this.tiles) {
+      let color = 'lightblue';
+      if (tile.complete) {
+        color = 'lightgreen';
+      } else if (tile.failed) {
+        color = 'red';
+      }
+      const options: PolylineOptions = {
+        color: color,
+      };
+      const layer: any = polygon(tile.coordinates, options);
+      layer.tile = tile;
+      layers.push(layer);
+    }
+    this.layers.push(layerGroup(layers));
   }
 
   private get bbox(): BBox {

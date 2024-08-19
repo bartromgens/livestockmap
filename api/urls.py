@@ -22,10 +22,12 @@ from rest_framework import routers
 
 from building.views import BuildingViewSet
 from building.views import CompanyViewSet
+from building.views import TileViewSet
 
 router = routers.DefaultRouter()
 router.register(r"buildings", BuildingViewSet)
 router.register(r"companies", CompanyViewSet)
+router.register(r"tiles", TileViewSet)
 
 urlpatterns = [
     path("api/", include(router.urls)),

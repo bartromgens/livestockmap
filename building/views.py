@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework import viewsets
 
 from building.models import Address
+from building.models import Tile
 from geo.utils import BBox
 from building.models import Building
 from building.models import Company
@@ -101,3 +102,22 @@ class BuildingViewSet(viewsets.ModelViewSet):
                 .filter(lat_max__lt=bbox.lat_max)
             )
         return queryset.prefetch_related("addresses_nearby")
+
+
+class TileSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Tile
+        fields = [
+            "level",
+            "lon_min",
+            "lon_max",
+            "lat_min",
+            "lat_max",
+            "complete",
+            "failed",
+        ]
+
+
+class TileViewSet(viewsets.ModelViewSet):
+    queryset = Tile.objects.all()
+    serializer_class = TileSerializer
