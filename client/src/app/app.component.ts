@@ -16,6 +16,7 @@ import {
   LeafletEvent,
   circleMarker,
   LatLngBounds,
+  circle,
 } from 'leaflet';
 import { tileLayer, Polygon, Layer, LayerGroup, layerGroup } from 'leaflet';
 import {
@@ -33,6 +34,7 @@ import { CompanyService } from './core';
 import { chickenIcon, cowIcon, pigIcon } from './map';
 import { PolygonUtils } from './utils';
 import { BBox } from './core/geo';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -234,12 +236,6 @@ export class AppComponent implements OnInit {
       const building: Building = (layer as any)['building'];
       this.layerBuildingSelected = layer;
       this.buildingSelected = building;
-      const inside = PolygonUtils.isMarkerInsidePolygon(
-        building.center.lat,
-        building.center.lon,
-        layer,
-      );
-      console.log('building center is inside building:', inside);
       const circleMarkers = [];
       for (const point of building.animalCoordinates) {
         const circleOptions = {
@@ -262,6 +258,14 @@ export class AppComponent implements OnInit {
       const layer: Marker = layerClicked as Marker;
       const company: Company = (layer as any)['company'];
       this.companySelected = company;
+
+      if (!environment.production) {
+        this.layers.push(
+          circle(latLng(company.coordinate.lat, company.coordinate.lon), {
+            radius: 100,
+          }),
+        );
+      }
     });
   }
 
