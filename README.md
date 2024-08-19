@@ -29,6 +29,7 @@ API options:
 Websites:
 
 - https://www.uittrekselregister.nl/zoekresultaten?q=
+- https://www.bedrijvenregister.nl/
 
 ### Tools
 
@@ -60,3 +61,8 @@ https://paletton.com to select [3 colors](https://paletton.com/#uid=5000A0kRrUXo
 - FF8300
 - FF0000
 - F300B0
+
+#### Data
+
+- https://agrimatie.nl/
+- https://www.staatvanlandbouwnatuurenvoedsel.nl/kerncijfers/
