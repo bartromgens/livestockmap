@@ -56,6 +56,7 @@ class Command(BaseCommand):
                 tile.failed = True
                 tile.error = str(e)
                 tile.save()
+                time.sleep(120)
 
     def create_tile(self, tile: Tile):
         start = time.time()

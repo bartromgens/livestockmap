@@ -188,6 +188,7 @@ class Building(models.Model):
     lat_min = models.FloatField(db_index=True)
     lat_max = models.FloatField(db_index=True)
     addresses_nearby = models.ManyToManyField(Address)
+    addresses_nearby_count = models.IntegerField(null=False, default=0)
 
     @property
     def geometry(self) -> List[Dict[str, float]]:
@@ -237,6 +238,7 @@ class Building(models.Model):
             addresses_nearby = cls.filter_nearest(
                 building, addresses_nearby, limit=limit
             )
+            building.addresses_nearby_count = len(nodes)
             building.addresses_nearby.set(addresses_nearby)
             building.save()
             addresses += addresses_nearby
