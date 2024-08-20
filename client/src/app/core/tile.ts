@@ -1,3 +1,5 @@
+import { Coordinate } from './geo';
+
 export interface TileResource {
   level: number;
   id: number;
@@ -28,6 +30,12 @@ export class Tile {
       [this.lat_max, this.lon_max],
       [this.lat_max, this.lon_min],
     ];
+  }
+
+  get center(): Coordinate {
+    const lat = (this.lat_max - this.lat_min) / 2 + this.lat_min;
+    const lon = (this.lon_max - this.lon_min) / 2 + this.lon_min;
+    return new Coordinate(lat, lon);
   }
 
   static fromResource(resource: TileResource): Tile {

@@ -200,6 +200,7 @@ export class AppComponent implements OnInit {
     }
 
     const layers: any[] = [];
+    const labels: any[] = [];
     for (const tile of this.tiles) {
       let color = 'lightblue';
       if (tile.complete) {
@@ -213,8 +214,18 @@ export class AppComponent implements OnInit {
       const layer: any = polygon(tile.coordinates, options);
       layer.tile = tile;
       layers.push(layer);
+
+      const showTileMarker = true;
+      if (showTileMarker) {
+        const label = marker([tile.center.lat, tile.center.lon], {
+          opacity: 0.3,
+        }); //opacity may be set to zero
+        label.bindTooltip(`<p>${tile.id}</p>`);
+        labels.push(label);
+      }
     }
     this.layers.push(layerGroup(layers));
+    this.layers.push(layerGroup(labels));
   }
 
   private get bbox(): BBox {

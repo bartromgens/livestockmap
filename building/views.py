@@ -108,6 +108,7 @@ class TileSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Tile
         fields = [
+            "id",
             "level",
             "lon_min",
             "lon_max",
