@@ -129,7 +129,7 @@ export class AppComponent implements OnInit {
       this.updateBuildings(this.bbox);
     }
 
-    if (!environment.production) {
+    if (environment.showTiles) {
       this.updateTiles();
     }
   }
