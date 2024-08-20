@@ -6,6 +6,7 @@ from typing import Tuple
 
 from django.core.management.base import BaseCommand
 
+from building.cities import CITIES_LARGE_NL
 from building.models import Address
 from building.models import Tile
 from company.kvk import ScraperMalfunction
@@ -47,8 +48,9 @@ class Command(BaseCommand):
             self.create_tiles()
 
     def create_tiles(self):
-        tiles = Tile.objects.filter(complete=False).all()
+        tiles = Tile.objects.filter(complete=False, failed=False).all()
         for tile in tiles:
+            logger.info(f"Creating tile {tile.id}")
             try:
                 self.create_tile(tile)
             except ScraperMalfunction as e:
@@ -57,6 +59,7 @@ class Command(BaseCommand):
                 tile.error = str(e)
                 tile.save()
                 time.sleep(120)
+            logger.info(f"Finished tile {tile.id}.")
 
     def create_tile(self, tile: Tile):
         start = time.time()
@@ -86,7 +89,21 @@ class Command(BaseCommand):
         addresses = Building.update_nearby_addresses(buildings)
         addresses_before = len(addresses)
         addresses = list(set(addresses))
-        logger.info(f"removed {addresses_before - len(addresses)} duplicate addresses")
+        logger.info(
+            f"removed {addresses_before - len(addresses)} duplicate addresses. {len(addresses)} left."
+        )
+
+        addresses_before = len(addresses)
+        cities_exclude = [city.lower() for city in CITIES_LARGE_NL]
+        addresses = [
+            address
+            for address in addresses
+            if address.city is None or address.city.lower() not in cities_exclude
+        ]
+        logger.info(
+            f"removed {addresses_before - len(addresses)} addresses in large cities. {len(addresses)} left."
+        )
+
         for i, address in enumerate(addresses):
             logger.info(
                 f"finding nearby address count for address {i+1}/{len(addresses)}"
@@ -100,7 +117,7 @@ class Command(BaseCommand):
             if address.addresses_nearby_count < Building.MAX_ADDRESSES_NEARBY
         ]
         logger.info(
-            f"removed {addresses_before - len(addresses)} addresses in a populated area"
+            f"removed {addresses_before - len(addresses)} addresses in a populated area. {len(addresses)} left."
         )
         companies = Address.update_companies(addresses)
         Company.update_types(companies)

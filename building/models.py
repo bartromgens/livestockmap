@@ -226,16 +226,18 @@ class Building(models.Model):
     @classmethod
     def create_from_osm(cls, osm_building: OSMBuilding) -> "Building":
         length, width = osm_building.length_width
-        building, _created = Building.objects.get_or_create(
+        building, _created = Building.objects.update_or_create(
             way_id=osm_building.id,
-            osm_raw=osm_building.raw,
-            lon_min=osm_building.raw["bounds"]["minlon"],
-            lon_max=osm_building.raw["bounds"]["maxlon"],
-            lat_min=osm_building.raw["bounds"]["minlat"],
-            lat_max=osm_building.raw["bounds"]["maxlat"],
-            area=osm_building.area_square_meters,
-            length=length,
-            width=width,
+            defaults=dict(
+                osm_raw=osm_building.raw,
+                lon_min=osm_building.raw["bounds"]["minlon"],
+                lon_max=osm_building.raw["bounds"]["maxlon"],
+                lat_min=osm_building.raw["bounds"]["minlat"],
+                lat_max=osm_building.raw["bounds"]["maxlat"],
+                area=osm_building.area_square_meters,
+                length=length,
+                width=width,
+            ),
         )
         return building
 
