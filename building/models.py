@@ -66,13 +66,14 @@ class Tile(models.Model):
 
     @classmethod
     def from_bbox(cls, bbox: BBox) -> "Tile":
-        return cls.objects.create(
+        tile, _created = cls.objects.get_or_create(
             level=cls.LEVEL_DEFAULT,
             lon_min=bbox.lon_min,
             lon_max=bbox.lon_max,
             lat_min=bbox.lat_min,
             lat_max=bbox.lat_max,
         )
+        return tile
 
     def to_bbox(self) -> BBox:
         return BBox(
