@@ -75,7 +75,7 @@ export class Coordinate {
   static toTransverseMercator(lat: number, lon: number): [number, number] {
     // TODO BR: add test for coordinate transformations.
     // See https://proj.org/en/9.4/operations/projections/tmerc.html for projection arguments
-    return proj4(this.TMERC, [lat, lon]);
+    return proj4(this.TMERC, [lon, lat]);
   }
 
   static toWGS84(x: number, y: number): [number, number] {
