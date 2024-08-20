@@ -215,7 +215,7 @@ export class AppComponent implements OnInit {
       layer.tile = tile;
       layers.push(layer);
 
-      const showTileMarker = true;
+      const showTileMarker = false;
       if (showTileMarker) {
         const label = marker([tile.center.lat, tile.center.lon], {
           opacity: 0.3,
