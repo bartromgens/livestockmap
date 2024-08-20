@@ -154,7 +154,7 @@ class Address(models.Model):
                 companies.append(company)
             # rate limit to prevent unintentional DOS
             time.sleep(0.5)
-            if i % 500 == 0:
+            if (i + 1) % 500 == 0:
                 logger.info(f"time to sleep a few minutes")
                 time.sleep(180)
         return companies
