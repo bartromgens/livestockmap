@@ -3,6 +3,7 @@ import math
 import time
 from typing import Dict
 from typing import List
+from typing import Optional
 
 from django.db import models
 from pydantic import BaseModel
@@ -99,10 +100,12 @@ class Address(models.Model):
         return Coordinate(lat=self.lat, lon=self.lon)
 
     @staticmethod
-    def get_or_create_from_node(node) -> "Address":
+    def get_or_create_from_node(node) -> Optional["Address"]:
         tags = node["tags"]
         street = tags.get("addr:street")
         housenumber = tags.get("addr:housenumber")
+        if street is None or housenumber is None:
+            return None
         postcode = tags.get("addr:postcode")
         city = tags.get("addr:city")
         address, _created = Address.objects.get_or_create(
@@ -261,6 +264,7 @@ class Building(models.Model):
                     building.center.lat, building.center.lon, distance=200
                 )
             addresses_nearby = [Address.get_or_create_from_node(node) for node in nodes]
+            addresses_nearby = [a for a in addresses_nearby if a is not None]
             addresses_nearby = cls.filter_nearest(
                 building, addresses_nearby, limit=limit
             )
