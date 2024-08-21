@@ -41,11 +41,14 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        region_bbox = self.get_region_bbox(options)
-        if region_bbox is not None:
-            self.create_for_bbox(region_bbox)
-        else:
-            self.create_tiles()
+        try:
+            region_bbox = self.get_region_bbox(options)
+            if region_bbox is not None:
+                self.create_for_bbox(region_bbox)
+            else:
+                self.create_tiles()
+        except Exception as e:
+            logger.exception(e)
 
     def create_tiles(self):
         tiles = Tile.objects.filter(complete=False, failed=False).all()
