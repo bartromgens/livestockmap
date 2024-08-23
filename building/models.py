@@ -5,6 +5,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
+from django.conf import settings
 from django.db import models
 from pydantic import BaseModel
 
@@ -156,10 +157,10 @@ class Address(models.Model):
                 )
                 companies.append(company)
             # rate limit to prevent unintentional DOS
-            time.sleep(0.5)
-            if (i + 1) % 500 == 0:
+            time.sleep(settings.KVK_SCRAPE_SLEEP_SEC)
+            if (i + 1) % 250 == 0:
                 logger.info(f"time to sleep a few minutes")
-                time.sleep(180)
+                time.sleep(60)
         return companies
 
 

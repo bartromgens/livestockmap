@@ -17,3 +17,5 @@ DATABASES = {
         "PORT": "",
     }
 }
+
+# KVK_SCRAPE_SLEEP_SEC = 0.5

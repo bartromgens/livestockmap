@@ -61,7 +61,8 @@ class Command(BaseCommand):
                 tile.failed = True
                 tile.error = str(e)
                 tile.save()
-                time.sleep(120)
+                logger.info("sleeping for 5 minutes...")
+                time.sleep(300)
             logger.info(f"Finished tile {tile.id}.")
 
     def create_tile(self, tile: Tile):

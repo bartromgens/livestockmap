@@ -139,6 +139,9 @@ REST_FRAMEWORK = {
 # corsheaders
 CORS_ORIGIN_ALLOW_ALL = True
 
+# Application settings
+KVK_SCRAPE_SLEEP_SEC = 0.5
+
 ###########
 # LOGGING #
 ###########
