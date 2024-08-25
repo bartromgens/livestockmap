@@ -62,7 +62,7 @@ import { environment } from '../environments/environment';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-  private readonly ZOOM_DEFAULT: number = 14;
+  private readonly ZOOM_DEFAULT: number = 12;
   private readonly CLUSTER_AT_ZOOM: number = 13;
   private readonly MAX_CLUSTER_RADIUS: number = 20;
   private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM;
