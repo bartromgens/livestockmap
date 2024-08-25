@@ -1,6 +1,6 @@
 import { Component, NgZone, OnInit } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { ActivatedRoute, RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
@@ -41,8 +41,7 @@ import {
 import { Building } from './core';
 import { CompanyService } from './core';
 import { chickenIcon, cowIcon, pigIcon } from './map';
-import { PolygonUtils } from './utils';
-import { BBox } from './core/geo';
+import { BBox } from './core';
 import { environment } from '../environments/environment';
 
 @Component({
@@ -88,6 +87,7 @@ export class AppComponent implements OnInit {
   companySelected: Company | null = null;
   buildingLayer: LayerGroup | null = null;
   animalsLayer: LayerGroup | null = null;
+  tilesLayer: LayerGroup | null = null;
 
   private tiles: Tile[] | null = null;
 
@@ -104,6 +104,7 @@ export class AppComponent implements OnInit {
   };
 
   constructor(
+    private route: ActivatedRoute,
     private buildingService: BuildingService,
     private companyService: CompanyService,
     private tileService: TileService,
@@ -111,8 +112,10 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.tileService.getTiles().subscribe((tiles) => {
-      this.tiles = tiles;
+    this.route.queryParamMap.subscribe((params) => {
+      if (params.has('showTiles') && params.get('showTiles') == 'true') {
+        this.updateTiles();
+      }
     });
   }
 
@@ -127,10 +130,6 @@ export class AppComponent implements OnInit {
 
     if (this.map.getZoom() >= this.BUILDINGS_AT_ZOOM) {
       this.updateBuildings(this.bbox);
-    }
-
-    if (environment.showTiles) {
-      this.updateTiles();
     }
   }
 
@@ -195,37 +194,45 @@ export class AppComponent implements OnInit {
   }
 
   private updateTiles(): void {
-    if (!this.tiles) {
-      return;
-    }
-
-    const layers: any[] = [];
-    const labels: any[] = [];
-    for (const tile of this.tiles) {
-      let color = 'lightblue';
-      if (tile.complete) {
-        color = 'lightgreen';
-      } else if (tile.failed) {
-        color = 'red';
+    console.log('updateTiles');
+    this.tileService.getTiles().subscribe((tiles) => {
+      if (!this.map) {
+        return;
       }
-      const options: PolylineOptions = {
-        color: color,
-      };
-      const layer: any = polygon(tile.coordinates, options);
-      layer.tile = tile;
-      layers.push(layer);
+      const layers: any[] = [];
+      const labels: any[] = [];
+      for (const tile of tiles) {
+        let color = 'lightblue';
+        if (tile.complete) {
+          color = 'lightgreen';
+        } else if (tile.failed) {
+          color = 'red';
+        }
+        const options: PolylineOptions = {
+          color: color,
+        };
+        const layer: any = polygon(tile.coordinates, options);
+        layer.tile = tile;
+        layers.push(layer);
 
-      const showTileMarker = false;
-      if (showTileMarker) {
-        const label = marker([tile.center.lat, tile.center.lon], {
-          opacity: 0.3,
-        }); //opacity may be set to zero
-        label.bindTooltip(`<p>${tile.id}</p>`);
-        labels.push(label);
+        const showTileMarker = false;
+        if (showTileMarker) {
+          const label = marker([tile.center.lat, tile.center.lon], {
+            opacity: 0.3,
+          }); //opacity may be set to zero
+          label.bindTooltip(`<p>${tile.id}</p>`);
+          labels.push(label);
+        }
       }
-    }
-    this.layers.push(layerGroup(layers));
-    this.layers.push(layerGroup(labels));
+
+      if (this.tilesLayer && this.map.hasLayer(this.tilesLayer)) {
+        this.map.removeLayer(this.tilesLayer);
+      }
+      this.tilesLayer = layerGroup(layers);
+      this.map.addLayer(this.tilesLayer);
+      // this.layers.push(layerGroup(layers));
+      // this.layers.push(layerGroup(labels));
+    });
   }
 
   private get bbox(): BBox {
