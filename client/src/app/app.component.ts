@@ -85,9 +85,10 @@ export class AppComponent implements OnInit {
   buildingSelected: Building | null = null;
   layerBuildingSelected: Polygon | null = null;
   companySelected: Company | null = null;
-  buildingLayer: LayerGroup | null = null;
+  buildingsLayer: LayerGroup | null = null;
   animalsLayer: LayerGroup | null = null;
   tilesLayer: LayerGroup | null = null;
+  companiesLayer: LayerGroup | null = null;
 
   private tiles: Tile[] | null = null;
 
@@ -119,6 +120,11 @@ export class AppComponent implements OnInit {
     });
   }
 
+  private initializeMap(): void {
+    this.updateCompanies();
+    this.update();
+  }
+
   private update(): void {
     if (!this.map) {
       console.assert(false, 'map is not defined');
@@ -126,15 +132,23 @@ export class AppComponent implements OnInit {
     }
 
     this.layers = [];
-    this.updateCompanies(this.bbox);
 
-    if (this.map.getZoom() >= this.BUILDINGS_AT_ZOOM) {
-      this.updateBuildings(this.bbox);
-    }
+    this.updateBuildings(this.bbox);
   }
 
   private updateBuildings(bbox: BBox): void {
+    console.log('updateBuildings');
+    if (this.map && this.map.getZoom() < this.BUILDINGS_AT_ZOOM) {
+      if (this.buildingsLayer && this.map.hasLayer(this.buildingsLayer)) {
+        this.map.removeLayer(this.buildingsLayer);
+      }
+      return;
+    }
     this.buildingService.getBuildings(bbox).subscribe((buildings) => {
+      if (!this.map) {
+        return;
+      }
+
       const layers: any[] = [];
       for (const building of buildings) {
         const layer: any = building.polygon;
@@ -145,14 +159,23 @@ export class AppComponent implements OnInit {
         layer.building = building;
         layers.push(layer);
       }
-      this.buildingLayer = layerGroup(layers);
-      this.layers.push(this.buildingLayer);
+      if (this.buildingsLayer && this.map.hasLayer(this.buildingsLayer)) {
+        this.map.removeLayer(this.buildingsLayer);
+      }
+      this.buildingsLayer = layerGroup(layers);
+      this.map.addLayer(this.buildingsLayer);
+
       this.updateAnimals();
     });
   }
 
-  private updateCompanies(bbox: BBox): void {
-    this.companyService.getCompanies(bbox).subscribe((companies) => {
+  private updateCompanies(): void {
+    console.log('updateCompanies');
+    this.companyService.getCompanies().subscribe((companies) => {
+      if (!this.map) {
+        return;
+      }
+
       const layers: any[] = [];
       for (const company of companies) {
         const layersCompany: any[] = [];
@@ -182,14 +205,12 @@ export class AppComponent implements OnInit {
         maxClusterRadius: this.MAX_CLUSTER_RADIUS,
       });
       markers.addLayers(layers);
-      this.layers.push(markers);
 
-      // if (companies.length > 0) {
-      //   this.map?.setView(
-      //     latLng(companies[0].address.lat, companies[0].address.lon),
-      //     this.ZOOM_DEFAULT,
-      //   );
-      // }
+      if (this.companiesLayer && this.map.hasLayer(this.companiesLayer)) {
+        this.map.removeLayer(this.companiesLayer);
+      }
+      this.companiesLayer = markers;
+      this.map.addLayer(this.companiesLayer);
     });
   }
 
@@ -336,7 +357,7 @@ export class AppComponent implements OnInit {
 
   onMapReady(map: Map): void {
     this.map = map;
-    this.update();
+    this.initializeMap();
   }
 
   onMove(event: LeafletEvent): void {
