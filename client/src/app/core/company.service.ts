@@ -13,8 +13,12 @@ import { BBox } from './geo';
 export class CompanyService {
   constructor(private httpClient: HttpClient) {}
 
-  public getCompanies(bbox: BBox): Observable<Company[]> {
-    const url = `${environment.apiBaseUrl}/companies/?bbox=${bbox.toString()}`;
+  public getCompanies(bbox?: BBox): Observable<Company[]> {
+    let url = `${environment.apiBaseUrl}/companies/`;
+    if (bbox) {
+      url += `?bbox=${bbox.toString()}`;
+    }
+
     return new Observable<Company[]>((observer) => {
       this.httpClient.get<CompanyResource[]>(url).subscribe((resources) => {
         observer.next(Company.fromResources(resources));
