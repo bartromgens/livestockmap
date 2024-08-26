@@ -1,4 +1,6 @@
 from django.db.models import Q
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import serializers
 from rest_framework import viewsets
 
@@ -47,6 +49,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
     )
     serializer_class = CompanySerializer
 
+    @method_decorator(cache_page(60 * 5))
     def get_queryset(self):
         queryset = self.queryset
         bbox_str = self.request.query_params.get("bbox")
