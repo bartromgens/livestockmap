@@ -165,7 +165,7 @@ class Address(models.Model):
 
 
 class Company(models.Model):
-    description = models.CharField(max_length=2000, null=False)
+    description = models.CharField(max_length=5000, null=False)
     active = models.BooleanField(default=True, null=False, db_index=True)
     address = models.ForeignKey(Address, null=False, on_delete=models.CASCADE)
     chicken = models.BooleanField(default=False, null=False, db_index=True)
