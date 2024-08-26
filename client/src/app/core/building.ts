@@ -140,6 +140,11 @@ export class Building {
       return this.animals;
     }
 
+    if (this.area > 5000) {
+      console.error(`Building area ${this.area} is too large to draw animals.`);
+      return [];
+    }
+
     const points: Coordinate[] = [];
     const maxPoints = this.area * 0.8;
     const maxTries = maxPoints * 10;

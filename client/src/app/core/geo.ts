@@ -12,6 +12,17 @@ export class BBox {
   toString(): string {
     return `${this.lonMin},${this.latMin},${this.lonMax},${this.latMax}`;
   }
+
+  static enlarge(bbox: BBox): BBox {
+    const dLon = (bbox.lonMax - bbox.lonMin) / 2;
+    const dLat = (bbox.latMax - bbox.latMin) / 2;
+    return new BBox(
+      bbox.lonMin - dLon,
+      bbox.latMin - dLat,
+      bbox.lonMax + dLon,
+      bbox.latMax + dLon,
+    );
+  }
 }
 
 /**

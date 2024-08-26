@@ -63,6 +63,11 @@ class Command(BaseCommand):
                 tile.save()
                 logger.info("sleeping for 5 minutes...")
                 time.sleep(300)
+            except Exception as e:
+                logger.exception(e)
+                tile.failed = True
+                tile.error = str(e)
+                tile.save()
             logger.info(f"Finished tile {tile.id}.")
 
     def create_tile(self, tile: Tile):
