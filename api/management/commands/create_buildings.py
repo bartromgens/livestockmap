@@ -51,7 +51,7 @@ class Command(BaseCommand):
             logger.exception(e)
 
     def create_tiles(self):
-        tiles = Tile.objects.filter(complete=False, failed=False).all()
+        tiles = Tile.objects.filter(complete=False).all()
         for tile in tiles:
             logger.info(f"Creating tile {tile.id}")
             try:
