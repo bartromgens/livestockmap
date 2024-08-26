@@ -59,7 +59,7 @@ class Command(BaseCommand):
             except ScraperMalfunction as e:
                 logger.exception(e)
                 tile.failed = True
-                tile.error = str(e)
+                tile.error = str(e)[:9500]
                 tile.save()
                 logger.info("sleeping for 5 minutes...")
                 time.sleep(300)
