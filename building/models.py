@@ -57,7 +57,7 @@ class Tile(models.Model):
     lat_max = models.FloatField(null=False, db_index=True)
     complete = models.BooleanField(default=False, db_index=True)
     failed = models.BooleanField(default=False, db_index=True)
-    error = models.CharField(null=False, default="", max_length=10000)
+    error = models.CharField(null=False, default="", max_length=10000, blank=True)
     duration = models.FloatField(null=True)
     building_count = models.IntegerField(null=True)
     company_count = models.IntegerField(null=True)
