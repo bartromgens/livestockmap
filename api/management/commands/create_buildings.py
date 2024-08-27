@@ -67,6 +67,10 @@ class Command(BaseCommand):
                 logger.exception(e)
                 tile.failed = True
                 tile.error = str(e)
+            else:
+                tile.failed = False
+                tile.error = ""
+            finally:
                 tile.save()
             logger.info(f"Finished tile {tile.id}.")
 
