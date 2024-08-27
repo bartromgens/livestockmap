@@ -109,14 +109,16 @@ class Address(models.Model):
             return None
         postcode = tags.get("addr:postcode")
         city = tags.get("addr:city")
-        address, _created = Address.objects.get_or_create(
+        address, _created = Address.objects.update_or_create(
             node_id=node["id"],
-            street=street,
-            housenumber=housenumber,
-            postcode=postcode,
-            city=city,
-            lat=node["lat"],
-            lon=node["lon"],
+            defaults=dict(
+                street=street,
+                housenumber=housenumber,
+                postcode=postcode,
+                city=city,
+                lat=node["lat"],
+                lon=node["lon"],
+            ),
         )
         return address
 
