@@ -61,7 +61,7 @@ import { BBox } from './core';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-  private readonly ZOOM_DEFAULT: number = 12;
+  private readonly ZOOM_DEFAULT: number = 8;
   private readonly CLUSTER_AT_ZOOM: number = 13;
   private readonly MAX_CLUSTER_RADIUS: number = 30;
   private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM + 1;
