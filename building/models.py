@@ -7,6 +7,9 @@ from typing import Optional
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
+from django.db.models import QuerySet
+from django.utils.functional import cached_property
 from pydantic import BaseModel
 
 from company.kvk import ScraperMalfunction
@@ -184,6 +187,12 @@ class Company(models.Model):
     def coordinate(self) -> Coordinate:
         return self.address.coordinate
 
+    @classmethod
+    def livestock_companies(cls) -> QuerySet["Company"]:
+        return Company.objects.filter(active=True).filter(
+            Q(chicken=True) | Q(pig=True) | Q(cattle=True)
+        )
+
     def update_type(self) -> None:
         cattle_words = ["melkvee", "rundvee", "kalveren"]
         chicken_words = ["pluimvee", "kippen", "kuikens", "hennen"]
@@ -215,6 +224,7 @@ class Building(models.Model):
     lon_max = models.FloatField(db_index=True)
     lat_min = models.FloatField(db_index=True)
     lat_max = models.FloatField(db_index=True)
+    company = models.ForeignKey(Company, null=True, on_delete=models.SET_NULL)
     addresses_nearby = models.ManyToManyField(Address)
     addresses_nearby_count = models.IntegerField(null=False, default=0)
 
@@ -251,6 +261,16 @@ class Building(models.Model):
             ),
         )
         return building
+
+    def update_company(self):
+        for address in self.addresses_nearby.all():
+            companies = Company.livestock_companies()
+            companies = companies.filter(address=address)
+            if companies:
+                # TODO BR: what if there are more companies found?
+                self.company = companies[0]
+                break
+        self.save()
 
     @classmethod
     def update_nearby_addresses(

@@ -44,9 +44,7 @@ class CompanySerializer(serializers.HyperlinkedModelSerializer):
 
 
 class CompanyViewSet(viewsets.ModelViewSet):
-    queryset = Company.objects.filter(active=True).filter(
-        Q(chicken=True) | Q(pig=True) | Q(cattle=True)
-    )
+    queryset = Company.livestock_companies()
     serializer_class = CompanySerializer
 
     @method_decorator(cache_page(60 * 5))
