@@ -36,6 +36,7 @@ import { Building, BuildingService, BuildingLayer } from './core/building';
 import { CompanyService } from './core';
 import { chickenIcon, cowIcon, pigIcon } from './map';
 import { BBox } from './core';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -55,7 +56,7 @@ import { BBox } from './core';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-  private readonly ZOOM_DEFAULT: number = 8;
+  private readonly ZOOM_DEFAULT: number = environment.production ? 8 : 13;
   private readonly CLUSTER_AT_ZOOM: number = 13;
   private readonly MAX_CLUSTER_RADIUS: number = 30;
   private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM + 1;
