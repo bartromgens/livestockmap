@@ -20,14 +20,7 @@ import {
   CircleMarker,
 } from 'leaflet';
 import { tileLayer, Polygon, Layer, LayerGroup, layerGroup } from 'leaflet';
-import {
-  Marker,
-  marker,
-  markerClusterGroup,
-  MarkerCluster,
-  divIcon,
-  DivIcon,
-} from 'leaflet';
+import { Marker, MarkerCluster } from 'leaflet';
 
 import { Coordinate } from './core';
 import {
@@ -38,7 +31,6 @@ import {
 } from './core/company';
 import { Building, BuildingService, BuildingLayer } from './core/building';
 import { TileLayer, TileService } from './core/tile';
-import { chickenIcon, cowIcon, pigIcon } from './map';
 import { BBox } from './core';
 import { environment } from '../environments/environment';
 
@@ -214,7 +206,7 @@ export class AppComponent implements OnInit {
   };
 
   onMapClick(event: LeafletMouseEvent): void {
-    // console.log('mapClick');
+    console.log('mapClick', event);
   }
 
   onMapReady(map: Map): void {
@@ -223,13 +215,13 @@ export class AppComponent implements OnInit {
   }
 
   onMove(event: LeafletEvent): void {
-    console.log('onMove');
+    console.log('onMove', event);
     this.logCompanyInViewStats();
     this.update();
   }
 
   onZoom(event: LeafletEvent): void {
-    console.log('onZoom: level', this.map?.getZoom());
+    console.log('onZoom: level', this.map?.getZoom(), event);
   }
 
   private updateAnimals(): void {
