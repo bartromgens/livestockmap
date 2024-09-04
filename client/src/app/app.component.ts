@@ -33,6 +33,7 @@ import { Building, BuildingService, BuildingLayer } from './core/building';
 import { TileLayer, TileService } from './core/tile';
 import { BBox } from './core';
 import { environment } from '../environments/environment';
+import { AnimalLayer } from './core/animal';
 
 @Component({
   selector: 'app-root',
@@ -57,6 +58,7 @@ export class AppComponent implements OnInit {
   private readonly MAX_CLUSTER_RADIUS: number = 30;
   private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM + 1;
   private readonly ANIMALS_AT_ZOOM: number = 17;
+
   Object = Object;
   readonly title: string = 'veekaart.nl';
   options = {
@@ -71,13 +73,11 @@ export class AppComponent implements OnInit {
   };
   sidebarOpened = false;
 
+  private map: Map | null = null;
   buildingLayer: BuildingLayer;
   companyLayer: CompanyLayer;
-  tileLayer: TileLayer;
-
-  animalsLayer: LayerGroup | null = null;
-
-  private map: Map | null = null;
+  private animalLayer: AnimalLayer;
+  private tileLayer: TileLayer;
 
   constructor(
     private route: ActivatedRoute,
@@ -87,11 +87,12 @@ export class AppComponent implements OnInit {
     private zone: NgZone,
   ) {
     this.buildingLayer = new BuildingLayer();
-    this.tileLayer = new TileLayer();
+    this.animalLayer = new AnimalLayer();
     this.companyLayer = new CompanyLayer({
       clusterAtZoom: this.CLUSTER_AT_ZOOM,
       maxClusterRadius: this.MAX_CLUSTER_RADIUS,
     });
+    this.tileLayer = new TileLayer();
   }
 
   ngOnInit(): void {
@@ -228,42 +229,13 @@ export class AppComponent implements OnInit {
     if (!this.map) {
       return;
     }
-    if (this.animalsLayer) {
-      this.map.removeLayer(this.animalsLayer);
-    }
+    this.animalLayer.remove(this.map);
     if (this.map.getZoom() < this.ANIMALS_AT_ZOOM) {
       return;
     }
-
-    const circleMarkers = this.createAnimalMarkers();
-    this.animalsLayer = layerGroup(circleMarkers);
-    this.map.addLayer(this.animalsLayer);
-  }
-
-  private createAnimalMarkers(): CircleMarker[] {
-    const circleMarkers = [];
-    const circleOptions = this.animalCircleOptions;
-    for (const building of this.buildingsInView) {
-      for (const point of building.animalCoordinates) {
-        circleMarkers.push(
-          circleMarker(latLng(point.lat, point.lon), circleOptions),
-        );
-      }
-    }
-    return circleMarkers;
-  }
-
-  private get animalCircleOptions(): any {
-    let radius = 1;
-    if (this.map) {
-      radius = this.map.getZoom() >= 20 ? 2 : radius;
-    }
-    return {
-      radius: radius,
-      stroke: false,
-      fillOpacity: 1,
-      fillColor: 'blue',
-    };
+    const buildingsInView = this.buildingLayer.getBuildingsInView(this.map);
+    this.animalLayer.create(buildingsInView, this.map.getZoom());
+    this.animalLayer.add(this.map);
   }
 
   private logCompanyInViewStats(): void {
