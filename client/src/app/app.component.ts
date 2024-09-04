@@ -31,8 +31,9 @@ import {
   DivIcon,
 } from 'leaflet';
 
-import { CompaniesStats, Company, Coordinate, TileService } from './core';
+import { CompaniesStats, Company, Coordinate } from './core';
 import { Building, BuildingService, BuildingLayer } from './core/building';
+import { TileLayer, TileService } from './core/tile';
 import { CompanyService } from './core';
 import { chickenIcon, cowIcon, pigIcon } from './map';
 import { BBox } from './core';
@@ -78,8 +79,9 @@ export class AppComponent implements OnInit {
   companySelected: Company | null = null;
 
   buildingLayer: BuildingLayer;
+  tileLayer: TileLayer;
+
   animalsLayer: LayerGroup | null = null;
-  tilesLayer: LayerGroup | null = null;
   companiesLayer: LayerGroup | null = null;
 
   private map: Map | null = null;
@@ -92,6 +94,7 @@ export class AppComponent implements OnInit {
     private zone: NgZone,
   ) {
     this.buildingLayer = new BuildingLayer();
+    this.tileLayer = new TileLayer();
   }
 
   ngOnInit(): void {
@@ -119,7 +122,7 @@ export class AppComponent implements OnInit {
   private updateBuildings(bbox: BBox): void {
     console.log('updateBuildings');
     if (this.map && this.map.getZoom() < this.BUILDINGS_AT_ZOOM) {
-      this.buildingLayer.removeLayer(this.map);
+      this.buildingLayer.remove(this.map);
       return;
     }
 
@@ -128,9 +131,9 @@ export class AppComponent implements OnInit {
       if (!this.map) {
         return;
       }
-      this.buildingLayer.removeLayer(this.map);
-      this.buildingLayer.createLayer(buildings, this.onBuildingLayerClick);
-      this.buildingLayer.addLayer(this.map);
+      this.buildingLayer.remove(this.map);
+      this.buildingLayer.create(buildings, this.onBuildingLayerClick);
+      this.buildingLayer.add(this.map);
       this.updateAnimals();
     });
   }
@@ -186,27 +189,8 @@ export class AppComponent implements OnInit {
       if (!this.map) {
         return;
       }
-      const layers: any[] = [];
-      for (const tile of tiles) {
-        let color = 'lightblue';
-        if (tile.complete) {
-          color = 'lightgreen';
-        } else if (tile.failed) {
-          color = 'red';
-        }
-        const options: PolylineOptions = {
-          color: color,
-        };
-        const layer: any = polygon(tile.coordinates, options);
-        layer.tile = tile;
-        layers.push(layer);
-      }
 
-      if (this.tilesLayer && this.map.hasLayer(this.tilesLayer)) {
-        this.map.removeLayer(this.tilesLayer);
-      }
-      this.tilesLayer = layerGroup(layers);
-      this.map.addLayer(this.tilesLayer);
+      this.tileLayer.update(tiles, this.map);
     });
   }
 

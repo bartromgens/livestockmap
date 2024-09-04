@@ -1,4 +1,4 @@
-import { Coordinate } from './geo';
+import { Coordinate } from '../geo';
 
 export interface TileResource {
   level: number;

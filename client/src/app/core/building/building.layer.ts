@@ -1,9 +1,10 @@
 import { Layer, LayerGroup, LeafletMouseEvent, Polygon, Map } from 'leaflet';
 import { Building } from './building';
+import { Tile } from '../tile';
 
 export class BuildingLayer {
-  layerGroup: LayerGroup | null = null;
-  selectedLayer: Polygon | null = null;
+  private layerGroup: LayerGroup | null = null;
+  private selectedLayer: Polygon | null = null;
   selectedBuilding: Building | null = null;
 
   private readonly defaultStyle = {
@@ -27,7 +28,7 @@ export class BuildingLayer {
     layer.setStyle(this.highlightBuildingStyle);
   }
 
-  createLayer(
+  create(
     buildings: Building[],
     onClick: (event: LeafletMouseEvent, layerClicked: Layer) => void,
   ): void {
@@ -42,13 +43,13 @@ export class BuildingLayer {
     this.layerGroup = new LayerGroup(layers);
   }
 
-  removeLayer(map: Map): void {
+  remove(map: Map): void {
     if (this.layerGroup && map.hasLayer(this.layerGroup)) {
       map.removeLayer(this.layerGroup);
     }
   }
 
-  addLayer(map: Map): void {
+  add(map: Map): void {
     if (this.layerGroup) {
       map.addLayer(this.layerGroup);
     }
