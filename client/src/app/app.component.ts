@@ -77,7 +77,6 @@ export class AppComponent implements OnInit {
   companySelected: Company | null = null;
 
   buildingLayer: BuildingLayer;
-  buildingsLayer: LayerGroup | null = null;
   animalsLayer: LayerGroup | null = null;
   tilesLayer: LayerGroup | null = null;
   companiesLayer: LayerGroup | null = null;
@@ -119,9 +118,7 @@ export class AppComponent implements OnInit {
   private updateBuildings(bbox: BBox): void {
     console.log('updateBuildings');
     if (this.map && this.map.getZoom() < this.BUILDINGS_AT_ZOOM) {
-      if (this.buildingsLayer && this.map.hasLayer(this.buildingsLayer)) {
-        this.map.removeLayer(this.buildingsLayer);
-      }
+      this.buildingLayer.removeLayer(this.map);
       return;
     }
 
@@ -130,23 +127,9 @@ export class AppComponent implements OnInit {
       if (!this.map) {
         return;
       }
-
-      const layers: any[] = [];
-      for (const building of buildings) {
-        const layer: any = building.polygon;
-        layer.on('click', (event: LeafletMouseEvent) =>
-          this.onBuildingLayerClick(event, layer),
-        );
-        layer.buildingId = building.way_id;
-        layer.building = building;
-        layers.push(layer);
-      }
-      if (this.buildingsLayer && this.map.hasLayer(this.buildingsLayer)) {
-        this.map.removeLayer(this.buildingsLayer);
-      }
-      this.buildingsLayer = layerGroup(layers);
-      this.map.addLayer(this.buildingsLayer);
-
+      this.buildingLayer.removeLayer(this.map);
+      this.buildingLayer.createLayer(buildings, this.onBuildingLayerClick);
+      this.buildingLayer.addLayer(this.map);
       this.updateAnimals();
     });
   }
@@ -279,15 +262,21 @@ export class AppComponent implements OnInit {
     }); // use getAllChildMarkers() to get type
   }
 
-  onBuildingLayerClick(event: LeafletMouseEvent, layerClicked: Layer): void {
+  private onBuildingLayerClick = (
+    event: LeafletMouseEvent,
+    layerClicked: Layer,
+  ): void => {
     this.zone.run(() => {
       this.sidebarOpened = true;
       const layer: Polygon = layerClicked as Polygon;
       this.buildingLayer.selectBuilding(layer);
     });
-  }
+  };
 
-  onCompanyLayerClick(event: LeafletMouseEvent, layerClicked: Layer): void {
+  private onCompanyLayerClick = (
+    event: LeafletMouseEvent,
+    layerClicked: Layer,
+  ): void => {
     this.zone.run(() => {
       this.sidebarOpened = true;
       const layer: Marker = layerClicked as Marker;
@@ -302,7 +291,7 @@ export class AppComponent implements OnInit {
       //   );
       // }
     });
-  }
+  };
 
   onMapClick(event: LeafletMouseEvent): void {
     // console.log('mapClick');

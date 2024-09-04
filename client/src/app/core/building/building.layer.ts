@@ -1,4 +1,4 @@
-import { LayerGroup, Polygon } from 'leaflet';
+import { Layer, LayerGroup, LeafletMouseEvent, Polygon, Map } from 'leaflet';
 import { Building } from './building';
 
 export class BuildingLayer {
@@ -25,5 +25,32 @@ export class BuildingLayer {
     this.selectedLayer = layer;
     this.selectedBuilding = building;
     layer.setStyle(this.highlightBuildingStyle);
+  }
+
+  createLayer(
+    buildings: Building[],
+    onClick: (event: LeafletMouseEvent, layerClicked: Layer) => void,
+  ): void {
+    const layers: any[] = [];
+    for (const building of buildings) {
+      const layer: any = building.polygon;
+      layer.on('click', (event: LeafletMouseEvent) => onClick(event, layer));
+      layer.buildingId = building.way_id;
+      layer.building = building;
+      layers.push(layer);
+    }
+    this.layerGroup = new LayerGroup(layers);
+  }
+
+  removeLayer(map: Map): void {
+    if (this.layerGroup && map.hasLayer(this.layerGroup)) {
+      map.removeLayer(this.layerGroup);
+    }
+  }
+
+  addLayer(map: Map): void {
+    if (this.layerGroup) {
+      map.addLayer(this.layerGroup);
+    }
   }
 }
