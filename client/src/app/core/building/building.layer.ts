@@ -1,4 +1,11 @@
-import { Layer, LayerGroup, LeafletMouseEvent, Polygon, Map } from 'leaflet';
+import {
+  Layer,
+  LayerGroup,
+  LeafletMouseEvent,
+  Polygon,
+  Map,
+  LatLng,
+} from 'leaflet';
 import { Building } from './building';
 
 export class BuildingLayer {
@@ -52,5 +59,23 @@ export class BuildingLayer {
     if (this.layerGroup) {
       map.addLayer(this.layerGroup);
     }
+  }
+
+  getBuildingsInView(map: Map): Building[] {
+    const buildings: Building[] = [];
+    map.eachLayer((layer: Layer) => {
+      if (layer instanceof Polygon) {
+        const points = layer.getLatLngs()[0] as LatLng[];
+        for (const point of points) {
+          if (map.getBounds().contains(point)) {
+            console.log('bounds do contain point', point);
+            const building = (layer as any)['building'];
+            buildings.push(building);
+            break;
+          }
+        }
+      }
+    });
+    return buildings;
   }
 }

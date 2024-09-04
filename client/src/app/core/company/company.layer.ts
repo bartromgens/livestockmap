@@ -7,6 +7,7 @@ import {
   LayerGroup,
   LeafletMouseEvent,
   Map,
+  Marker,
   marker,
   MarkerCluster,
   markerClusterGroup,
@@ -79,6 +80,27 @@ export class CompanyLayer {
 
   select(company: Company): void {
     this.selectedCompany = company;
+  }
+
+  getCompaniesInView(map: Map): Company[] {
+    const companies: Company[] = [];
+    map.eachLayer((layer: Layer) => {
+      if (layer instanceof MarkerCluster) {
+        if (map.getBounds().contains(layer.getLatLng())) {
+          companies.push(
+            ...layer
+              .getAllChildMarkers()
+              .map((child) => (child as any)['company']),
+          );
+        }
+      } else if (layer instanceof Marker) {
+        if (map.getBounds().contains(layer.getLatLng())) {
+          const company = (layer as any)['company'];
+          companies.push(company);
+        }
+      }
+    });
+    return companies;
   }
 
   private createMarkerGroupIcon(cluster: MarkerCluster): DivIcon {

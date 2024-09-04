@@ -283,45 +283,13 @@ export class AppComponent implements OnInit {
     if (!this.map) {
       return [];
     }
-    const companies: Company[] = [];
-    this.map.eachLayer((layer: Layer) => {
-      if (layer instanceof MarkerCluster) {
-        if (this.map?.getBounds().contains(layer.getLatLng())) {
-          companies.push(
-            ...layer
-              .getAllChildMarkers()
-              .map((child) => (child as any)['company']),
-          );
-        }
-      } else if (layer instanceof Marker) {
-        if (this.map?.getBounds().contains(layer.getLatLng())) {
-          const company = (layer as any)['company'];
-          companies.push(company);
-        }
-      }
-    });
-    return companies;
+    return this.companyLayer.getCompaniesInView(this.map);
   }
 
   private get buildingsInView(): Building[] {
     if (!this.map) {
       return [];
     }
-
-    const buildings: Building[] = [];
-    this.map.eachLayer((layer: Layer) => {
-      if (layer instanceof Polygon) {
-        const points = layer.getLatLngs()[0] as LatLng[];
-        for (const point of points) {
-          if (this.map?.getBounds().contains(point)) {
-            console.log('bounds do contain point', point);
-            const building = (layer as any)['building'];
-            buildings.push(building);
-            break;
-          }
-        }
-      }
-    });
-    return buildings;
+    return this.buildingLayer.getBuildingsInView(this.map);
   }
 }
