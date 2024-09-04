@@ -1,5 +1,6 @@
 # Project
 settings_local.py
+*.sql
 
 # IDE
 .idea

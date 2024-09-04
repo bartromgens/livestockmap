@@ -135,6 +135,10 @@ class Command(BaseCommand):
         companies = Address.update_companies(addresses)
         Company.update_types(companies)
 
+        logger.info(f"finding companies for buildings")
+        for building in buildings:
+            building.update_company()
+
         logger.info(
             self.style.SUCCESS(f"Successfully created {len(buildings)} buildings")
         )

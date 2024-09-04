@@ -12,6 +12,7 @@ class BuildingAdmin(admin.ModelAdmin):
         "area",
         "width",
         "length",
+        "company",
         "addresses_nearby_count",
         "get_addresses_nearby",
     ]
