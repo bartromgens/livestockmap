@@ -14,13 +14,10 @@ import {
   Map,
   LeafletMouseEvent,
   LeafletEvent,
-  circleMarker,
   LatLngBounds,
-  LatLng,
-  CircleMarker,
 } from 'leaflet';
-import { tileLayer, Polygon, Layer, LayerGroup, layerGroup } from 'leaflet';
-import { Marker, MarkerCluster } from 'leaflet';
+import { tileLayer, Polygon, Layer } from 'leaflet';
+import { Marker } from 'leaflet';
 
 import { Coordinate } from './core';
 import {
@@ -149,6 +146,19 @@ export class AppComponent implements OnInit {
     });
   }
 
+  private updateAnimals(): void {
+    if (!this.map) {
+      return;
+    }
+    this.animalLayer.remove(this.map);
+    if (this.map.getZoom() < this.ANIMALS_AT_ZOOM) {
+      return;
+    }
+    const buildingsInView = this.buildingLayer.getBuildingsInView(this.map);
+    this.animalLayer.create(buildingsInView, this.map.getZoom());
+    this.animalLayer.add(this.map);
+  }
+
   private updateTiles(): void {
     console.log('updateTiles');
     this.tileService.getTiles().subscribe((tiles) => {
@@ -223,19 +233,6 @@ export class AppComponent implements OnInit {
 
   onZoom(event: LeafletEvent): void {
     console.log('onZoom: level', this.map?.getZoom(), event);
-  }
-
-  private updateAnimals(): void {
-    if (!this.map) {
-      return;
-    }
-    this.animalLayer.remove(this.map);
-    if (this.map.getZoom() < this.ANIMALS_AT_ZOOM) {
-      return;
-    }
-    const buildingsInView = this.buildingLayer.getBuildingsInView(this.map);
-    this.animalLayer.create(buildingsInView, this.map.getZoom());
-    this.animalLayer.add(this.map);
   }
 
   private logCompanyInViewStats(): void {
