@@ -31,14 +31,8 @@ import {
   DivIcon,
 } from 'leaflet';
 
-import {
-  BuildingService,
-  CompaniesStats,
-  Company,
-  Coordinate,
-  TileService,
-} from './core';
-import { Building } from './core';
+import { CompaniesStats, Company, Coordinate, TileService } from './core';
+import { Building, BuildingService, BuildingLayer } from './core/building';
 import { CompanyService } from './core';
 import { chickenIcon, cowIcon, pigIcon } from './map';
 import { BBox } from './core';
@@ -80,26 +74,15 @@ export class AppComponent implements OnInit {
   };
   sidebarOpened = false;
 
-  buildingSelected: Building | null = null;
-  layerBuildingSelected: Polygon | null = null;
   companySelected: Company | null = null;
 
+  buildingLayer: BuildingLayer;
   buildingsLayer: LayerGroup | null = null;
   animalsLayer: LayerGroup | null = null;
   tilesLayer: LayerGroup | null = null;
   companiesLayer: LayerGroup | null = null;
 
   private map: Map | null = null;
-  private readonly highlightBuildingStyle = {
-    color: '#FF3388',
-    weight: 2,
-    opacity: 1,
-  };
-  private readonly defaultStyle = {
-    color: '#3388FF',
-    weight: 3,
-    opacity: 1,
-  };
 
   constructor(
     private route: ActivatedRoute,
@@ -107,7 +90,9 @@ export class AppComponent implements OnInit {
     private companyService: CompanyService,
     private tileService: TileService,
     private zone: NgZone,
-  ) {}
+  ) {
+    this.buildingLayer = new BuildingLayer();
+  }
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe((params) => {
@@ -297,12 +282,8 @@ export class AppComponent implements OnInit {
   onBuildingLayerClick(event: LeafletMouseEvent, layerClicked: Layer): void {
     this.zone.run(() => {
       this.sidebarOpened = true;
-      this.layerBuildingSelected?.setStyle(this.defaultStyle);
       const layer: Polygon = layerClicked as Polygon;
-      layer.setStyle(this.highlightBuildingStyle);
-      const building: Building = (layer as any)['building'];
-      this.layerBuildingSelected = layer;
-      this.buildingSelected = building;
+      this.buildingLayer.selectBuilding(layer);
     });
   }
 

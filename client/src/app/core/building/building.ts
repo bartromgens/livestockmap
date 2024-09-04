@@ -1,6 +1,6 @@
-import { PolygonUtils } from '../utils';
+import { PolygonUtils } from '../../utils';
 import { Polygon, polygon } from 'leaflet';
-import { Coordinate } from './geo';
+import { Coordinate } from '../geo';
 
 export interface CoordinateResource {
   lat: number;

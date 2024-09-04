@@ -1,5 +1,5 @@
 import proj4 from 'proj4';
-import { CoordinateResource } from './building';
+import { CoordinateResource } from './building/building';
 
 export class BBox {
   constructor(
