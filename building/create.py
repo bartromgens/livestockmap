@@ -65,14 +65,7 @@ class BuildingFactory:
 
     @classmethod
     def create_for_bbox(cls, bbox: BBox) -> Tuple[List[Building], List[Company]]:
-        buildings_raw = get_buildings_batches(bbox)
-
-        buildings_osm: List[OSMBuilding] = []
-        for building_raw in buildings_raw:
-            buildings_osm.append(OSMBuilding.create_from_osm_way(building_raw))
-
-        logger.info(f"{len(buildings_osm)} buildings found")
-        buildings_osm_large = OSMBuilding.filter_by_area(buildings_osm)
+        buildings_osm_large = cls._get_large_osm_buildings(bbox)
         logger.info(f"{len(buildings_osm_large)} buildings selected as large enough")
 
         buildings: List[Building] = [
@@ -80,13 +73,25 @@ class BuildingFactory:
             for building_osm in buildings_osm_large
         ]
 
+        addresses = cls._get_addresses_for_buildings(buildings)
+        companies = Address.update_companies(addresses)
+        Company.update_types(companies)
+
+        logger.info(f"finding companies for buildings")
+        for building in buildings:
+            building.update_company()
+
+        logger.info(f"Successfully created {len(buildings)} buildings")
+        return buildings, companies
+
+    @classmethod
+    def _get_addresses_for_buildings(cls, buildings):
         addresses = Building.update_nearby_addresses(buildings)
         addresses_before = len(addresses)
         addresses = list(set(addresses))
         logger.info(
             f"removed {addresses_before - len(addresses)} duplicate addresses. {len(addresses)} left."
         )
-
         addresses_before = len(addresses)
         cities_exclude = [city.lower() for city in CITIES_LARGE_NL]
         addresses = [
@@ -97,13 +102,11 @@ class BuildingFactory:
         logger.info(
             f"removed {addresses_before - len(addresses)} addresses in large cities. {len(addresses)} left."
         )
-
         for i, address in enumerate(addresses):
             logger.info(
                 f"finding nearby address count for address {i + 1}/{len(addresses)}"
             )
             address.update_addresses_nearby_count()
-
         addresses_before = len(addresses)
         addresses = [
             address
@@ -113,15 +116,17 @@ class BuildingFactory:
         logger.info(
             f"removed {addresses_before - len(addresses)} addresses in a populated area. {len(addresses)} left."
         )
-        companies = Address.update_companies(addresses)
-        Company.update_types(companies)
+        return addresses
 
-        logger.info(f"finding companies for buildings")
-        for building in buildings:
-            building.update_company()
-
-        logger.info(f"Successfully created {len(buildings)} buildings")
-        return buildings, companies
+    @classmethod
+    def _get_large_osm_buildings(cls, bbox) -> List[OSMBuilding]:
+        buildings_raw = get_buildings_batches(bbox)
+        buildings_osm: List[OSMBuilding] = []
+        for building_raw in buildings_raw:
+            buildings_osm.append(OSMBuilding.create_from_osm_way(building_raw))
+        logger.info(f"{len(buildings_osm)} buildings found")
+        buildings_osm_large = OSMBuilding.filter_by_area(buildings_osm)
+        return buildings_osm_large
 
     @classmethod
     def get_region_bbox(cls, region: Optional[str]) -> Optional[BBox]:
