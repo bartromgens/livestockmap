@@ -51,7 +51,7 @@
       </mat-card-content>
     </mat-card>
     <mat-card
-      *ngIf="companySelected"
+      *ngIf="companyLayer.selectedCompany"
       appearance="outlined"
       class="card-sidebar"
     >
@@ -59,21 +59,21 @@
         <mat-card-title>Company</mat-card-title>
         <mat-card-subtitle>
           <img
-            *ngIf="companySelected.chicken"
+            *ngIf="companyLayer.selectedCompany.chicken"
             ngSrc="/assets/chicken60x60.png"
             alt="chicken"
             width="30"
             height="30"
           />
           <img
-            *ngIf="companySelected.cattle"
+            *ngIf="companyLayer.selectedCompany.cattle"
             ngSrc="/assets/cow60x38.png"
             alt="chicken"
             width="30"
             height="19"
           />
           <img
-            *ngIf="companySelected.pig"
+            *ngIf="companyLayer.selectedCompany.pig"
             ngSrc="/assets/pig60x40.png"
             alt="chicken"
             width="30"
@@ -83,13 +83,13 @@
       </mat-card-header>
       <mat-card-content>
         <div>
-          {{ companySelected.description }}
+          {{ companyLayer.selectedCompany.description }}
         </div>
         <br />
         <div>
-          <a [href]="googleCoordinateUrl(companySelected.coordinate)">
-            {{ companySelected.coordinate.lat }},
-            {{ companySelected.coordinate.lon }}
+          <a [href]="googleCoordinateUrl(companyLayer.selectedCompany.coordinate)">
+            {{ companyLayer.selectedCompany.coordinate.lat }},
+            {{ companyLayer.selectedCompany.coordinate.lon }}
           </a>
         </div>
       </mat-card-content>

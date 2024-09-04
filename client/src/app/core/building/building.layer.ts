@@ -1,6 +1,5 @@
 import { Layer, LayerGroup, LeafletMouseEvent, Polygon, Map } from 'leaflet';
 import { Building } from './building';
-import { Tile } from '../tile';
 
 export class BuildingLayer {
   private layerGroup: LayerGroup | null = null;
@@ -19,7 +18,7 @@ export class BuildingLayer {
     opacity: 1,
   };
 
-  selectBuilding(layer: Polygon): void {
+  select(layer: Polygon): void {
     this.selectedLayer?.setStyle(this.defaultStyle);
     layer.setStyle(this.highlightBuildingStyle);
     const building: Building = (layer as any)['building'];

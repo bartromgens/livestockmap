@@ -16,8 +16,6 @@ import {
   LeafletEvent,
   circleMarker,
   LatLngBounds,
-  polygon,
-  PolylineOptions,
   LatLng,
   CircleMarker,
 } from 'leaflet';
@@ -31,10 +29,15 @@ import {
   DivIcon,
 } from 'leaflet';
 
-import { CompaniesStats, Company, Coordinate } from './core';
+import { Coordinate } from './core';
+import {
+  CompaniesStats,
+  Company,
+  CompanyLayer,
+  CompanyService,
+} from './core/company';
 import { Building, BuildingService, BuildingLayer } from './core/building';
 import { TileLayer, TileService } from './core/tile';
-import { CompanyService } from './core';
 import { chickenIcon, cowIcon, pigIcon } from './map';
 import { BBox } from './core';
 import { environment } from '../environments/environment';
@@ -76,13 +79,11 @@ export class AppComponent implements OnInit {
   };
   sidebarOpened = false;
 
-  companySelected: Company | null = null;
-
   buildingLayer: BuildingLayer;
+  companyLayer: CompanyLayer;
   tileLayer: TileLayer;
 
   animalsLayer: LayerGroup | null = null;
-  companiesLayer: LayerGroup | null = null;
 
   private map: Map | null = null;
 
@@ -95,6 +96,10 @@ export class AppComponent implements OnInit {
   ) {
     this.buildingLayer = new BuildingLayer();
     this.tileLayer = new TileLayer();
+    this.companyLayer = new CompanyLayer({
+      clusterAtZoom: this.CLUSTER_AT_ZOOM,
+      maxClusterRadius: this.MAX_CLUSTER_RADIUS,
+    });
   }
 
   ngOnInit(): void {
@@ -145,41 +150,9 @@ export class AppComponent implements OnInit {
         return;
       }
 
-      const layers: any[] = [];
-      for (const company of companies) {
-        const layersCompany: any[] = [];
-        const coordinate = latLng([company.address.lat, company.address.lon]);
-        // TODO BR: remove switch with polymorphism
-        if (company.chicken) {
-          layersCompany.push(marker(coordinate, { icon: chickenIcon }));
-        }
-        if (company.pig) {
-          layersCompany.push(marker(coordinate, { icon: pigIcon }));
-        }
-        if (company.cattle) {
-          layersCompany.push(marker(coordinate, { icon: cowIcon }));
-        }
-        for (const layer of layersCompany) {
-          layer.on('click', (event: LeafletMouseEvent) =>
-            this.onCompanyLayerClick(event, layer),
-          );
-          layer.company = company;
-        }
-        layers.push(...layersCompany);
-      }
-      const markers = markerClusterGroup({
-        disableClusteringAtZoom: this.CLUSTER_AT_ZOOM,
-        iconCreateFunction: this.createMarkerGroupIcon,
-        showCoverageOnHover: false,
-        maxClusterRadius: this.MAX_CLUSTER_RADIUS,
-      });
-      markers.addLayers(layers);
-
-      if (this.companiesLayer && this.map.hasLayer(this.companiesLayer)) {
-        this.map.removeLayer(this.companiesLayer);
-      }
-      this.companiesLayer = markers;
-      this.map.addLayer(this.companiesLayer);
+      this.companyLayer.remove(this.map);
+      this.companyLayer.create(companies, this.onCompanyLayerClick);
+      this.companyLayer.add(this.map);
     });
   }
 
@@ -209,44 +182,6 @@ export class AppComponent implements OnInit {
     );
   }
 
-  private createMarkerGroupIcon(cluster: MarkerCluster): DivIcon {
-    // TODO BR: remove switch with polymorphism
-    let cattleCount = 0;
-    let chickenCount = 0;
-    let pigCount = 0;
-    for (const marker of cluster.getAllChildMarkers()) {
-      const company: Company = (marker as any)['company'];
-      if (company.cattle) {
-        cattleCount += 1;
-      }
-      if (company.chicken) {
-        chickenCount += 1;
-      }
-      if (company.pig) {
-        pigCount += 1;
-      }
-    }
-    const totalCount = cattleCount + chickenCount + pigCount;
-    const sizeFactorCow = Math.sqrt(cattleCount / totalCount);
-    const sizeCow = [30 * sizeFactorCow, 19 * sizeFactorCow];
-    const sizeFactorChicken = Math.sqrt(chickenCount / totalCount);
-    const sizeChicken = [30 * sizeFactorChicken, 30 * sizeFactorChicken];
-    const sizeFactorPig = Math.sqrt(pigCount / totalCount);
-    const sizePig = [30 * sizeFactorPig, 20 * sizeFactorPig];
-    const iconImageStyle = `display: inline-block;`;
-    let iconHtml = `<div style="width: 60px;">`;
-    iconHtml += `<img src="/assets/pig60x40.png" width=${sizePig[0]} height=${sizePig[1]} style="${iconImageStyle}">`;
-    iconHtml += `<img src="/assets/cow60x38.png" width=${sizeCow[0]} height=${sizeCow[1]} style="${iconImageStyle}">`;
-    iconHtml += `<img src="/assets/chicken60x60.png" width=${sizeChicken[0]} height=${sizeChicken[1]} style="">`;
-    iconHtml += `</div>`;
-    return divIcon({
-      html: iconHtml,
-      iconSize: [0, 0],
-      iconAnchor: [15, 15],
-      className: '',
-    }); // use getAllChildMarkers() to get type
-  }
-
   private onBuildingLayerClick = (
     event: LeafletMouseEvent,
     layerClicked: Layer,
@@ -254,7 +189,7 @@ export class AppComponent implements OnInit {
     this.zone.run(() => {
       this.sidebarOpened = true;
       const layer: Polygon = layerClicked as Polygon;
-      this.buildingLayer.selectBuilding(layer);
+      this.buildingLayer.select(layer);
     });
   };
 
@@ -266,7 +201,7 @@ export class AppComponent implements OnInit {
       this.sidebarOpened = true;
       const layer: Marker = layerClicked as Marker;
       const company: Company = (layer as any)['company'];
-      this.companySelected = company;
+      this.companyLayer.select(company);
 
       // if (!environment.production) {
       //   this.layers.push(
