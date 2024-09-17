@@ -262,7 +262,7 @@ class Building(models.Model):
         )
         return building
 
-    def update_company(self):
+    def update_company(self, save=True):
         for address in self.addresses_nearby.all():
             companies = Company.livestock_companies()
             companies = companies.filter(address=address)
@@ -270,7 +270,8 @@ class Building(models.Model):
                 # TODO BR: what if there are more companies found?
                 self.company = companies[0]
                 break
-        self.save()
+        if save:
+            self.save()
 
     @classmethod
     def update_nearby_addresses(
