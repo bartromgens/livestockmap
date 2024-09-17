@@ -14,34 +14,23 @@ import {
   Map,
   LeafletMouseEvent,
   LeafletEvent,
-  circleMarker,
   LatLngBounds,
-  polygon,
-  PolylineOptions,
-  LatLng,
-  CircleMarker,
 } from 'leaflet';
-import { tileLayer, Polygon, Layer, LayerGroup, layerGroup } from 'leaflet';
-import {
-  Marker,
-  marker,
-  markerClusterGroup,
-  MarkerCluster,
-  divIcon,
-  DivIcon,
-} from 'leaflet';
+import { tileLayer, Polygon, Layer } from 'leaflet';
+import { Marker } from 'leaflet';
 
+import { Coordinate } from './core';
 import {
-  BuildingService,
   CompaniesStats,
   Company,
-  Coordinate,
-  TileService,
-} from './core';
-import { Building } from './core';
-import { CompanyService } from './core';
-import { chickenIcon, cowIcon, pigIcon } from './map';
+  CompanyLayer,
+  CompanyService,
+} from './core/company';
+import { Building, BuildingService, BuildingLayer } from './core/building';
+import { TileLayer, TileService } from './core/tile';
 import { BBox } from './core';
+import { environment } from '../environments/environment';
+import { AnimalLayer } from './core/animal';
 
 @Component({
   selector: 'app-root',
@@ -61,11 +50,12 @@ import { BBox } from './core';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-  private readonly ZOOM_DEFAULT: number = 8;
+  private readonly ZOOM_DEFAULT: number = environment.production ? 8 : 13;
   private readonly CLUSTER_AT_ZOOM: number = 13;
   private readonly MAX_CLUSTER_RADIUS: number = 30;
   private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM + 1;
   private readonly ANIMALS_AT_ZOOM: number = 17;
+
   Object = Object;
   readonly title: string = 'veekaart.nl';
   options = {
@@ -80,26 +70,11 @@ export class AppComponent implements OnInit {
   };
   sidebarOpened = false;
 
-  buildingSelected: Building | null = null;
-  layerBuildingSelected: Polygon | null = null;
-  companySelected: Company | null = null;
-
-  buildingsLayer: LayerGroup | null = null;
-  animalsLayer: LayerGroup | null = null;
-  tilesLayer: LayerGroup | null = null;
-  companiesLayer: LayerGroup | null = null;
-
   private map: Map | null = null;
-  private readonly highlightBuildingStyle = {
-    color: '#FF3388',
-    weight: 2,
-    opacity: 1,
-  };
-  private readonly defaultStyle = {
-    color: '#3388FF',
-    weight: 3,
-    opacity: 1,
-  };
+  buildingLayer: BuildingLayer;
+  companyLayer: CompanyLayer;
+  private animalLayer: AnimalLayer;
+  private tileLayer: TileLayer;
 
   constructor(
     private route: ActivatedRoute,
@@ -107,7 +82,15 @@ export class AppComponent implements OnInit {
     private companyService: CompanyService,
     private tileService: TileService,
     private zone: NgZone,
-  ) {}
+  ) {
+    this.buildingLayer = new BuildingLayer();
+    this.animalLayer = new AnimalLayer();
+    this.companyLayer = new CompanyLayer({
+      clusterAtZoom: this.CLUSTER_AT_ZOOM,
+      maxClusterRadius: this.MAX_CLUSTER_RADIUS,
+    });
+    this.tileLayer = new TileLayer();
+  }
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe((params) => {
@@ -134,9 +117,7 @@ export class AppComponent implements OnInit {
   private updateBuildings(bbox: BBox): void {
     console.log('updateBuildings');
     if (this.map && this.map.getZoom() < this.BUILDINGS_AT_ZOOM) {
-      if (this.buildingsLayer && this.map.hasLayer(this.buildingsLayer)) {
-        this.map.removeLayer(this.buildingsLayer);
-      }
+      this.buildingLayer.remove(this.map);
       return;
     }
 
@@ -145,23 +126,9 @@ export class AppComponent implements OnInit {
       if (!this.map) {
         return;
       }
-
-      const layers: any[] = [];
-      for (const building of buildings) {
-        const layer: any = building.polygon;
-        layer.on('click', (event: LeafletMouseEvent) =>
-          this.onBuildingLayerClick(event, layer),
-        );
-        layer.buildingId = building.way_id;
-        layer.building = building;
-        layers.push(layer);
-      }
-      if (this.buildingsLayer && this.map.hasLayer(this.buildingsLayer)) {
-        this.map.removeLayer(this.buildingsLayer);
-      }
-      this.buildingsLayer = layerGroup(layers);
-      this.map.addLayer(this.buildingsLayer);
-
+      this.buildingLayer.remove(this.map);
+      this.buildingLayer.create(buildings, this.onBuildingLayerClick);
+      this.buildingLayer.add(this.map);
       this.updateAnimals();
     });
   }
@@ -173,42 +140,23 @@ export class AppComponent implements OnInit {
         return;
       }
 
-      const layers: any[] = [];
-      for (const company of companies) {
-        const layersCompany: any[] = [];
-        const coordinate = latLng([company.address.lat, company.address.lon]);
-        // TODO BR: remove switch with polymorphism
-        if (company.chicken) {
-          layersCompany.push(marker(coordinate, { icon: chickenIcon }));
-        }
-        if (company.pig) {
-          layersCompany.push(marker(coordinate, { icon: pigIcon }));
-        }
-        if (company.cattle) {
-          layersCompany.push(marker(coordinate, { icon: cowIcon }));
-        }
-        for (const layer of layersCompany) {
-          layer.on('click', (event: LeafletMouseEvent) =>
-            this.onCompanyLayerClick(event, layer),
-          );
-          layer.company = company;
-        }
-        layers.push(...layersCompany);
-      }
-      const markers = markerClusterGroup({
-        disableClusteringAtZoom: this.CLUSTER_AT_ZOOM,
-        iconCreateFunction: this.createMarkerGroupIcon,
-        showCoverageOnHover: false,
-        maxClusterRadius: this.MAX_CLUSTER_RADIUS,
-      });
-      markers.addLayers(layers);
-
-      if (this.companiesLayer && this.map.hasLayer(this.companiesLayer)) {
-        this.map.removeLayer(this.companiesLayer);
-      }
-      this.companiesLayer = markers;
-      this.map.addLayer(this.companiesLayer);
+      this.companyLayer.remove(this.map);
+      this.companyLayer.create(companies, this.onCompanyLayerClick);
+      this.companyLayer.add(this.map);
     });
+  }
+
+  private updateAnimals(): void {
+    if (!this.map) {
+      return;
+    }
+    this.animalLayer.remove(this.map);
+    if (this.map.getZoom() < this.ANIMALS_AT_ZOOM) {
+      return;
+    }
+    const buildingsInView = this.buildingLayer.getBuildingsInView(this.map);
+    this.animalLayer.create(buildingsInView, this.map.getZoom());
+    this.animalLayer.add(this.map);
   }
 
   private updateTiles(): void {
@@ -217,27 +165,8 @@ export class AppComponent implements OnInit {
       if (!this.map) {
         return;
       }
-      const layers: any[] = [];
-      for (const tile of tiles) {
-        let color = 'lightblue';
-        if (tile.complete) {
-          color = 'lightgreen';
-        } else if (tile.failed) {
-          color = 'red';
-        }
-        const options: PolylineOptions = {
-          color: color,
-        };
-        const layer: any = polygon(tile.coordinates, options);
-        layer.tile = tile;
-        layers.push(layer);
-      }
 
-      if (this.tilesLayer && this.map.hasLayer(this.tilesLayer)) {
-        this.map.removeLayer(this.tilesLayer);
-      }
-      this.tilesLayer = layerGroup(layers);
-      this.map.addLayer(this.tilesLayer);
+      this.tileLayer.update(tiles, this.map);
     });
   }
 
@@ -256,62 +185,26 @@ export class AppComponent implements OnInit {
     );
   }
 
-  private createMarkerGroupIcon(cluster: MarkerCluster): DivIcon {
-    // TODO BR: remove switch with polymorphism
-    let cattleCount = 0;
-    let chickenCount = 0;
-    let pigCount = 0;
-    for (const marker of cluster.getAllChildMarkers()) {
-      const company: Company = (marker as any)['company'];
-      if (company.cattle) {
-        cattleCount += 1;
-      }
-      if (company.chicken) {
-        chickenCount += 1;
-      }
-      if (company.pig) {
-        pigCount += 1;
-      }
-    }
-    const totalCount = cattleCount + chickenCount + pigCount;
-    const sizeFactorCow = Math.sqrt(cattleCount / totalCount);
-    const sizeCow = [30 * sizeFactorCow, 19 * sizeFactorCow];
-    const sizeFactorChicken = Math.sqrt(chickenCount / totalCount);
-    const sizeChicken = [30 * sizeFactorChicken, 30 * sizeFactorChicken];
-    const sizeFactorPig = Math.sqrt(pigCount / totalCount);
-    const sizePig = [30 * sizeFactorPig, 20 * sizeFactorPig];
-    const iconImageStyle = `display: inline-block;`;
-    let iconHtml = `<div style="width: 60px;">`;
-    iconHtml += `<img src="/assets/pig60x40.png" width=${sizePig[0]} height=${sizePig[1]} style="${iconImageStyle}">`;
-    iconHtml += `<img src="/assets/cow60x38.png" width=${sizeCow[0]} height=${sizeCow[1]} style="${iconImageStyle}">`;
-    iconHtml += `<img src="/assets/chicken60x60.png" width=${sizeChicken[0]} height=${sizeChicken[1]} style="">`;
-    iconHtml += `</div>`;
-    return divIcon({
-      html: iconHtml,
-      iconSize: [0, 0],
-      iconAnchor: [15, 15],
-      className: '',
-    }); // use getAllChildMarkers() to get type
-  }
-
-  onBuildingLayerClick(event: LeafletMouseEvent, layerClicked: Layer): void {
+  private onBuildingLayerClick = (
+    event: LeafletMouseEvent,
+    layerClicked: Layer,
+  ): void => {
     this.zone.run(() => {
       this.sidebarOpened = true;
-      this.layerBuildingSelected?.setStyle(this.defaultStyle);
       const layer: Polygon = layerClicked as Polygon;
-      layer.setStyle(this.highlightBuildingStyle);
-      const building: Building = (layer as any)['building'];
-      this.layerBuildingSelected = layer;
-      this.buildingSelected = building;
+      this.buildingLayer.select(layer);
     });
-  }
+  };
 
-  onCompanyLayerClick(event: LeafletMouseEvent, layerClicked: Layer): void {
+  private onCompanyLayerClick = (
+    event: LeafletMouseEvent,
+    layerClicked: Layer,
+  ): void => {
     this.zone.run(() => {
       this.sidebarOpened = true;
       const layer: Marker = layerClicked as Marker;
       const company: Company = (layer as any)['company'];
-      this.companySelected = company;
+      this.companyLayer.select(company);
 
       // if (!environment.production) {
       //   this.layers.push(
@@ -321,10 +214,10 @@ export class AppComponent implements OnInit {
       //   );
       // }
     });
-  }
+  };
 
   onMapClick(event: LeafletMouseEvent): void {
-    // console.log('mapClick');
+    console.log('mapClick', event);
   }
 
   onMapReady(map: Map): void {
@@ -333,55 +226,13 @@ export class AppComponent implements OnInit {
   }
 
   onMove(event: LeafletEvent): void {
-    console.log('onMove');
+    console.log('onMove', event);
     this.logCompanyInViewStats();
     this.update();
   }
 
   onZoom(event: LeafletEvent): void {
-    console.log('onZoom: level', this.map?.getZoom());
-  }
-
-  private updateAnimals(): void {
-    if (!this.map) {
-      return;
-    }
-    if (this.animalsLayer) {
-      this.map.removeLayer(this.animalsLayer);
-    }
-    if (this.map.getZoom() < this.ANIMALS_AT_ZOOM) {
-      return;
-    }
-
-    const circleMarkers = this.createAnimalMarkers();
-    this.animalsLayer = layerGroup(circleMarkers);
-    this.map.addLayer(this.animalsLayer);
-  }
-
-  private createAnimalMarkers(): CircleMarker[] {
-    const circleMarkers = [];
-    const circleOptions = this.animalCircleOptions;
-    for (const building of this.buildingsInView) {
-      for (const point of building.animalCoordinates) {
-        circleMarkers.push(
-          circleMarker(latLng(point.lat, point.lon), circleOptions),
-        );
-      }
-    }
-    return circleMarkers;
-  }
-
-  private get animalCircleOptions(): any {
-    let radius = 1;
-    if (this.map) {
-      radius = this.map.getZoom() >= 20 ? 2 : radius;
-    }
-    return {
-      radius: radius,
-      stroke: false,
-      fillOpacity: 1,
-      fillColor: 'blue',
-    };
+    console.log('onZoom: level', this.map?.getZoom(), event);
   }
 
   private logCompanyInViewStats(): void {
@@ -401,45 +252,13 @@ export class AppComponent implements OnInit {
     if (!this.map) {
       return [];
     }
-    const companies: Company[] = [];
-    this.map.eachLayer((layer: Layer) => {
-      if (layer instanceof MarkerCluster) {
-        if (this.map?.getBounds().contains(layer.getLatLng())) {
-          companies.push(
-            ...layer
-              .getAllChildMarkers()
-              .map((child) => (child as any)['company']),
-          );
-        }
-      } else if (layer instanceof Marker) {
-        if (this.map?.getBounds().contains(layer.getLatLng())) {
-          const company = (layer as any)['company'];
-          companies.push(company);
-        }
-      }
-    });
-    return companies;
+    return this.companyLayer.getCompaniesInView(this.map);
   }
 
   private get buildingsInView(): Building[] {
     if (!this.map) {
       return [];
     }
-
-    const buildings: Building[] = [];
-    this.map.eachLayer((layer: Layer) => {
-      if (layer instanceof Polygon) {
-        const points = layer.getLatLngs()[0] as LatLng[];
-        for (const point of points) {
-          if (this.map?.getBounds().contains(point)) {
-            console.log('bounds do contain point', point);
-            const building = (layer as any)['building'];
-            buildings.push(building);
-            break;
-          }
-        }
-      }
-    });
-    return buildings;
+    return this.buildingLayer.getBuildingsInView(this.map);
   }
 }

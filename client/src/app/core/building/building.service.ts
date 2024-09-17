@@ -3,10 +3,10 @@ import { HttpClient } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
 
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { Building } from './building';
 import { BuildingResource } from './building';
-import { BBox } from './geo';
+import { BBox } from '../geo';
 
 @Injectable({
   providedIn: 'root',
