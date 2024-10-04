@@ -25,6 +25,7 @@
     "@types/proj4": "^2.5.5",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
+    "ngx-matomo-client": "^6.3.1",
     "proj4": "^2.11.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
