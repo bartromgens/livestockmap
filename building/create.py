@@ -75,7 +75,7 @@ class BuildingFactory:
 
         addresses = cls._get_addresses_for_buildings(buildings)
         companies = Address.update_companies(addresses)
-        Company.update_types(companies)
+        Company.update_companies(companies)
 
         logger.info(f"finding companies for buildings")
         for building in buildings:

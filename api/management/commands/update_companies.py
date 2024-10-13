@@ -19,4 +19,4 @@ class Command(BaseCommand):
         )
         logger.info(f"found {len(addresses)}/{Address.objects.all().count()} addresses")
         companies = Address.update_companies(addresses)
-        Company.update_types(companies)
+        Company.update_companies(companies)

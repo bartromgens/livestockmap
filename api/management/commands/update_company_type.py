@@ -12,4 +12,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         companies = Company.objects.all()
-        Company.update_types(companies)
+        Company.update_companies(companies)

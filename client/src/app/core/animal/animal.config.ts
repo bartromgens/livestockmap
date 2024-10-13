@@ -1,3 +1,5 @@
+// TODO BR: Move this to the backend (and remove here)
+
 export interface AnimalConfig {
   minimalSquareMeterPerAnimal: number;
 }

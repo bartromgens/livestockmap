@@ -1,4 +1,3 @@
-from django.db.models import Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import serializers
@@ -35,6 +34,8 @@ class CompanySerializer(serializers.HyperlinkedModelSerializer):
             "description",
             "active",
             "address",
+            "animal_type_main",
+            "animal_count",
             "chicken",
             "pig",
             "cattle",
