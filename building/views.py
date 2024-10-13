@@ -68,6 +68,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
 
 class BuildingSerializer(serializers.HyperlinkedModelSerializer):
     addresses_nearby = AddressSerializer(many=True, read_only=True)
+    company = CompanySerializer(many=False, read_only=True)
 
     class Meta:
         model = Building
@@ -79,6 +80,7 @@ class BuildingSerializer(serializers.HyperlinkedModelSerializer):
             "width",
             "tags",
             "geometry",
+            "company",
             "addresses_nearby",
             "lon_min",
             "lon_max",
