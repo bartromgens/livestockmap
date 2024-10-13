@@ -238,7 +238,8 @@ class Company(models.Model):
     @classmethod
     def update_companies(cls, companies: List["Company"]) -> None:
         for i, company in enumerate(companies):
-            logger.info(f"determining type for company {i+1}/{len(companies)}")
+            if i % 100 == 0:
+                logger.info(f"determining type for company {i+1}/{len(companies)}")
             company.update(save=True)
 
     def _update_animal_type(self) -> None:
@@ -253,6 +254,9 @@ class Company(models.Model):
         self.pig = any(word in description for word in pig_words)
         self.sheep = any(word in description for word in sheep_words)
         self.goat = any(word in description for word in goat_words)
+        self.animal_type_main = self._determine_main_type()
+
+    def _determine_main_type(self) -> Animal:
         main_type = None
         if self.chicken:
             main_type = Animal.CHICKEN
@@ -264,7 +268,7 @@ class Company(models.Model):
             main_type = Animal.SHEEP
         elif self.goat:
             main_type = Animal.GOAT
-        self.animal_type_main = main_type
+        return main_type
 
     def _update_animal_count(self) -> None:
         animal_count = 0
