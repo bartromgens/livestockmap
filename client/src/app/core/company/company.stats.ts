@@ -16,6 +16,9 @@ export class CompaniesStats {
     this.cattleCompanies = [];
     this.chickenCompanies = [];
     this.pigCompanies = [];
+    this.cowCount = 0;
+    this.pigCount = 0;
+    this.chickenCount = 0;
     for (const company of this.companies) {
       switch (company.animalTypeMain) {
         case AnimalType.Cow:

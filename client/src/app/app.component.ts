@@ -240,7 +240,7 @@ export class AppComponent implements OnInit {
     console.log(
       'companies in view',
       stats.companies.length,
-      `| cows: ${stats.cowCount}, chickens: ${stats.chickenCount}, pigs: ${stats.pigCount}`,
+      `| cows: ${Math.floor(stats.cowCount / 1000)}k, chickens: ${Math.floor(stats.chickenCount / 1000)}k, pigs: ${Math.floor(stats.pigCount / 1000)}k`,
       `| cow farm: ${stats.cattleCompanies.length}, chicken farm: ${stats.chickenCompanies.length}, pig farm: ${stats.pigCompanies.length}`,
     );
   }
