@@ -51,8 +51,8 @@ import { AnimalLayer } from './core/animal';
 })
 export class AppComponent implements OnInit {
   private readonly ZOOM_DEFAULT: number = environment.production ? 8 : 13;
-  private readonly CLUSTER_AT_ZOOM: number = 13;
-  private readonly MAX_CLUSTER_RADIUS: number = 30;
+  private readonly CLUSTER_AT_ZOOM: number = 14;
+  private readonly MAX_CLUSTER_RADIUS: number = 40;
   private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM + 3;
   private readonly ANIMALS_AT_ZOOM: number = 17;
 
@@ -116,6 +116,19 @@ export class AppComponent implements OnInit {
     this.updateBuildings(this.bbox);
   }
 
+  private updateCompanies(): void {
+    console.log('updateCompanies');
+    this.companyService.getCompanies().subscribe((companies) => {
+      if (!this.map) {
+        return;
+      }
+
+      this.companyLayer.remove(this.map);
+      this.companyLayer.create(companies, this.onCompanyLayerClick);
+      this.companyLayer.add(this.map);
+    });
+  }
+
   private updateBuildings(bbox: BBox): void {
     console.log('updateBuildings');
     if (this.map && this.map.getZoom() < this.BUILDINGS_AT_ZOOM) {
@@ -133,19 +146,6 @@ export class AppComponent implements OnInit {
       this.buildingLayer.create(buildings, this.onBuildingLayerClick);
       this.buildingLayer.add(this.map);
       this.updateAnimals();
-    });
-  }
-
-  private updateCompanies(): void {
-    console.log('updateCompanies');
-    this.companyService.getCompanies().subscribe((companies) => {
-      if (!this.map) {
-        return;
-      }
-
-      this.companyLayer.remove(this.map);
-      this.companyLayer.create(companies, this.onCompanyLayerClick);
-      this.companyLayer.add(this.map);
     });
   }
 

@@ -20,6 +20,7 @@ for more information on how these are to be used.
 
 - [ ] Determine building animal type for companies with multiple
 - [ ] Optimize rendering of many markers (especially zooming out)
+  - [ ] Use canvas? https://github.com/francoisromain/leaflet-markers-canvas?tab=readme-ov-file 
 - [ ] Add diary cow as animal type
 - [ ] Change animal colors for better distinction between cow and pig
 - [ ] Change sidebar expand button to close button inside sidebar
