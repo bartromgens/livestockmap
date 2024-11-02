@@ -16,6 +16,13 @@ for more information on how these are to be used.
 
 ### Ideas
 
+#### TODO
+
+- [ ] Determine building animal type for companies with multiple
+- [ ] Optimize rendering of many markers (especially zooming out)
+- [ ] Add diary cow as animal type
+- [ ] Change animal colors for better distinction between cow and pig
+
 #### Company information (KvK)
 
 - Search for companies registered at the KvK near a building on the map
