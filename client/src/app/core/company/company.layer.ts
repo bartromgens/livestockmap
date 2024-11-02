@@ -85,24 +85,23 @@ export class CompanyLayer {
   }
 
   getCompaniesInView(map: Map): Company[] {
-    const companies: Company[] = [];
+    console.log('getCompaniesInView');
+    const companiesSet = new Set<Company>();
     map.eachLayer((layer: Layer) => {
       if (layer instanceof MarkerCluster) {
         if (map.getBounds().contains(layer.getLatLng())) {
-          companies.push(
-            ...layer
-              .getAllChildMarkers()
-              .map((child) => (child as any)['company']),
-          );
+          layer
+            .getAllChildMarkers()
+            .map((child) => companiesSet.add((child as any)['company']));
         }
       } else if (layer instanceof Marker) {
         if (map.getBounds().contains(layer.getLatLng())) {
           const company = (layer as any)['company'];
-          companies.push(company);
+          companiesSet.add(company);
         }
       }
     });
-    return companies;
+    return [...companiesSet];
   }
 
   private createMarkerGroupIcon(cluster: MarkerCluster): DivIcon {

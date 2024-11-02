@@ -54,7 +54,7 @@ export class AppComponent implements OnInit {
   private readonly CLUSTER_AT_ZOOM: number = 14;
   private readonly MAX_CLUSTER_RADIUS: number = 40;
   private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM + 3;
-  private readonly ANIMALS_AT_ZOOM: number = 17;
+  private readonly ANIMALS_AT_ZOOM: number = 18;
 
   Object = Object;
   readonly title: string = 'veekaart.nl';
@@ -230,8 +230,8 @@ export class AppComponent implements OnInit {
 
   onMove(event: LeafletEvent): void {
     console.log('onMove', event);
-    this.logCompanyInViewStats();
     this.update();
+    this.logCompanyInViewStats();
   }
 
   onZoom(event: LeafletEvent): void {
