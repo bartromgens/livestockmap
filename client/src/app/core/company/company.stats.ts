@@ -1,18 +1,20 @@
 import { AnimalType, Company } from './company';
 
 export class CompaniesStats {
+  companyCount = 0;
   cattleCompanies: Company[] = [];
   chickenCompanies: Company[] = [];
   pigCompanies: Company[] = [];
-  cowCount: number = 0;
-  pigCount: number = 0;
-  chickenCount: number = 0;
+  cowCount = 0;
+  pigCount = 0;
+  chickenCount = 0;
 
   constructor(public readonly companies: Company[]) {
     this.createStats();
   }
 
   private createStats(): any {
+    this.companyCount = this.companies.length;
     this.cattleCompanies = [];
     this.chickenCompanies = [];
     this.pigCompanies = [];
