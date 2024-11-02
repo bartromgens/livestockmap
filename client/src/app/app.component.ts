@@ -53,7 +53,7 @@ export class AppComponent implements OnInit {
   private readonly ZOOM_DEFAULT: number = environment.production ? 8 : 13;
   private readonly CLUSTER_AT_ZOOM: number = 13;
   private readonly MAX_CLUSTER_RADIUS: number = 30;
-  private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM + 1;
+  private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM + 3;
   private readonly ANIMALS_AT_ZOOM: number = 17;
 
   Object = Object;
@@ -101,11 +101,13 @@ export class AppComponent implements OnInit {
   }
 
   private initializeMap(): void {
+    console.log('initializeMap');
     this.updateCompanies();
     this.update();
   }
 
   private update(): void {
+    console.log('update');
     if (!this.map) {
       console.assert(false, 'map is not defined');
       return;
@@ -118,6 +120,7 @@ export class AppComponent implements OnInit {
     console.log('updateBuildings');
     if (this.map && this.map.getZoom() < this.BUILDINGS_AT_ZOOM) {
       this.buildingLayer.remove(this.map);
+      console.log('buildings not shown at this zoom level');
       return;
     }
 

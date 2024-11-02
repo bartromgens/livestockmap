@@ -22,6 +22,7 @@ for more information on how these are to be used.
 - [ ] Optimize rendering of many markers (especially zooming out)
 - [ ] Add diary cow as animal type
 - [ ] Change animal colors for better distinction between cow and pig
+- [ ] Change sidebar expand button to close button inside sidebar
 
 #### Company information (KvK)
 

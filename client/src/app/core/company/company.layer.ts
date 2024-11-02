@@ -36,6 +36,7 @@ export class CompanyLayer {
     companies: Company[],
     onClick: (event: LeafletMouseEvent, layerClicked: Layer) => void,
   ): void {
+    console.log('create markers');
     const layers: any[] = [];
     for (const company of companies) {
       const layersCompany: any[] = [];
@@ -64,6 +65,7 @@ export class CompanyLayer {
     });
     markers.addLayers(layers);
     this.layerGroup = markers;
+    console.log('create markers done');
   }
 
   remove(map: Map): void {
