@@ -239,7 +239,9 @@ class Company(models.Model):
     def update_companies(cls, companies: List["Company"]) -> None:
         for i, company in enumerate(companies):
             if i % 100 == 0:
-                logger.info(f"determining type for company {i+1}/{len(companies)}")
+                logger.info(
+                    f"determining type for company {i+1}/{len(companies)} ({(i/len(companies)*100):.2f}%)"
+                )
             company.update(save=True)
 
     def _update_animal_type(self) -> None:
