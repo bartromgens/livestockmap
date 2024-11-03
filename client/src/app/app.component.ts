@@ -11,26 +11,27 @@ import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import 'leaflet.markercluster'; // a leaflet plugin
 import {
   latLng,
-  Map,
-  LeafletMouseEvent,
-  LeafletEvent,
   LatLngBounds,
+  Layer,
+  LeafletEvent,
+  LeafletMouseEvent,
+  Map,
+  Marker,
+  Polygon,
+  tileLayer,
 } from 'leaflet';
-import { tileLayer, Polygon, Layer } from 'leaflet';
-import { Marker } from 'leaflet';
 
-import { Coordinate } from './core';
+import { BBox, Coordinate } from './core';
 import {
   CompaniesStats,
   Company,
   CompanyLayer,
   CompanyService,
 } from './core/company';
-import { Building, BuildingService, BuildingLayer } from './core/building';
+import { Building, BuildingLayer, BuildingService } from './core/building';
 import { TileLayer, TileService } from './core/tile';
-import { BBox } from './core';
 import { environment } from '../environments/environment';
-import { AnimalLayer } from './core/animal';
+import { AnimalLayer, AnimalType } from './core/animal';
 import { FooterComponent } from './nav/footer.component';
 
 @Component({
@@ -52,9 +53,9 @@ import { FooterComponent } from './nav/footer.component';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-  private readonly ZOOM_DEFAULT: number = environment.production ? 8 : 13;
+  private readonly ZOOM_DEFAULT: number = environment.production ? 8 : 8;
   private readonly CLUSTER_AT_ZOOM: number = 14;
-  private readonly MAX_CLUSTER_RADIUS: number = 40;
+  private readonly MAX_CLUSTER_RADIUS: number = 35;
   private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM + 3;
   private readonly ANIMALS_AT_ZOOM: number = 18;
 
@@ -125,6 +126,9 @@ export class AppComponent implements OnInit {
       if (!this.map) {
         return;
       }
+      // companies = companies.filter(
+      //   (company) => company.animalTypeMain == AnimalType.Combined,
+      // );
 
       this.companyLayer.remove(this.map);
       this.companyLayer.create(companies, this.onCompanyLayerClick);

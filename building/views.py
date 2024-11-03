@@ -43,6 +43,7 @@ class CompanySerializer(serializers.HyperlinkedModelSerializer):
             "cattle_beef",
             "sheep",
             "goat",
+            "other_activities",
         ]
 
 

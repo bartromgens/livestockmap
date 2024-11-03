@@ -194,13 +194,13 @@ ANIMAL_CONFIG = {
     Animal.COW_BEEF: AnimalConfig(
         1.7
     ),  # https://www.nvwa.nl/onderwerpen/runderen/regels-voor-rundveehouders
-    Animal.COW_DAIRY: AnimalConfig(5),  # Beter Leven 1 ster
+    Animal.COW_DAIRY: AnimalConfig(8),  # Configued to match national statistics
     Animal.PIG: AnimalConfig(
         0.8
     ),  # https://www.rvo.nl/onderwerpen/dieren-houden-verkopen-verzorgen/welzijnseisen-varkens
     Animal.CHICKEN: AnimalConfig(
-        0.04
-    ),  # https://www.rvo.nl/onderwerpen/dieren-houden-verkopen-verzorgen/welzijnseisen-vleeskuikens
+        0.04 * 1.5
+    ),  # https://www.rvo.nl/onderwerpen/dieren-houden-verkopen-verzorgen/welzijnseisen-vleeskuikens, 1.5 to match national statistics
     Animal.SHEEP: AnimalConfig(0.6),
     Animal.GOAT: AnimalConfig(0.5),
     Animal.COMBINED: AnimalConfig(5),
@@ -218,6 +218,7 @@ class Company(models.Model):
     cattle_dairy = models.BooleanField(default=False, null=False, db_index=True)
     sheep = models.BooleanField(default=False, null=False, db_index=True)
     goat = models.BooleanField(default=False, null=False, db_index=True)
+    other_activities = models.BooleanField(default=False, null=False, db_index=True)
     animal_type_main = models.CharField(max_length=3, choices=Animal, null=True)
     animal_count = models.IntegerField(null=False, default=0)
 
@@ -236,7 +237,13 @@ class Company(models.Model):
     @classmethod
     def livestock_companies(cls) -> QuerySet["Company"]:
         return Company.objects.filter(active=True).filter(
-            Q(chicken=True) | Q(pig=True) | Q(cattle=True)
+            Q(chicken=True)
+            | Q(pig=True)
+            | Q(cattle=True)
+            | Q(cattle_dairy=True)
+            | Q(cattle_beef=True)
+            | Q(sheep=True)
+            | Q(goat=True)
         )
 
     def update(self, save=True):
@@ -262,9 +269,16 @@ class Company(models.Model):
         pig_words = ["varken", "zeug"]
         sheep_words = ["schaap", "schapen"]
         goat_words = ["geit"]
+        other_activities_words = [
+            "dienstverlening",
+            "arbeidskrachten",
+            "loonwerk",
+            "loonbedrijf",
+            "teelt",
+        ]
         description = self.description.lower()
         self.cattle = any(word in description for word in cattle_words)
-        self.cattle_beef = any(word in description for word in dairy_beef_words)
+        self.cattle_beef = any(word in description for word in beef_cattle_words)
         self.cattle_dairy = any(word in description for word in dairy_cattle_words)
         if "geen melkvee" in description:
             self.cattle_dairy = False
@@ -272,36 +286,91 @@ class Company(models.Model):
         self.pig = any(word in description for word in pig_words)
         self.sheep = any(word in description for word in sheep_words)
         self.goat = any(word in description for word in goat_words)
+        self.other_activities = any(
+            word in description for word in other_activities_words
+        )
         self.animal_type_main = self._determine_main_type()
 
     def _determine_main_type(self) -> Animal:
-        main_type = Animal.COMBINED
+        main_type = None
         if self.chicken and not any(
-            [self.cattle_dairy, self.cattle_beef, self.pig, self.goat, self.sheep]
+            [
+                self.cattle_dairy,
+                self.cattle_beef,
+                self.pig,
+                self.goat,
+                self.sheep,
+            ]
         ):
             main_type = Animal.CHICKEN
         elif self.pig and not any(
-            [self.cattle_dairy, self.cattle_beef, self.chicken, self.goat, self.sheep]
+            [
+                self.cattle_dairy,
+                self.cattle_beef,
+                self.chicken,
+                self.goat,
+                self.sheep,
+            ]
         ):
             main_type = Animal.PIG
         elif self.cattle_beef and not any(
-            [self.cattle_dairy, self.pig, self.chicken, self.goat, self.sheep]
+            [
+                self.cattle_dairy,
+                self.pig,
+                self.chicken,
+                self.goat,
+                self.sheep,
+            ]
         ):
             main_type = Animal.COW_BEEF
         elif self.cattle_dairy and not any(
-            [self.cattle_beef, self.pig, self.chicken, self.goat, self.sheep]
+            [
+                self.cattle_beef,
+                self.pig,
+                self.chicken,
+                self.goat,
+                self.sheep,
+            ]
         ):
             main_type = Animal.COW_DAIRY
-        elif self.cattle and not any([self.pig, self.chicken, self.goat, self.sheep]):
+        elif self.cattle and not any(
+            [self.pig, self.chicken, self.goat, self.sheep, self.other_activities]
+        ):
             main_type = Animal.COW
         elif self.sheep and not any(
-            [self.cattle_beef, self.cattle_dairy, self.pig, self.chicken, self.goat]
+            [
+                self.cattle,
+                self.cattle_beef,
+                self.cattle_dairy,
+                self.pig,
+                self.chicken,
+                self.goat,
+            ]
         ):
             main_type = Animal.SHEEP
         elif self.goat and not any(
-            [self.cattle_beef, self.cattle_dairy, self.pig, self.chicken, self.sheep]
+            [
+                self.cattle,
+                self.cattle_beef,
+                self.cattle_dairy,
+                self.pig,
+                self.chicken,
+                self.sheep,
+            ]
         ):
             main_type = Animal.GOAT
+        elif any(
+            [
+                self.cattle,
+                self.cattle_beef,
+                self.cattle_dairy,
+                self.pig,
+                self.chicken,
+                self.sheep,
+                self.goat,
+            ]
+        ):
+            main_type = Animal.COMBINED
         return main_type
 
     def _update_animal_count(self) -> None:
