@@ -108,6 +108,8 @@
   </mat-sidenav-content>
 </mat-sidenav-container>
 
+<app-footer [companies]="companiesInView"></app-footer>
+
 <div
   class="toggle-sidebar"
   [ngClass]="{ collapsed: !sidebarOpened }"

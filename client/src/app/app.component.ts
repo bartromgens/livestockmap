@@ -31,6 +31,7 @@ import { TileLayer, TileService } from './core/tile';
 import { BBox } from './core';
 import { environment } from '../environments/environment';
 import { AnimalLayer } from './core/animal';
+import { FooterComponent } from './nav/footer.component';
 
 @Component({
   selector: 'app-root',
@@ -45,6 +46,7 @@ import { AnimalLayer } from './core/animal';
     MatSidenavModule,
     MatButtonModule,
     MatCardModule,
+    FooterComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -75,6 +77,7 @@ export class AppComponent implements OnInit {
   companyLayer: CompanyLayer;
   private animalLayer: AnimalLayer;
   private tileLayer: TileLayer;
+  companiesInView: Company[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -126,6 +129,7 @@ export class AppComponent implements OnInit {
       this.companyLayer.remove(this.map);
       this.companyLayer.create(companies, this.onCompanyLayerClick);
       this.companyLayer.add(this.map);
+      this.updateCompanyInViewStats();
     });
   }
 
@@ -230,16 +234,17 @@ export class AppComponent implements OnInit {
 
   onMove(event: LeafletEvent): void {
     console.log('onMove', event);
+    this.updateCompanyInViewStats();
     this.update();
-    this.logCompanyInViewStats();
   }
 
   onZoom(event: LeafletEvent): void {
     console.log('onZoom: level', this.map?.getZoom(), event);
   }
 
-  private logCompanyInViewStats(): void {
-    const stats = new CompaniesStats(this.getCompaniesInView());
+  private updateCompanyInViewStats(): void {
+    this.companiesInView = this.getCompaniesInView();
+    const stats = new CompaniesStats(this.companiesInView);
     console.log(
       'companies in view',
       stats.companies.length,
