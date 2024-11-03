@@ -25,6 +25,17 @@ for more information on how these are to be used.
 - [ ] Change animal colors for better distinction between cow and pig
 - [ ] Change sidebar expand button to close button inside sidebar
 
+#### Livestock data 
+
+Livestock animals in the Netherlands [source](https://longreads.cbs.nl/nederland-in-cijfers-2021/hoeveel-landbouwdieren-telt-ons-land/)
+- 11.4 million pigs
+- 3.8 million cattle [source](https://www.cbs.nl/nl-nl/nieuws/2023/11/nauwelijks-minder-melkkoeien-in-2022-wel-minder-varkens)
+  - 2.55 million dairy cattle (including young)
+  - 1.21 million beef cattle (including young)
+- 99.9 million chickens
+- 0.85 million sheep
+- 0.48 million goats
+
 #### Company information (KvK)
 
 - Search for companies registered at the KvK near a building on the map
