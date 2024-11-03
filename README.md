@@ -21,9 +21,10 @@ for more information on how these are to be used.
 - [ ] Determine building animal type for companies with multiple
 - [ ] Optimize rendering of many markers (especially zooming out)
   - [ ] Use canvas? https://github.com/francoisromain/leaflet-markers-canvas?tab=readme-ov-file 
-- [ ] Add diary cow as animal type
+- [ ] Add dairy cow as animal type
 - [ ] Change animal colors for better distinction between cow and pig
 - [ ] Change sidebar expand button to close button inside sidebar
+- [ ] Filter by animal type
 
 #### Livestock data 
 
@@ -35,6 +36,18 @@ Livestock animals in the Netherlands [source](https://longreads.cbs.nl/nederland
 - 99.9 million chickens
 - 0.85 million sheep
 - 0.48 million goats
+
+Number of livestock companies [source](https://www.staatvanlandbouwnatuurenvoedsel.nl/kerncijfers/aantal-bedrijven/#Groepen) [source2](https://agrimatie.nl/SectorResultaat.aspx?subpubID=2232&sectorID=2430)
+- 2026 pigs
+- 13215 dairy cattle
+- 1451 beef cattle [source](https://agrimatie.nl/SectorResultaat.aspx?subpubID=2232&sectorID=2430&themaID=2286)
+- 3041 combined
+- 1488 chicken (or other)
+  - 733 eggs [source](https://agrimatie.nl/SectorResultaat.aspx?subpubID=2232&sectorID=2249&themaID=2286)
+  - 613 meat [source](https://agrimatie.nl/SectorResultaat.aspx?subpubID=2232&sectorID=2249&themaID=2286)
+- 11198 other grazing (goat, sheep, horse, other)
+  - 651 goat [source](https://agrimatie.nl/SectorResultaat.aspx?subpubID=2232&sectorID=2430)
+  - 8141 sheep [source](https://agrimatie.nl/SectorResultaat.aspx?subpubID=2232&sectorID=2430)
 
 #### Company information (KvK)
 
