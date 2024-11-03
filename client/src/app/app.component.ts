@@ -31,6 +31,7 @@ import { TileLayer, TileService } from './core/tile';
 import { BBox } from './core';
 import { environment } from '../environments/environment';
 import { AnimalLayer } from './core/animal';
+import { FooterComponent } from './nav/footer.component';
 
 @Component({
   selector: 'app-root',
@@ -45,16 +46,17 @@ import { AnimalLayer } from './core/animal';
     MatSidenavModule,
     MatButtonModule,
     MatCardModule,
+    FooterComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
   private readonly ZOOM_DEFAULT: number = environment.production ? 8 : 13;
-  private readonly CLUSTER_AT_ZOOM: number = 13;
-  private readonly MAX_CLUSTER_RADIUS: number = 30;
-  private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM + 1;
-  private readonly ANIMALS_AT_ZOOM: number = 17;
+  private readonly CLUSTER_AT_ZOOM: number = 14;
+  private readonly MAX_CLUSTER_RADIUS: number = 40;
+  private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM + 3;
+  private readonly ANIMALS_AT_ZOOM: number = 18;
 
   Object = Object;
   readonly title: string = 'veekaart.nl';
@@ -75,6 +77,7 @@ export class AppComponent implements OnInit {
   companyLayer: CompanyLayer;
   private animalLayer: AnimalLayer;
   private tileLayer: TileLayer;
+  companiesInView: Company[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -101,36 +104,19 @@ export class AppComponent implements OnInit {
   }
 
   private initializeMap(): void {
+    console.log('initializeMap');
     this.updateCompanies();
     this.update();
   }
 
   private update(): void {
+    console.log('update');
     if (!this.map) {
       console.assert(false, 'map is not defined');
       return;
     }
 
     this.updateBuildings(this.bbox);
-  }
-
-  private updateBuildings(bbox: BBox): void {
-    console.log('updateBuildings');
-    if (this.map && this.map.getZoom() < this.BUILDINGS_AT_ZOOM) {
-      this.buildingLayer.remove(this.map);
-      return;
-    }
-
-    bbox = BBox.enlarge(bbox);
-    this.buildingService.getBuildings(bbox).subscribe((buildings) => {
-      if (!this.map) {
-        return;
-      }
-      this.buildingLayer.remove(this.map);
-      this.buildingLayer.create(buildings, this.onBuildingLayerClick);
-      this.buildingLayer.add(this.map);
-      this.updateAnimals();
-    });
   }
 
   private updateCompanies(): void {
@@ -143,6 +129,27 @@ export class AppComponent implements OnInit {
       this.companyLayer.remove(this.map);
       this.companyLayer.create(companies, this.onCompanyLayerClick);
       this.companyLayer.add(this.map);
+      this.updateCompanyInViewStats();
+    });
+  }
+
+  private updateBuildings(bbox: BBox): void {
+    console.log('updateBuildings');
+    if (this.map && this.map.getZoom() < this.BUILDINGS_AT_ZOOM) {
+      this.buildingLayer.remove(this.map);
+      console.log('buildings not shown at this zoom level');
+      return;
+    }
+
+    bbox = BBox.enlarge(bbox);
+    this.buildingService.getBuildings(bbox).subscribe((buildings) => {
+      if (!this.map) {
+        return;
+      }
+      this.buildingLayer.remove(this.map);
+      this.buildingLayer.create(buildings, this.onBuildingLayerClick);
+      this.buildingLayer.add(this.map);
+      this.updateAnimals();
     });
   }
 
@@ -227,7 +234,7 @@ export class AppComponent implements OnInit {
 
   onMove(event: LeafletEvent): void {
     console.log('onMove', event);
-    this.logCompanyInViewStats();
+    this.updateCompanyInViewStats();
     this.update();
   }
 
@@ -235,12 +242,14 @@ export class AppComponent implements OnInit {
     console.log('onZoom: level', this.map?.getZoom(), event);
   }
 
-  private logCompanyInViewStats(): void {
-    const stats = new CompaniesStats(this.getCompaniesInView());
+  private updateCompanyInViewStats(): void {
+    this.companiesInView = this.getCompaniesInView();
+    const stats = new CompaniesStats(this.companiesInView);
     console.log(
       'companies in view',
       stats.companies.length,
-      `cow: ${stats.cattleCompanies.length}, chicken: ${stats.chickenCompanies.length}, pigs: ${stats.pigCompanies.length}`,
+      `| cows: ${Math.floor(stats.cowCount / 1000)}k, chickens: ${Math.floor(stats.chickenCount / 1000)}k, pigs: ${Math.floor(stats.pigCount / 1000)}k`,
+      `| cow farm: ${stats.cattleCompanies.length}, chicken farm: ${stats.chickenCompanies.length}, pig farm: ${stats.pigCompanies.length}`,
     );
   }
 

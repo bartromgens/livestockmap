@@ -36,6 +36,7 @@ export class CompanyLayer {
     companies: Company[],
     onClick: (event: LeafletMouseEvent, layerClicked: Layer) => void,
   ): void {
+    console.log('create markers');
     const layers: any[] = [];
     for (const company of companies) {
       const layersCompany: any[] = [];
@@ -64,6 +65,7 @@ export class CompanyLayer {
     });
     markers.addLayers(layers);
     this.layerGroup = markers;
+    console.log('create markers done');
   }
 
   remove(map: Map): void {
@@ -83,24 +85,23 @@ export class CompanyLayer {
   }
 
   getCompaniesInView(map: Map): Company[] {
-    const companies: Company[] = [];
+    console.log('getCompaniesInView');
+    const companiesSet = new Set<Company>();
     map.eachLayer((layer: Layer) => {
       if (layer instanceof MarkerCluster) {
         if (map.getBounds().contains(layer.getLatLng())) {
-          companies.push(
-            ...layer
-              .getAllChildMarkers()
-              .map((child) => (child as any)['company']),
-          );
+          layer
+            .getAllChildMarkers()
+            .map((child) => companiesSet.add((child as any)['company']));
         }
       } else if (layer instanceof Marker) {
         if (map.getBounds().contains(layer.getLatLng())) {
           const company = (layer as any)['company'];
-          companies.push(company);
+          companiesSet.add(company);
         }
       }
     });
-    return companies;
+    return [...companiesSet];
   }
 
   private createMarkerGroupIcon(cluster: MarkerCluster): DivIcon {

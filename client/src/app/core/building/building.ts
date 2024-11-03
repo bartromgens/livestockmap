@@ -1,18 +1,19 @@
 import { PolygonUtils } from '../../utils';
 import { Polygon, polygon } from 'leaflet';
 import { Coordinate } from '../geo';
+import { Company, CompanyResource } from '../company';
+import { Address, AddressResource } from '../address';
+import {
+  AnimalConfig,
+  chickenConfig,
+  cowConfig,
+  defaultAnimalConfig,
+  goatConfig,
+  pigConfig,
+  sheepConfig,
+} from '../animal';
 
 export interface CoordinateResource {
-  lat: number;
-  lon: number;
-}
-
-export interface AddressResource {
-  node_id: number;
-  street: string;
-  housenumber: string;
-  postcode: string;
-  city: string;
   lat: number;
   lon: number;
 }
@@ -24,47 +25,12 @@ export interface BuildingResource {
   width: number;
   tags: Record<string, string>;
   geometry: CoordinateResource[];
+  company: CompanyResource;
   addresses_nearby: AddressResource[];
   lon_min: number;
   lon_max: number;
   lat_min: number;
   lat_max: number;
-}
-
-export class Address {
-  constructor(
-    public node_id: number,
-    public street: string,
-    public housenumber: string,
-    public postcode: string,
-    public city: string,
-    public lat: number,
-    public lon: number,
-  ) {}
-
-  static fromResource(resource: AddressResource): Address {
-    return new Address(
-      Number(resource.node_id),
-      resource.street,
-      resource.housenumber,
-      resource.postcode,
-      resource.city,
-      Number(resource.lat),
-      Number(resource.lon),
-    );
-  }
-
-  static fromResources(resources: AddressResource[]): Address[] {
-    return resources.map((resource) => Address.fromResource(resource));
-  }
-
-  toString(): string {
-    return `${this.street} ${this.housenumber} ${this.city}`;
-  }
-
-  get coordinate(): Coordinate {
-    return new Coordinate(this.lat, this.lon);
-  }
 }
 
 export class Building {
@@ -77,6 +43,7 @@ export class Building {
     public width: number,
     public tags: Record<string, string>,
     public geometry: Coordinate[],
+    public company: Company,
     public addresses_nearby: Address[],
     public center: Coordinate,
     public latMin: number,
@@ -109,6 +76,7 @@ export class Building {
       resource.width,
       resource.tags,
       coordinates,
+      Company.fromResource(resource.company),
       addresses_nearby,
       new Coordinate(lat, lon),
       resource.lat_min,
@@ -135,22 +103,43 @@ export class Building {
     return polygon(coordinates);
   }
 
+  get animalConfig(): AnimalConfig {
+    if (this.company.pig) {
+      return pigConfig;
+    } else if (this.company.cattle) {
+      return cowConfig;
+    } else if (this.company.chicken) {
+      return chickenConfig;
+    } else if (this.company.sheep) {
+      return sheepConfig;
+    } else if (this.company.goat) {
+      return goatConfig;
+    }
+    return defaultAnimalConfig;
+  }
+
+  get animalCount(): number {
+    return this.area / this.animalConfig.minimalSquareMeterPerAnimal;
+  }
+
   get animalCoordinates(): Coordinate[] {
     if (this.animals) {
       return this.animals;
     }
 
-    if (this.area > 5000) {
-      console.error(`Building area ${this.area} is too large to draw animals.`);
+    if (this.animalCount > 10000) {
+      console.error(
+        `There are too many animals to draw them in the buildings.`,
+      );
       return [];
     }
 
     const points: Coordinate[] = [];
-    const maxPoints = this.area * 0.8;
-    const maxTries = maxPoints * 10;
+    const nPoints = this.animalCount;
+    const maxTries = nPoints * 10;
     let nTries = 0;
     const polygonBuilding = this.polygon;
-    while (points.length < maxPoints && nTries < maxTries) {
+    while (points.length < nPoints && nTries < maxTries) {
       const lat = Math.random() * (this.latMax - this.latMin) + this.latMin;
       const lon = Math.random() * (this.lonMax - this.lonMin) + this.lonMin;
       if (PolygonUtils.isMarkerInsidePolygon(lat, lon, polygonBuilding)) {

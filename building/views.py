@@ -1,4 +1,3 @@
-from django.db.models import Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import serializers
@@ -35,6 +34,8 @@ class CompanySerializer(serializers.HyperlinkedModelSerializer):
             "description",
             "active",
             "address",
+            "animal_type_main",
+            "animal_count",
             "chicken",
             "pig",
             "cattle",
@@ -68,6 +69,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
 
 class BuildingSerializer(serializers.HyperlinkedModelSerializer):
     addresses_nearby = AddressSerializer(many=True, read_only=True)
+    company = CompanySerializer(many=False, read_only=True)
 
     class Meta:
         model = Building
@@ -79,6 +81,7 @@ class BuildingSerializer(serializers.HyperlinkedModelSerializer):
             "width",
             "tags",
             "geometry",
+            "company",
             "addresses_nearby",
             "lon_min",
             "lon_max",

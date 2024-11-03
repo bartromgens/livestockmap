@@ -1,6 +1,7 @@
 import logging
 import math
 import time
+from dataclasses import dataclass
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -9,7 +10,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.db.models import QuerySet
-from django.utils.functional import cached_property
+from django.utils.translation import gettext_lazy as _
 from pydantic import BaseModel
 
 from company.kvk import ScraperMalfunction
@@ -169,6 +170,35 @@ class Address(models.Model):
         return companies
 
 
+class Animal(models.TextChoices):
+    COW = "COW", _("Cow")
+    PIG = "PIG", _("Pig")
+    CHICKEN = "CHI", _("Chicken")
+    SHEEP = "SHE", _("Sheep")
+    GOAT = "GOA", _("Goat")
+
+
+@dataclass
+class AnimalConfig:
+    minimal_square_meter_per_animal: float
+
+
+ANIMAL_CONFIG = {
+    None: AnimalConfig(0.8),
+    Animal.COW: AnimalConfig(
+        1.7
+    ),  # https://www.nvwa.nl/onderwerpen/runderen/regels-voor-rundveehouders
+    Animal.PIG: AnimalConfig(
+        0.8
+    ),  # https://www.rvo.nl/onderwerpen/dieren-houden-verkopen-verzorgen/welzijnseisen-varkens
+    Animal.CHICKEN: AnimalConfig(
+        0.04
+    ),  # https://www.rvo.nl/onderwerpen/dieren-houden-verkopen-verzorgen/welzijnseisen-vleeskuikens
+    Animal.SHEEP: AnimalConfig(0.6),
+    Animal.GOAT: AnimalConfig(0.5),
+}
+
+
 class Company(models.Model):
     description = models.CharField(max_length=5000, null=False)
     active = models.BooleanField(default=True, null=False, db_index=True)
@@ -178,6 +208,8 @@ class Company(models.Model):
     cattle = models.BooleanField(default=False, null=False, db_index=True)
     sheep = models.BooleanField(default=False, null=False, db_index=True)
     goat = models.BooleanField(default=False, null=False, db_index=True)
+    animal_type_main = models.CharField(max_length=3, choices=Animal, null=True)
+    animal_count = models.IntegerField(null=False, default=0)
 
     @property
     def has_type(self) -> bool:
@@ -187,13 +219,32 @@ class Company(models.Model):
     def coordinate(self) -> Coordinate:
         return self.address.coordinate
 
+    @property
+    def animal_config(self) -> AnimalConfig:
+        return ANIMAL_CONFIG.get(self.animal_type_main)
+
     @classmethod
     def livestock_companies(cls) -> QuerySet["Company"]:
         return Company.objects.filter(active=True).filter(
             Q(chicken=True) | Q(pig=True) | Q(cattle=True)
         )
 
-    def update_type(self) -> None:
+    def update(self, save=True):
+        self._update_animal_type()
+        self._update_animal_count()
+        if save:
+            self.save()
+
+    @classmethod
+    def update_companies(cls, companies: List["Company"]) -> None:
+        for i, company in enumerate(companies):
+            if i % 100 == 0:
+                logger.info(
+                    f"determining type for company {i+1}/{len(companies)} ({(i/len(companies)*100):.2f}%)"
+                )
+            company.update(save=True)
+
+    def _update_animal_type(self) -> None:
         cattle_words = ["melkvee", "rundvee", "kalveren"]
         chicken_words = ["pluimvee", "kippen", "kuikens", "hennen"]
         pig_words = ["varken", "zeug"]
@@ -205,13 +256,29 @@ class Company(models.Model):
         self.pig = any(word in description for word in pig_words)
         self.sheep = any(word in description for word in sheep_words)
         self.goat = any(word in description for word in goat_words)
+        self.animal_type_main = self._determine_main_type()
 
-    @classmethod
-    def update_types(cls, companies: List["Company"]) -> None:
-        for i, company in enumerate(companies):
-            logger.info(f"determining type for company {i+1}/{len(companies)}")
-            company.update_type()
-            company.save()
+    def _determine_main_type(self) -> Animal:
+        main_type = None
+        if self.chicken:
+            main_type = Animal.CHICKEN
+        elif self.pig:
+            main_type = Animal.PIG
+        elif self.cattle:
+            main_type = Animal.COW
+        elif self.sheep:
+            main_type = Animal.SHEEP
+        elif self.goat:
+            main_type = Animal.GOAT
+        return main_type
+
+    def _update_animal_count(self) -> None:
+        animal_count = 0
+        for building in self.building_set.all():
+            animal_count += (
+                building.area / self.animal_config.minimal_square_meter_per_animal
+            )
+        self.animal_count = animal_count
 
 
 class Building(models.Model):
