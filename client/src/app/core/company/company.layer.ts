@@ -151,7 +151,7 @@ export class CompanyLayer {
     let iconHtml = `<div style="width: 80px;">`;
     for (let animalType of animalTypes) {
       const count: number = animalCounts[animalType];
-      const sizeFactor = Math.pow(count / totalCount, 1 / 2) / 1.4;
+      const sizeFactor = Math.pow(count / totalCount, 1 / 2) / Math.sqrt(2);
       const icon = ANIMAL_TYPE_ICON[animalType];
       iconHtml += `<img src="${icon.iconUrl}" width=${icon.width * sizeFactor} height=${icon.height * sizeFactor} style="display: inline-block;">`;
     }

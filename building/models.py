@@ -236,15 +236,7 @@ class Company(models.Model):
 
     @classmethod
     def livestock_companies(cls) -> QuerySet["Company"]:
-        return Company.objects.filter(active=True).filter(
-            Q(chicken=True)
-            | Q(pig=True)
-            | Q(cattle=True)
-            | Q(cattle_dairy=True)
-            | Q(cattle_beef=True)
-            | Q(sheep=True)
-            | Q(goat=True)
-        )
+        return Company.objects.filter(active=True).exclude(animal_type_main=None)
 
     def update(self, save=True):
         self._update_animal_type()
