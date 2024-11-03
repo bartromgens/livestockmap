@@ -22,8 +22,6 @@ export class FooterComponent {
   }
 
   private update(): void {
-    console.log(this._companies);
-    const stats = new CompaniesStats(this._companies);
-    this.stats = stats;
+    this.stats = new CompaniesStats(this._companies);
   }
 }
