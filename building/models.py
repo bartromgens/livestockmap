@@ -172,10 +172,13 @@ class Address(models.Model):
 
 class Animal(models.TextChoices):
     COW = "COW", _("Cow")
+    COW_DAIRY = "COD", _("Cow Dairy")
+    COW_BEEF = "COB", _("Cow Beef")
     PIG = "PIG", _("Pig")
     CHICKEN = "CHI", _("Chicken")
     SHEEP = "SHE", _("Sheep")
     GOAT = "GOA", _("Goat")
+    COMBINED = "COM", _("Combined")
 
 
 @dataclass
@@ -188,6 +191,10 @@ ANIMAL_CONFIG = {
     Animal.COW: AnimalConfig(
         1.7
     ),  # https://www.nvwa.nl/onderwerpen/runderen/regels-voor-rundveehouders
+    Animal.COW_BEEF: AnimalConfig(
+        1.7
+    ),  # https://www.nvwa.nl/onderwerpen/runderen/regels-voor-rundveehouders
+    Animal.COW_DAIRY: AnimalConfig(5),  # Beter Leven 1 ster
     Animal.PIG: AnimalConfig(
         0.8
     ),  # https://www.rvo.nl/onderwerpen/dieren-houden-verkopen-verzorgen/welzijnseisen-varkens
@@ -196,6 +203,7 @@ ANIMAL_CONFIG = {
     ),  # https://www.rvo.nl/onderwerpen/dieren-houden-verkopen-verzorgen/welzijnseisen-vleeskuikens
     Animal.SHEEP: AnimalConfig(0.6),
     Animal.GOAT: AnimalConfig(0.5),
+    Animal.COMBINED: AnimalConfig(5),
 }
 
 
@@ -206,6 +214,8 @@ class Company(models.Model):
     chicken = models.BooleanField(default=False, null=False, db_index=True)
     pig = models.BooleanField(default=False, null=False, db_index=True)
     cattle = models.BooleanField(default=False, null=False, db_index=True)
+    cattle_beef = models.BooleanField(default=False, null=False, db_index=True)
+    cattle_dairy = models.BooleanField(default=False, null=False, db_index=True)
     sheep = models.BooleanField(default=False, null=False, db_index=True)
     goat = models.BooleanField(default=False, null=False, db_index=True)
     animal_type_main = models.CharField(max_length=3, choices=Animal, null=True)
@@ -246,12 +256,18 @@ class Company(models.Model):
 
     def _update_animal_type(self) -> None:
         cattle_words = ["melkvee", "rundvee", "kalveren"]
+        dairy_cattle_words = ["melkvee"]
+        beef_cattle_words = ["rundvee", "vleeskalveren"]
         chicken_words = ["pluimvee", "kippen", "kuikens", "hennen"]
         pig_words = ["varken", "zeug"]
         sheep_words = ["schaap", "schapen"]
         goat_words = ["geit"]
         description = self.description.lower()
         self.cattle = any(word in description for word in cattle_words)
+        self.cattle_beef = any(word in description for word in dairy_beef_words)
+        self.cattle_dairy = any(word in description for word in dairy_cattle_words)
+        if "geen melkvee" in description:
+            self.cattle_dairy = False
         self.chicken = any(word in description for word in chicken_words)
         self.pig = any(word in description for word in pig_words)
         self.sheep = any(word in description for word in sheep_words)
@@ -259,16 +275,32 @@ class Company(models.Model):
         self.animal_type_main = self._determine_main_type()
 
     def _determine_main_type(self) -> Animal:
-        main_type = None
-        if self.chicken:
+        main_type = Animal.COMBINED
+        if self.chicken and not any(
+            [self.cattle_dairy, self.cattle_beef, self.pig, self.goat, self.sheep]
+        ):
             main_type = Animal.CHICKEN
-        elif self.pig:
+        elif self.pig and not any(
+            [self.cattle_dairy, self.cattle_beef, self.chicken, self.goat, self.sheep]
+        ):
             main_type = Animal.PIG
-        elif self.cattle:
+        elif self.cattle_beef and not any(
+            [self.cattle_dairy, self.pig, self.chicken, self.goat, self.sheep]
+        ):
+            main_type = Animal.COW_BEEF
+        elif self.cattle_dairy and not any(
+            [self.cattle_beef, self.pig, self.chicken, self.goat, self.sheep]
+        ):
+            main_type = Animal.COW_DAIRY
+        elif self.cattle and not any([self.pig, self.chicken, self.goat, self.sheep]):
             main_type = Animal.COW
-        elif self.sheep:
+        elif self.sheep and not any(
+            [self.cattle_beef, self.cattle_dairy, self.pig, self.chicken, self.goat]
+        ):
             main_type = Animal.SHEEP
-        elif self.goat:
+        elif self.goat and not any(
+            [self.cattle_beef, self.cattle_dairy, self.pig, self.chicken, self.sheep]
+        ):
             main_type = Animal.GOAT
         return main_type
 

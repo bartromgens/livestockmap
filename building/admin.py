@@ -41,6 +41,8 @@ class CompanyAdmin(admin.ModelAdmin):
         "chicken",
         "pig",
         "cattle",
+        "cattle_dairy",
+        "cattle_beef",
         "sheep",
         "goat",
     ]

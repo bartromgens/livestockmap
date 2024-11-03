@@ -1,16 +1,6 @@
 import { Coordinate } from '../geo';
 import { Address, AddressResource } from '../address';
-
-/**
- * Values should match those returned by the backend.
- */
-export enum AnimalType {
-  Cow = 'COW',
-  Pig = 'PIG',
-  Chicken = 'CHI',
-  Sheep = 'SHE',
-  Goat = 'GOA',
-}
+import { AnimalType } from '../animal';
 
 export interface CompanyResource {
   id: number;
@@ -22,6 +12,8 @@ export interface CompanyResource {
   chicken: boolean;
   pig: boolean;
   cattle: boolean;
+  cattle_dairy: boolean;
+  cattle_beef: boolean;
   sheep: boolean;
   goat: boolean;
 }
@@ -37,6 +29,8 @@ export class Company {
     public chicken: boolean,
     public pig: boolean,
     public cattle: boolean,
+    public cattleDairy: boolean,
+    public cattleBeef: boolean,
     public sheep: boolean,
     public goat: boolean,
   ) {}
@@ -56,6 +50,8 @@ export class Company {
       resource.chicken,
       resource.pig,
       resource.cattle,
+      resource.cattle_dairy,
+      resource.cattle_beef,
       resource.sheep,
       resource.goat,
     );

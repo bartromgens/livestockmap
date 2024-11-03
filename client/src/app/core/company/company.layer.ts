@@ -12,7 +12,8 @@ import {
   MarkerCluster,
   markerClusterGroup,
 } from 'leaflet';
-import { chickenIcon, cowIcon, pigIcon } from '../../map';
+import { ANIMAL_TYPE_ICON, chickenIcon, cowIcon, pigIcon } from '../../map';
+import { AnimalType } from '../animal';
 
 export interface CompanyLayerOptions {
   clusterAtZoom: number;
@@ -41,16 +42,9 @@ export class CompanyLayer {
     for (const company of companies) {
       const layersCompany: any[] = [];
       const coordinate = latLng([company.address.lat, company.address.lon]);
-      // TODO BR: remove switch with polymorphism
-      if (company.chicken) {
-        layersCompany.push(marker(coordinate, { icon: chickenIcon }));
-      }
-      if (company.pig) {
-        layersCompany.push(marker(coordinate, { icon: pigIcon }));
-      }
-      if (company.cattle) {
-        layersCompany.push(marker(coordinate, { icon: cowIcon }));
-      }
+      layersCompany.push(
+        marker(coordinate, { icon: ANIMAL_TYPE_ICON[company.animalTypeMain] }),
+      );
       for (const layer of layersCompany) {
         layer.on('click', (event: LeafletMouseEvent) => onClick(event, layer));
         layer.company = company;

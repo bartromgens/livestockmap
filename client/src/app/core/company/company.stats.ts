@@ -1,4 +1,5 @@
-import { AnimalType, Company } from './company';
+import { Company } from './company';
+import { AnimalType } from '../animal';
 
 export class CompaniesStats {
   companyCount = 0;
