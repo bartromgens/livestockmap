@@ -56,7 +56,7 @@ export class AppComponent implements OnInit {
   private readonly ZOOM_DEFAULT: number = environment.production ? 8 : 8;
   private readonly CLUSTER_AT_ZOOM: number = 14;
   private readonly MAX_CLUSTER_RADIUS: number = 35;
-  private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM + 3;
+  private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM + 1;
   private readonly ANIMALS_AT_ZOOM: number = 18;
 
   Object = Object;
