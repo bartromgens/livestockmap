@@ -41,8 +41,11 @@ class CompanyAdmin(admin.ModelAdmin):
         "chicken",
         "pig",
         "cattle",
+        "cattle_dairy",
+        "cattle_beef",
         "sheep",
         "goat",
+        "other_activities",
     ]
     list_display = [
         "id",
@@ -54,8 +57,11 @@ class CompanyAdmin(admin.ModelAdmin):
         "chicken",
         "pig",
         "cattle",
+        "cattle_dairy",
+        "cattle_beef",
         "sheep",
         "goat",
+        "other_activities",
     ]
 
 

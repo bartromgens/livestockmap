@@ -13,15 +13,28 @@ class Command(BaseCommand):
     help = "Prints some stats of the data in the database"
 
     def handle(self, *args, **options):
-        self.print_stats(Animal.COW)
-        self.print_stats(Animal.PIG)
-        self.print_stats(Animal.CHICKEN)
-        self.print_stats(Animal.SHEEP)
-        self.print_stats(Animal.GOAT)
+        print("================")
+        self.print_company_stats(Animal.PIG)
+        self.print_company_stats(Animal.CHICKEN)
+        self.print_company_stats(Animal.COW)
+        self.print_company_stats(Animal.COW_DAIRY)
+        self.print_company_stats(Animal.COW_BEEF)
+        self.print_company_stats(Animal.SHEEP)
+        self.print_company_stats(Animal.GOAT)
+        self.print_company_stats(Animal.COMBINED)
 
     @classmethod
-    def print_stats(cls, animal_type: Animal):
-        cow_companies = Company.objects.filter(animal_type_main=animal_type)
-        companies = cow_companies
-        animal_count = companies.aggregate(Sum("animal_count"))
-        print(animal_type.label, animal_count["animal_count__sum"] / 1e6, "million")
+    @property
+    def companies_active(cls):
+        return Company.objects.filter(active=True)
+
+    def print_company_stats(cls, animal_type: Animal):
+        name = animal_type.label
+        only = cls.companies_active.filter(animal_type_main=animal_type)
+        only_animal_count = only.aggregate(Sum("animal_count"))
+        print(
+            only.count(),
+            f"{name} companies",
+            only_animal_count["animal_count__sum"] / 1e6,
+            f"{name} animals",
+        )

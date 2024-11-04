@@ -12,7 +12,8 @@ import {
   MarkerCluster,
   markerClusterGroup,
 } from 'leaflet';
-import { chickenIcon, cowIcon, pigIcon } from '../../map';
+import { ANIMAL_TYPE_ICON } from '../../map';
+import { AnimalType } from '../animal';
 
 export interface CompanyLayerOptions {
   clusterAtZoom: number;
@@ -41,16 +42,11 @@ export class CompanyLayer {
     for (const company of companies) {
       const layersCompany: any[] = [];
       const coordinate = latLng([company.address.lat, company.address.lon]);
-      // TODO BR: remove switch with polymorphism
-      if (company.chicken) {
-        layersCompany.push(marker(coordinate, { icon: chickenIcon }));
-      }
-      if (company.pig) {
-        layersCompany.push(marker(coordinate, { icon: pigIcon }));
-      }
-      if (company.cattle) {
-        layersCompany.push(marker(coordinate, { icon: cowIcon }));
-      }
+      layersCompany.push(
+        marker(coordinate, {
+          icon: ANIMAL_TYPE_ICON[company.animalTypeMain].leafletIcon,
+        }),
+      );
       for (const layer of layersCompany) {
         layer.on('click', (event: LeafletMouseEvent) => onClick(event, layer));
         layer.company = company;
@@ -104,35 +100,62 @@ export class CompanyLayer {
     return [...companiesSet];
   }
 
+  private static countAnimalType(companies: Company[]): {
+    [key in AnimalType]: number;
+  } {
+    const counts = Object.values(AnimalType).reduce(
+      (acc, animalType) => {
+        acc[animalType as AnimalType] = 0;
+        return acc;
+      },
+      {} as { [key in AnimalType]: number },
+    );
+
+    // Iterate over the items and increment the corresponding color count
+    companies.forEach((company) => {
+      counts[company.animalTypeMain]++;
+    });
+
+    return counts;
+  }
+
   private createMarkerGroupIcon(cluster: MarkerCluster): DivIcon {
-    // TODO BR: remove switch with polymorphism
-    let cattleCount = 0;
-    let chickenCount = 0;
-    let pigCount = 0;
+    const companies: Company[] = [];
     for (const marker of cluster.getAllChildMarkers()) {
       const company: Company = (marker as any)['company'];
-      if (company.cattle) {
-        cattleCount += 1;
-      }
-      if (company.chicken) {
-        chickenCount += 1;
-      }
-      if (company.pig) {
-        pigCount += 1;
-      }
+      companies.push(company);
     }
-    const totalCount = cattleCount + chickenCount + pigCount;
-    const sizeFactorCow = Math.sqrt(cattleCount / totalCount);
-    const sizeCow = [30 * sizeFactorCow, 19 * sizeFactorCow];
-    const sizeFactorChicken = Math.sqrt(chickenCount / totalCount);
-    const sizeChicken = [30 * sizeFactorChicken, 30 * sizeFactorChicken];
-    const sizeFactorPig = Math.sqrt(pigCount / totalCount);
-    const sizePig = [30 * sizeFactorPig, 20 * sizeFactorPig];
-    const iconImageStyle = `display: inline-block;`;
-    let iconHtml = `<div style="width: 60px;">`;
-    iconHtml += `<img src="/assets/pig60x40.png" width=${sizePig[0]} height=${sizePig[1]} style="${iconImageStyle}">`;
-    iconHtml += `<img src="/assets/cow60x38.png" width=${sizeCow[0]} height=${sizeCow[1]} style="${iconImageStyle}">`;
-    iconHtml += `<img src="/assets/chicken60x60.png" width=${sizeChicken[0]} height=${sizeChicken[1]} style="">`;
+
+    const animalCounts = CompanyLayer.countAnimalType(companies);
+
+    const animalTypes = [
+      AnimalType.Cow_Dairy,
+      AnimalType.Cow_Beef,
+      AnimalType.Pig,
+      AnimalType.Chicken,
+    ];
+    let totalCount = 0;
+    for (let animalType of animalTypes) {
+      const count: number = animalCounts[animalType];
+      totalCount += count;
+    }
+
+    if (totalCount == 0) {
+      return divIcon({
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
+        className: '',
+      });
+    }
+
+    let iconHtml = `<div style="width: 80px;">`;
+    for (let animalType of animalTypes) {
+      const count: number = animalCounts[animalType];
+      const sizeFactor = Math.pow(count / totalCount, 1 / 2) / Math.sqrt(2);
+      const icon = ANIMAL_TYPE_ICON[animalType];
+      iconHtml += `<img src="${icon.iconUrl}" width=${icon.width * sizeFactor} height=${icon.height * sizeFactor} style="display: inline-block;">`;
+    }
+
     iconHtml += `</div>`;
     return divIcon({
       html: iconHtml,
