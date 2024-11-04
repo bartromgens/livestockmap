@@ -31,7 +31,7 @@ import {
 import { Building, BuildingLayer, BuildingService } from './core/building';
 import { TileLayer, TileService } from './core/tile';
 import { environment } from '../environments/environment';
-import { AnimalLayer, AnimalType } from './core/animal';
+import { AnimalLayer } from './core/animal';
 import { FooterComponent } from './nav/footer.component';
 
 @Component({
