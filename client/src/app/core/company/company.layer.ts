@@ -93,11 +93,15 @@ export class CompanyLayer {
       showCoverageOnHover: false,
       maxClusterRadius: this.options.maxClusterRadius,
     });
+
     markers.addLayers(layers);
-    control.addOverlay(
-      markers,
-      EnumUtils.getEnumKeyByValue(AnimalType, animalType) as string,
-    );
+    const displayName = EnumUtils.getEnumKeyByValue(
+      AnimalType,
+      animalType,
+    ) as string;
+    const icon = ANIMAL_TYPE_ICON[animalType];
+    const name = `<img src='${icon.iconUrl}' height='16px'/> ${displayName}`;
+    control.addOverlay(markers, name);
     return markers;
   }
 
