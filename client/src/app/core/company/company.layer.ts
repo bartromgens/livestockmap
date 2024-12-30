@@ -14,7 +14,7 @@ import {
   MarkerClusterGroup,
   markerClusterGroup,
 } from 'leaflet';
-import { ANIMAL_TYPE_ICON } from '../../map';
+import { ANIMAL_TYPE_DISPLAY_NAME, ANIMAL_TYPE_ICON } from '../../map';
 import { AnimalType } from '../animal';
 import { EnumUtils } from '../../utils';
 
@@ -95,13 +95,12 @@ export class CompanyLayer {
     });
 
     markers.addLayers(layers);
-    const displayName = EnumUtils.getEnumKeyByValue(
-      AnimalType,
-      animalType,
-    ) as string;
+
+    const displayName = ANIMAL_TYPE_DISPLAY_NAME[animalType];
     const icon = ANIMAL_TYPE_ICON[animalType];
-    const name = `<img src='${icon.iconUrl}' height='16px'/> ${displayName}`;
-    control.addOverlay(markers, name);
+    const labelHtml = `<img src="${icon.iconUrl}" height="16"/>${displayName}`;
+    control.addOverlay(markers, labelHtml);
+
     return markers;
   }
 
