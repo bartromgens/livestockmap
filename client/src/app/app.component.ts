@@ -10,6 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import 'leaflet.markercluster'; // a leaflet plugin
 import {
+  Control,
   latLng,
   LatLngBounds,
   Layer,
@@ -61,14 +62,15 @@ export class AppComponent implements OnInit {
 
   Object = Object;
   readonly title: string = 'veekaart';
-  readonly title: string = 'veekaart.nl';
+  private baseLayer = tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+      maxZoom: 20,
+      attribution: '...',
+    },
+  );
   options = {
-    layers: [
-      tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 20,
-        attribution: '...',
-      }),
-    ],
+    layers: [this.baseLayer],
     zoom: this.ZOOM_DEFAULT,
     center: latLng(52.1, 5.58),
   };
@@ -79,6 +81,7 @@ export class AppComponent implements OnInit {
   companyLayer: CompanyLayer;
   private animalLayer: AnimalLayer;
   private tileLayer: TileLayer;
+  private control: Control.Layers;
   companiesInView: Company[] = [];
 
   constructor(
@@ -95,6 +98,7 @@ export class AppComponent implements OnInit {
       maxClusterRadius: this.MAX_CLUSTER_RADIUS,
     });
     this.tileLayer = new TileLayer();
+    this.control = new Control.Layers();
   }
 
   ngOnInit(): void {
@@ -109,6 +113,13 @@ export class AppComponent implements OnInit {
     console.log('initializeMap');
     this.updateCompanies();
     this.update();
+
+    if (!this.map) {
+      console.assert(false, 'map is not defined');
+      return;
+    }
+    this.control.addTo(this.map);
+    // this.control.addBaseLayer(this.baseLayer, 'map');
   }
 
   private update(): void {
@@ -134,6 +145,11 @@ export class AppComponent implements OnInit {
       this.companyLayer.remove(this.map);
       this.companyLayer.create(companies, this.onCompanyLayerClick);
       this.companyLayer.add(this.map);
+
+      if (!this.companyLayer.layerGroup) {
+        return;
+      }
+      this.control.addOverlay(this.companyLayer.layerGroup, 'companies');
       this.updateCompanyInViewStats();
     });
   }
