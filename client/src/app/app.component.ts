@@ -55,9 +55,9 @@ import { FooterComponent } from './nav/footer.component';
 })
 export class AppComponent implements OnInit {
   private readonly ZOOM_DEFAULT: number = environment.production ? 8 : 9;
-  private readonly CLUSTER_AT_ZOOM: number = 14;
-  private readonly MAX_CLUSTER_RADIUS: number = 35;
-  private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM + 1;
+  private readonly CLUSTER_AT_ZOOM: number = 12;
+  private readonly MAX_CLUSTER_RADIUS: number = 30;
+  private readonly BUILDINGS_AT_ZOOM: number = 15;
   private readonly ANIMALS_AT_ZOOM: number = 18;
 
   Object = Object;
@@ -98,7 +98,9 @@ export class AppComponent implements OnInit {
       maxClusterRadius: this.MAX_CLUSTER_RADIUS,
     });
     this.tileLayer = new TileLayer();
-    this.control = new Control.Layers();
+    this.control = new Control.Layers(undefined, undefined, {
+      collapsed: false,
+    });
   }
 
   ngOnInit(): void {

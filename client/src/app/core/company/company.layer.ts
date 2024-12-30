@@ -24,16 +24,25 @@ export interface CompanyLayerOptions {
 }
 
 export class CompanyLayer {
-  selectedCompany: Company | null = null;
+  selectedCompany: Company | undefined;
   private readonly optionsDefault: CompanyLayerOptions = {
     clusterAtZoom: 13,
     maxClusterRadius: 30,
   };
   private readonly options: CompanyLayerOptions = this.optionsDefault;
-  private layerGroup: LayerGroup | null = null;
+  private layerGroup: LayerGroup | undefined;
+  private readonly layers: Record<AnimalType, MarkerClusterGroup | null>;
 
   constructor(options: CompanyLayerOptions = this.optionsDefault) {
     this.options = { ...this.options, ...options };
+
+    this.layers = Object.values(AnimalType).reduce(
+      (map, key) => {
+        map[key as AnimalType] = null;
+        return map;
+      },
+      {} as Record<AnimalType, null>,
+    );
   }
 
   create(
@@ -52,6 +61,7 @@ export class CompanyLayer {
         onClick,
         control,
       );
+      this.layers[animalType] = animalLayer;
       animalLayers.push(animalLayer);
     }
 
@@ -100,6 +110,13 @@ export class CompanyLayer {
   add(map: Map): void {
     if (this.layerGroup) {
       map.addLayer(this.layerGroup);
+    }
+
+    for (const animalType of Object.values(AnimalType)) {
+      const animalLayer = this.layers[animalType];
+      if (animalLayer) {
+        map.removeLayer(animalLayer);
+      }
     }
   }
 
@@ -153,15 +170,7 @@ export class CompanyLayer {
       companies.push(company);
     }
 
-    const animalCounts = CompanyLayer.countAnimalType(companies);
-
-    let totalCount = 0;
-    for (const animalType of Object.values(AnimalType)) {
-      const count: number = animalCounts[animalType];
-      totalCount += count;
-    }
-
-    if (totalCount == 0) {
+    if (companies.length == 0) {
       return divIcon({
         iconSize: [0, 0],
         iconAnchor: [0, 0],
@@ -169,13 +178,14 @@ export class CompanyLayer {
       });
     }
 
-    let iconHtml = `<div style="width: 80px;">`;
-    for (const animalType of Object.values(AnimalType)) {
-      const count: number = animalCounts[animalType];
-      const sizeFactor = Math.pow(count / totalCount, 1 / 2) / Math.sqrt(2);
-      const icon = ANIMAL_TYPE_ICON[animalType];
-      iconHtml += `<img src="${icon.iconUrl}" width=${icon.width * sizeFactor} height=${icon.height * sizeFactor} style="display: inline-block;">`;
-    }
+    const animalType = companies[0].animalTypeMain;
+    const icon = ANIMAL_TYPE_ICON[animalType];
+    const sizeFactor = Math.sqrt(companies.length / 50) + 1;
+    const iconWidth = Math.min(icon.width, icon.widthDisplay * sizeFactor);
+    const iconHeight = Math.min(icon.height, icon.heightDisplay * sizeFactor);
+
+    let iconHtml = `<div style="width: ${iconWidth}px;">`;
+    iconHtml += `<img src="${icon.iconUrl}" width=${iconWidth} height=${iconHeight} style="display: inline-block;">`;
 
     iconHtml += `</div>`;
     return divIcon({
