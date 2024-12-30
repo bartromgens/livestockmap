@@ -139,15 +139,8 @@ export class CompanyLayer {
 
     const animalCounts = CompanyLayer.countAnimalType(companies);
 
-    const animalTypes = [
-      AnimalType.Cow_Dairy,
-      AnimalType.Cow_Beef,
-      AnimalType.Cow,
-      AnimalType.Pig,
-      AnimalType.Chicken,
-    ];
     let totalCount = 0;
-    for (const animalType of animalTypes) {
+    for (const animalType of Object.values(AnimalType)) {
       const count: number = animalCounts[animalType];
       totalCount += count;
     }
@@ -161,7 +154,7 @@ export class CompanyLayer {
     }
 
     let iconHtml = `<div style="width: 80px;">`;
-    for (const animalType of animalTypes) {
+    for (const animalType of Object.values(AnimalType)) {
       const count: number = animalCounts[animalType];
       const sizeFactor = Math.pow(count / totalCount, 1 / 2) / Math.sqrt(2);
       const icon = ANIMAL_TYPE_ICON[animalType];
