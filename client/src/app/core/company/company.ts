@@ -60,4 +60,22 @@ export class Company {
   static fromResources(resources: CompanyResource[]): Company[] {
     return resources.map((resource) => Company.fromResource(resource));
   }
+
+  static groupCompaniesByAnimalType(companies: Company[]) {
+    // Initialize each key with an empty list
+    const companiesGrouped: Record<AnimalType, Company[]> = Object.values(
+      AnimalType,
+    ).reduce(
+      (map, key) => {
+        map[key as AnimalType] = [];
+        return map;
+      },
+      {} as Record<AnimalType, any[]>,
+    );
+
+    for (const company of companies) {
+      companiesGrouped[company.animalTypeMain].push(company);
+    }
+    return companiesGrouped;
+  }
 }

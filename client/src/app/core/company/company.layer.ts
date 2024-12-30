@@ -1,5 +1,6 @@
 import { Company } from './company';
 import {
+  Control,
   divIcon,
   DivIcon,
   latLng,
@@ -14,6 +15,7 @@ import {
 } from 'leaflet';
 import { ANIMAL_TYPE_ICON } from '../../map';
 import { AnimalType } from '../animal';
+import { EnumUtils } from '../../utils';
 
 export interface CompanyLayerOptions {
   clusterAtZoom: number;
@@ -35,29 +37,41 @@ export class CompanyLayer {
 
   create(
     companies: Company[],
+    control: Control.Layers,
     onClick: (event: LeafletMouseEvent, layerClicked: Layer) => void,
   ): void {
     console.log('create markers');
-    const layers: any[] = [];
-    for (const company of companies) {
-      const coordinate = latLng([company.address.lat, company.address.lon]);
-      const companyMarker: any = marker(coordinate, {
-        icon: ANIMAL_TYPE_ICON[company.animalTypeMain].leafletIcon,
+    const companiesGrouped = Company.groupCompaniesByAnimalType(companies);
+
+    const animalLayers = [];
+    for (const animalType of Object.values(AnimalType)) {
+      const layers: any[] = [];
+      for (const company of companiesGrouped[animalType]) {
+        const coordinate = latLng([company.address.lat, company.address.lon]);
+        const companyMarker: any = marker(coordinate, {
+          icon: ANIMAL_TYPE_ICON[company.animalTypeMain].leafletIcon,
+        });
+        companyMarker.on('click', (event: LeafletMouseEvent) =>
+          onClick(event, companyMarker),
+        );
+        companyMarker.company = company;
+        layers.push(companyMarker);
+      }
+      const markers = markerClusterGroup({
+        disableClusteringAtZoom: this.options.clusterAtZoom,
+        iconCreateFunction: this.createMarkerGroupIcon,
+        showCoverageOnHover: false,
+        maxClusterRadius: this.options.maxClusterRadius,
       });
-      companyMarker.on('click', (event: LeafletMouseEvent) =>
-        onClick(event, companyMarker),
+      markers.addLayers(layers);
+      animalLayers.push(markers);
+      control.addOverlay(
+        markers,
+        EnumUtils.getEnumKeyByValue(AnimalType, animalType) as string,
       );
-      companyMarker.company = company;
-      layers.push(companyMarker);
     }
-    const markers = markerClusterGroup({
-      disableClusteringAtZoom: this.options.clusterAtZoom,
-      iconCreateFunction: this.createMarkerGroupIcon,
-      showCoverageOnHover: false,
-      maxClusterRadius: this.options.maxClusterRadius,
-    });
-    markers.addLayers(layers);
-    this.layerGroup = markers;
+
+    this.layerGroup = new LayerGroup(animalLayers);
     console.log('create markers done');
   }
 
@@ -128,6 +142,7 @@ export class CompanyLayer {
     const animalTypes = [
       AnimalType.Cow_Dairy,
       AnimalType.Cow_Beef,
+      AnimalType.Cow,
       AnimalType.Pig,
       AnimalType.Chicken,
     ];

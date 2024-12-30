@@ -142,7 +142,11 @@ export class AppComponent implements OnInit {
       // );
 
       this.companyLayer.remove(this.map);
-      this.companyLayer.create(companies, this.onCompanyLayerClick);
+      this.companyLayer.create(
+        companies,
+        this.control,
+        this.onCompanyLayerClick,
+      );
       this.companyLayer.add(this.map);
 
       // if (!this.companyLayer.layerGroup) {
