@@ -11,6 +11,7 @@ import {
   Marker,
   marker,
   MarkerCluster,
+  MarkerClusterGroup,
   markerClusterGroup,
 } from 'leaflet';
 import { ANIMAL_TYPE_ICON } from '../../map';
@@ -45,34 +46,49 @@ export class CompanyLayer {
 
     const animalLayers = [];
     for (const animalType of Object.values(AnimalType)) {
-      const layers: any[] = [];
-      for (const company of companiesGrouped[animalType]) {
-        const coordinate = latLng([company.address.lat, company.address.lon]);
-        const companyMarker: any = marker(coordinate, {
-          icon: ANIMAL_TYPE_ICON[company.animalTypeMain].leafletIcon,
-        });
-        companyMarker.on('click', (event: LeafletMouseEvent) =>
-          onClick(event, companyMarker),
-        );
-        companyMarker.company = company;
-        layers.push(companyMarker);
-      }
-      const markers = markerClusterGroup({
-        disableClusteringAtZoom: this.options.clusterAtZoom,
-        iconCreateFunction: this.createMarkerGroupIcon,
-        showCoverageOnHover: false,
-        maxClusterRadius: this.options.maxClusterRadius,
-      });
-      markers.addLayers(layers);
-      animalLayers.push(markers);
-      control.addOverlay(
-        markers,
-        EnumUtils.getEnumKeyByValue(AnimalType, animalType) as string,
+      const animalLayer = this.createLayerForAnimalType(
+        companiesGrouped,
+        animalType,
+        onClick,
+        control,
       );
+      animalLayers.push(animalLayer);
     }
 
     this.layerGroup = new LayerGroup(animalLayers);
     console.log('create markers done');
+  }
+
+  private createLayerForAnimalType(
+    companiesGrouped: Record<AnimalType, Company[]>,
+    animalType: AnimalType,
+    onClick: (event: LeafletMouseEvent, layerClicked: Layer) => void,
+    control: Control.Layers,
+  ): MarkerClusterGroup {
+    const layers: any[] = [];
+    for (const company of companiesGrouped[animalType]) {
+      const coordinate = latLng([company.address.lat, company.address.lon]);
+      const companyMarker: any = marker(coordinate, {
+        icon: ANIMAL_TYPE_ICON[company.animalTypeMain].leafletIcon,
+      });
+      companyMarker.on('click', (event: LeafletMouseEvent) =>
+        onClick(event, companyMarker),
+      );
+      companyMarker.company = company;
+      layers.push(companyMarker);
+    }
+    const markers = markerClusterGroup({
+      disableClusteringAtZoom: this.options.clusterAtZoom,
+      iconCreateFunction: this.createMarkerGroupIcon,
+      showCoverageOnHover: false,
+      maxClusterRadius: this.options.maxClusterRadius,
+    });
+    markers.addLayers(layers);
+    control.addOverlay(
+      markers,
+      EnumUtils.getEnumKeyByValue(AnimalType, animalType) as string,
+    );
+    return markers;
   }
 
   remove(map: Map): void {
