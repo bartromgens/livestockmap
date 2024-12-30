@@ -149,10 +149,6 @@ export class AppComponent implements OnInit {
       );
       this.companyLayer.add(this.map);
 
-      // if (!this.companyLayer.layerGroup) {
-      //   return;
-      // }
-      // this.control.addOverlay(this.companyLayer.layerGroup, 'companies');
       this.updateCompanyInViewStats();
     });
   }
