@@ -60,6 +60,7 @@ export class AppComponent implements OnInit {
   private readonly ANIMALS_AT_ZOOM: number = 18;
 
   Object = Object;
+  readonly title: string = 'veekaart';
   readonly title: string = 'veekaart.nl';
   options = {
     layers: [
