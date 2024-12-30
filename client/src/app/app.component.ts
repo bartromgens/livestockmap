@@ -113,12 +113,16 @@ export class AppComponent implements OnInit {
     console.log('initializeMap');
     this.updateCompanies();
     this.update();
+    this.addControls();
+  }
 
+  private addControls() {
     if (!this.map) {
       console.assert(false, 'map is not defined');
       return;
     }
     this.control.addTo(this.map);
+    new Control.Scale().addTo(this.map);
   }
 
   private update(): void {
