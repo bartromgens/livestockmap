@@ -119,7 +119,6 @@ export class AppComponent implements OnInit {
       return;
     }
     this.control.addTo(this.map);
-    // this.control.addBaseLayer(this.baseLayer, 'map');
   }
 
   private update(): void {
@@ -146,10 +145,10 @@ export class AppComponent implements OnInit {
       this.companyLayer.create(companies, this.onCompanyLayerClick);
       this.companyLayer.add(this.map);
 
-      if (!this.companyLayer.layerGroup) {
-        return;
-      }
-      this.control.addOverlay(this.companyLayer.layerGroup, 'companies');
+      // if (!this.companyLayer.layerGroup) {
+      //   return;
+      // }
+      // this.control.addOverlay(this.companyLayer.layerGroup, 'companies');
       this.updateCompanyInViewStats();
     });
   }

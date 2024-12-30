@@ -40,18 +40,15 @@ export class CompanyLayer {
     console.log('create markers');
     const layers: any[] = [];
     for (const company of companies) {
-      const layersCompany: any[] = [];
       const coordinate = latLng([company.address.lat, company.address.lon]);
-      layersCompany.push(
-        marker(coordinate, {
-          icon: ANIMAL_TYPE_ICON[company.animalTypeMain].leafletIcon,
-        }),
+      const companyMarker: any = marker(coordinate, {
+        icon: ANIMAL_TYPE_ICON[company.animalTypeMain].leafletIcon,
+      });
+      companyMarker.on('click', (event: LeafletMouseEvent) =>
+        onClick(event, companyMarker),
       );
-      for (const layer of layersCompany) {
-        layer.on('click', (event: LeafletMouseEvent) => onClick(event, layer));
-        layer.company = company;
-      }
-      layers.push(...layersCompany);
+      companyMarker.company = company;
+      layers.push(companyMarker);
     }
     const markers = markerClusterGroup({
       disableClusteringAtZoom: this.options.clusterAtZoom,
@@ -135,7 +132,7 @@ export class CompanyLayer {
       AnimalType.Chicken,
     ];
     let totalCount = 0;
-    for (let animalType of animalTypes) {
+    for (const animalType of animalTypes) {
       const count: number = animalCounts[animalType];
       totalCount += count;
     }
@@ -149,7 +146,7 @@ export class CompanyLayer {
     }
 
     let iconHtml = `<div style="width: 80px;">`;
-    for (let animalType of animalTypes) {
+    for (const animalType of animalTypes) {
       const count: number = animalCounts[animalType];
       const sizeFactor = Math.pow(count / totalCount, 1 / 2) / Math.sqrt(2);
       const icon = ANIMAL_TYPE_ICON[animalType];
