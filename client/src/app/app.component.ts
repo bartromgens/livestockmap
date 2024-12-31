@@ -10,6 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import 'leaflet.markercluster'; // a leaflet plugin
 import {
+  Control,
   latLng,
   LatLngBounds,
   Layer,
@@ -31,7 +32,7 @@ import {
 import { Building, BuildingLayer, BuildingService } from './core/building';
 import { TileLayer, TileService } from './core/tile';
 import { environment } from '../environments/environment';
-import { AnimalLayer } from './core/animal';
+import { AnimalLayer, AnimalType } from './core/animal';
 import { FooterComponent } from './nav/footer.component';
 
 @Component({
@@ -54,20 +55,22 @@ import { FooterComponent } from './nav/footer.component';
 })
 export class AppComponent implements OnInit {
   private readonly ZOOM_DEFAULT: number = environment.production ? 8 : 9;
-  private readonly CLUSTER_AT_ZOOM: number = 14;
-  private readonly MAX_CLUSTER_RADIUS: number = 35;
-  private readonly BUILDINGS_AT_ZOOM: number = this.CLUSTER_AT_ZOOM + 1;
+  private readonly CLUSTER_AT_ZOOM: number = 12;
+  private readonly MAX_CLUSTER_RADIUS: number = 30;
+  private readonly BUILDINGS_AT_ZOOM: number = 15;
   private readonly ANIMALS_AT_ZOOM: number = 18;
 
   Object = Object;
-  readonly title: string = 'veekaart.nl';
+  readonly title: string = 'veekaart';
+  private baseLayer = tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+      maxZoom: 20,
+      attribution: '...',
+    },
+  );
   options = {
-    layers: [
-      tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 20,
-        attribution: '...',
-      }),
-    ],
+    layers: [this.baseLayer],
     zoom: this.ZOOM_DEFAULT,
     center: latLng(52.1, 5.58),
   };
@@ -78,6 +81,7 @@ export class AppComponent implements OnInit {
   companyLayer: CompanyLayer;
   private animalLayer: AnimalLayer;
   private tileLayer: TileLayer;
+  private control: Control.Layers;
   companiesInView: Company[] = [];
 
   constructor(
@@ -92,8 +96,12 @@ export class AppComponent implements OnInit {
     this.companyLayer = new CompanyLayer({
       clusterAtZoom: this.CLUSTER_AT_ZOOM,
       maxClusterRadius: this.MAX_CLUSTER_RADIUS,
+      visibleLayers: [AnimalType.Pig, AnimalType.Cow_Beef, AnimalType.Chicken],
     });
     this.tileLayer = new TileLayer();
+    this.control = new Control.Layers(undefined, undefined, {
+      collapsed: false,
+    });
   }
 
   ngOnInit(): void {
@@ -108,6 +116,16 @@ export class AppComponent implements OnInit {
     console.log('initializeMap');
     this.updateCompanies();
     this.update();
+    this.addControls();
+  }
+
+  private addControls() {
+    if (!this.map) {
+      console.assert(false, 'map is not defined');
+      return;
+    }
+    this.control.addTo(this.map);
+    new Control.Scale().addTo(this.map);
   }
 
   private update(): void {
@@ -131,8 +149,13 @@ export class AppComponent implements OnInit {
       // );
 
       this.companyLayer.remove(this.map);
-      this.companyLayer.create(companies, this.onCompanyLayerClick);
+      this.companyLayer.create(
+        companies,
+        this.control,
+        this.onCompanyLayerClick,
+      );
       this.companyLayer.add(this.map);
+
       this.updateCompanyInViewStats();
     });
   }
