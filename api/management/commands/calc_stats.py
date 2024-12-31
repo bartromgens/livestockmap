@@ -16,7 +16,6 @@ class Command(BaseCommand):
         print("================")
         self.print_company_stats(Animal.PIG)
         self.print_company_stats(Animal.CHICKEN)
-        self.print_company_stats(Animal.COW)
         self.print_company_stats(Animal.COW_DAIRY)
         self.print_company_stats(Animal.COW_BEEF)
         self.print_company_stats(Animal.SHEEP)

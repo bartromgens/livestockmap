@@ -171,7 +171,6 @@ class Address(models.Model):
 
 
 class Animal(models.TextChoices):
-    COW = "COW", _("Cow")
     COW_DAIRY = "COD", _("Cow Dairy")
     COW_BEEF = "COB", _("Cow Beef")
     PIG = "PIG", _("Pig")
@@ -188,13 +187,10 @@ class AnimalConfig:
 
 ANIMAL_CONFIG = {
     None: AnimalConfig(0.8),
-    Animal.COW: AnimalConfig(
-        1.7
-    ),  # https://www.nvwa.nl/onderwerpen/runderen/regels-voor-rundveehouders
     Animal.COW_BEEF: AnimalConfig(
         1.7
     ),  # https://www.nvwa.nl/onderwerpen/runderen/regels-voor-rundveehouders
-    Animal.COW_DAIRY: AnimalConfig(8),  # Configued to match national statistics
+    Animal.COW_DAIRY: AnimalConfig(8),  # Configured to match national statistics
     Animal.PIG: AnimalConfig(
         0.8
     ),  # https://www.rvo.nl/onderwerpen/dieren-houden-verkopen-verzorgen/welzijnseisen-varkens
@@ -246,6 +242,7 @@ class Company(models.Model):
 
     @classmethod
     def update_companies(cls, companies: List["Company"]) -> None:
+        logger.info(f"updating {len(companies)} companies")
         for i, company in enumerate(companies):
             if i % 100 == 0:
                 logger.info(

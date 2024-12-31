@@ -66,7 +66,6 @@ export const sheepIcon = new AnimalIcon(
 export const ANIMAL_TYPE_ICON: Record<AnimalType, AnimalIcon> = {
   [AnimalType.Chicken]: chickenIcon,
   [AnimalType.Pig]: pigIcon,
-  [AnimalType.Cow]: cowIcon,
   [AnimalType.Cow_Dairy]: cowDairyIcon,
   [AnimalType.Cow_Beef]: cowIcon,
   [AnimalType.Goat]: goatIcon,
@@ -77,7 +76,6 @@ export const ANIMAL_TYPE_ICON: Record<AnimalType, AnimalIcon> = {
 export const ANIMAL_TYPE_DISPLAY_NAME: Record<AnimalType, string> = {
   [AnimalType.Chicken]: 'Kippen',
   [AnimalType.Pig]: 'Varkens',
-  [AnimalType.Cow]: 'Koeien',
   [AnimalType.Cow_Dairy]: 'Melkkoeien',
   [AnimalType.Cow_Beef]: 'Vleeskalveren',
   [AnimalType.Goat]: 'Geiten',

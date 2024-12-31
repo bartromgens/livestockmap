@@ -32,10 +32,6 @@ export class CompaniesStats {
     this.chickenCount = 0;
     for (const company of this.companies) {
       switch (company.animalTypeMain) {
-        case AnimalType.Cow:
-          this.cattleCompanies.push(company);
-          this.cowCount += company.animalCount;
-          break;
         case AnimalType.Cow_Dairy:
           this.cattleDairyCompanies.push(company);
           this.cowDairyCount += company.animalCount;
