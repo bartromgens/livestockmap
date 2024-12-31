@@ -256,7 +256,7 @@ class Company(models.Model):
     def _update_animal_type(self) -> None:
         cattle_words = ["melkvee", "rundvee", "kalveren"]
         dairy_cattle_words = ["melkvee"]
-        beef_cattle_words = ["rundvee", "vleeskalveren"]
+        beef_cattle_words = ["rundvee", "vleeskalveren", "kalveren"]
         chicken_words = ["pluimvee", "kippen", "kuikens", "hennen"]
         pig_words = ["varken", "zeug"]
         sheep_words = ["schaap", "schapen"]
@@ -272,7 +272,7 @@ class Company(models.Model):
         self.cattle = any(word in description for word in cattle_words)
         self.cattle_beef = any(word in description for word in beef_cattle_words)
         self.cattle_dairy = any(word in description for word in dairy_cattle_words)
-        if "geen melkvee" in description:
+        if "geen melkvee" in description or "niet melkvee" in description:
             self.cattle_dairy = False
         self.chicken = any(word in description for word in chicken_words)
         self.pig = any(word in description for word in pig_words)
@@ -325,10 +325,6 @@ class Company(models.Model):
             ]
         ):
             main_type = Animal.COW_DAIRY
-        elif self.cattle and not any(
-            [self.pig, self.chicken, self.goat, self.sheep, self.other_activities]
-        ):
-            main_type = Animal.COW
         elif self.sheep and not any(
             [
                 self.cattle,
