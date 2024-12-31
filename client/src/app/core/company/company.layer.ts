@@ -96,13 +96,19 @@ export class CompanyLayer {
     });
 
     markers.addLayers(layers);
+    this.createControls(animalType, control, markers);
+    return markers;
+  }
 
+  private createControls(
+    animalType: AnimalType,
+    control: Control.Layers,
+    markers: MarkerClusterGroup,
+  ) {
     const displayName = ANIMAL_TYPE_DISPLAY_NAME[animalType];
     const icon = ANIMAL_TYPE_ICON[animalType];
-    const labelHtml = `<img src="${icon.iconUrl}" height="16"/>${displayName}`;
+    const labelHtml = `<div class="control-name"><img src="${icon.iconUrl}" height="16"/></div>${displayName}`;
     control.addOverlay(markers, labelHtml);
-
-    return markers;
   }
 
   remove(map: Map): void {
@@ -169,7 +175,7 @@ export class CompanyLayer {
     }
 
     const icon = ANIMAL_TYPE_ICON[companies[0].animalTypeMain];
-    const sizeFactor = Math.sqrt(companies.length / 50) + 1;
+    const sizeFactor = Math.sqrt(companies.length / 100) + 1;
     const iconWidth = Math.min(icon.width, icon.widthDisplay * sizeFactor);
     const iconHeight = Math.min(icon.height, icon.heightDisplay * sizeFactor);
 
