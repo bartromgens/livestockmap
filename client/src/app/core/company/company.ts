@@ -45,7 +45,7 @@ export class Company {
       resource.description,
       resource.active,
       Address.fromResource(resource.address),
-      <AnimalType>resource.animal_type_main,
+      resource.animal_type_main as AnimalType,
       Number(resource.animal_count),
       resource.chicken,
       resource.pig,

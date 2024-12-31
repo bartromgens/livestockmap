@@ -16,7 +16,6 @@ import {
 } from 'leaflet';
 import { ANIMAL_TYPE_DISPLAY_NAME, ANIMAL_TYPE_ICON } from '../../map';
 import { AnimalType } from '../animal';
-import { EnumUtils } from '../../utils';
 
 export interface CompanyLayerOptions {
   clusterAtZoom: number;
@@ -124,6 +123,7 @@ export class CompanyLayer {
   }
 
   select(company: Company): void {
+    console.log('selected company', company);
     this.selectedCompany = company;
   }
 
@@ -181,8 +181,7 @@ export class CompanyLayer {
       });
     }
 
-    const animalType = companies[0].animalTypeMain;
-    const icon = ANIMAL_TYPE_ICON[animalType];
+    const icon = ANIMAL_TYPE_ICON[companies[0].animalTypeMain];
     const sizeFactor = Math.sqrt(companies.length / 50) + 1;
     const iconWidth = Math.min(icon.width, icon.widthDisplay * sizeFactor);
     const iconHeight = Math.min(icon.height, icon.heightDisplay * sizeFactor);
