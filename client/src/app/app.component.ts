@@ -32,7 +32,7 @@ import {
 import { Building, BuildingLayer, BuildingService } from './core/building';
 import { TileLayer, TileService } from './core/tile';
 import { environment } from '../environments/environment';
-import { AnimalLayer } from './core/animal';
+import { AnimalLayer, AnimalType } from './core/animal';
 import { FooterComponent } from './nav/footer.component';
 
 @Component({
@@ -96,6 +96,7 @@ export class AppComponent implements OnInit {
     this.companyLayer = new CompanyLayer({
       clusterAtZoom: this.CLUSTER_AT_ZOOM,
       maxClusterRadius: this.MAX_CLUSTER_RADIUS,
+      visibleLayers: [AnimalType.Pig, AnimalType.Cow_Beef, AnimalType.Chicken],
     });
     this.tileLayer = new TileLayer();
     this.control = new Control.Layers(undefined, undefined, {

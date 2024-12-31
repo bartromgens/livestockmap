@@ -18,8 +18,9 @@ import { ANIMAL_TYPE_DISPLAY_NAME, ANIMAL_TYPE_ICON } from '../../map';
 import { AnimalType } from '../animal';
 
 export interface CompanyLayerOptions {
-  clusterAtZoom: number;
-  maxClusterRadius: number;
+  clusterAtZoom?: number;
+  maxClusterRadius?: number;
+  visibleLayers?: AnimalType[];
 }
 
 export class CompanyLayer {
@@ -27,6 +28,7 @@ export class CompanyLayer {
   private readonly optionsDefault: CompanyLayerOptions = {
     clusterAtZoom: 13,
     maxClusterRadius: 30,
+    visibleLayers: [AnimalType.Pig, AnimalType.Cow_Beef, AnimalType.Chicken],
   };
   private readonly options: CompanyLayerOptions = this.optionsDefault;
   private layerGroup: LayerGroup | undefined;
@@ -114,12 +116,7 @@ export class CompanyLayer {
       map.addLayer(this.layerGroup);
     }
 
-    for (const animalType of Object.values(AnimalType)) {
-      const animalLayer = this.layers[animalType];
-      if (animalLayer) {
-        map.removeLayer(animalLayer);
-      }
-    }
+    this.updateLayerVisibility(map);
   }
 
   select(company: Company): void {
@@ -147,23 +144,13 @@ export class CompanyLayer {
     return [...companiesSet];
   }
 
-  private static countAnimalType(companies: Company[]): {
-    [key in AnimalType]: number;
-  } {
-    const counts = Object.values(AnimalType).reduce(
-      (acc, animalType) => {
-        acc[animalType as AnimalType] = 0;
-        return acc;
-      },
-      {} as { [key in AnimalType]: number },
-    );
-
-    // Iterate over the items and increment the corresponding color count
-    companies.forEach((company) => {
-      counts[company.animalTypeMain]++;
-    });
-
-    return counts;
+  private updateLayerVisibility(map: Map): void {
+    for (const animalType of Object.values(AnimalType)) {
+      const animalLayer = this.layers[animalType];
+      if (animalLayer && !this.options.visibleLayers?.includes(animalType)) {
+        map.removeLayer(animalLayer);
+      }
+    }
   }
 
   private createMarkerGroupIcon(cluster: MarkerCluster): DivIcon {
@@ -196,5 +183,24 @@ export class CompanyLayer {
       iconAnchor: [15, 15],
       className: '',
     }); // use getAllChildMarkers() to get type
+  }
+
+  private static countAnimalType(companies: Company[]): {
+    [key in AnimalType]: number;
+  } {
+    const counts = Object.values(AnimalType).reduce(
+      (acc, animalType) => {
+        acc[animalType as AnimalType] = 0;
+        return acc;
+      },
+      {} as { [key in AnimalType]: number },
+    );
+
+    // Iterate over the items and increment the corresponding color count
+    companies.forEach((company) => {
+      counts[company.animalTypeMain]++;
+    });
+
+    return counts;
   }
 }
