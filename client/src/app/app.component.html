@@ -110,6 +110,10 @@
     </mat-card>
   </mat-sidenav>
   <mat-sidenav-content>
+    <div class="loading-overlay" *ngIf="isLoading">
+      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+      <p class="m-0">Loading data...</p>
+    </div>
     <div
       class="page-content-wrapper"
       leaflet

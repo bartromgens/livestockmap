@@ -6,6 +6,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 import { LeafletModule } from '@bluehalo/ngx-leaflet';
 import 'leaflet.markercluster'; // a leaflet plugin
@@ -48,6 +49,7 @@ import { FooterComponent } from './nav/footer.component';
     MatSidenavModule,
     MatButtonModule,
     MatCardModule,
+    MatProgressSpinner,
     FooterComponent,
   ],
   templateUrl: './app.component.html',
@@ -59,6 +61,7 @@ export class AppComponent implements OnInit {
   private readonly MAX_CLUSTER_RADIUS: number = 30;
   private readonly BUILDINGS_AT_ZOOM: number = 15;
   private readonly ANIMALS_AT_ZOOM: number = 18;
+  isLoading = true;
 
   Object = Object;
   readonly title: string = 'veekaart';
@@ -114,6 +117,7 @@ export class AppComponent implements OnInit {
 
   private initializeMap(): void {
     console.log('initializeMap');
+    this.isLoading = true;
     this.updateCompanies();
     this.update();
     this.addControls();
@@ -156,6 +160,7 @@ export class AppComponent implements OnInit {
       );
       this.companyLayer.add(this.map);
 
+      this.isLoading = false;
       this.updateCompanyInViewStats();
     });
   }
