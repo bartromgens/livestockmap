@@ -24,23 +24,33 @@
       </mat-card-header>
       <mat-card-content>
         <div>
-          Area: {{ buildingLayer.selectedBuilding.area | number: "1.0-0" }} m<sup>2</sup>
+          Area:
+          {{ buildingLayer.selectedBuilding.area | number: "1.0-0" }} m<sup
+            >2</sup
+          >
         </div>
         <div>
           Size: {{ buildingLayer.selectedBuilding.length | number: "1.0-0" }} x
           {{ buildingLayer.selectedBuilding.width | number: "1.0-0" }} m
         </div>
         <div>
-          {{ buildingLayer.selectedBuilding.center.lat }}, {{ buildingLayer.selectedBuilding.center.lon }}
+          {{ buildingLayer.selectedBuilding.center.lat }},
+          {{ buildingLayer.selectedBuilding.center.lon }}
         </div>
         <br />
         <div class="mat-title-medium">Tags</div>
-        <div *ngFor="let key of Object.keys(buildingLayer.selectedBuilding.tags)">
+        <div
+          *ngFor="let key of Object.keys(buildingLayer.selectedBuilding.tags)"
+        >
           {{ key }}: {{ buildingLayer.selectedBuilding.tags[key] }}
         </div>
         <br />
         <div class="mat-title-medium">Nearby addresses</div>
-        <div *ngFor="let address of buildingLayer.selectedBuilding.addresses_nearby">
+        <div
+          *ngFor="
+            let address of buildingLayer.selectedBuilding.addresses_nearby
+          "
+        >
           {{ address.toString() }},
           {{
             address.coordinate.distanceTo(buildingLayer.selectedBuilding.center)
@@ -87,7 +97,11 @@
         </div>
         <br />
         <div>
-          <a [href]="googleCoordinateUrl(companyLayer.selectedCompany.coordinate)">
+          <a
+            [href]="
+              googleCoordinateUrl(companyLayer.selectedCompany.coordinate)
+            "
+          >
             {{ companyLayer.selectedCompany.coordinate.lat }},
             {{ companyLayer.selectedCompany.coordinate.lon }}
           </a>
