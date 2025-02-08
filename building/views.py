@@ -51,7 +51,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
     queryset = Company.livestock_companies()
     serializer_class = CompanySerializer
 
-    @method_decorator(cache_page(60 * 5))
+    @method_decorator(cache_page(60 * 60 * 24))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
