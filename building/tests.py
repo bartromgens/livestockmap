@@ -22,7 +22,7 @@ class BuildingFactoryTest(TestCase):
 
     def test_building_company_count(self):
         self.assertEqual(self.buildings.count(), 8)
-        self.assertEqual(Company.objects.all().count(), 28)
+        self.assertEqual(Company.objects.all().count(), 29)
 
     def test_building_area_width_length(self):
         buildings = sorted(self.buildings, key=lambda b: b.area, reverse=True)
