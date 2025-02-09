@@ -119,7 +119,10 @@ export class AppComponent implements OnInit {
         this.updateTiles();
       }
       if (params.has('visibleLayers') && params.get('visibleLayers') !== null) {
-        this.updateVisibleLayersFromParams(params);
+        this.updateVisibleLayersFromURL(params);
+      }
+      if (params.has('lat') && params.has('lon') && params.has('zoom')) {
+        this.updateLocationZoomFromURL(params);
       }
     });
   }
@@ -222,7 +225,7 @@ export class AppComponent implements OnInit {
     });
   }
 
-  private updateVisibleLayersFromParams(params: ParamMap) {
+  private updateVisibleLayersFromURL(params: ParamMap) {
     const visibleLayersStr = params.get('visibleLayers');
     if (!visibleLayersStr) {
       return;
@@ -253,6 +256,18 @@ export class AppComponent implements OnInit {
     this.updateBuildings(this.bbox);
     this.updateCompanyInViewStats();
   };
+
+  private updateLocationZoomFromURL(params: ParamMap) {
+    const lat = Number(params.get('lat'));
+    const lon = Number(params.get('lon'));
+    const zoom = Number(params.get('zoom'));
+    if (lat === null || lon === null || zoom === null) {
+      return;
+    }
+    this.options.center = latLng(lat, lon);
+    this.options.zoom = zoom;
+    this.map?.setView([lat, lon], zoom);
+  }
 
   private get bbox(): BBox {
     if (!this.map) {
@@ -313,10 +328,25 @@ export class AppComponent implements OnInit {
     console.log('onMove', event);
     this.updateCompanyInViewStats();
     this.update();
+    this.updateUrlWithLocationZoom();
   }
 
   onZoom(event: LeafletEvent): void {
     console.log('onZoom: level', this.map?.getZoom(), event);
+    this.updateUrlWithLocationZoom();
+  }
+
+  private updateUrlWithLocationZoom(): void {
+    if (!this.map) {
+      return;
+    }
+    const center = this.map.getCenter();
+    const zoom = this.map.getZoom();
+    const url = new URL(window.location.href);
+    url.searchParams.set('lat', center.lat.toFixed(6));
+    url.searchParams.set('lon', center.lng.toFixed(6));
+    url.searchParams.set('zoom', String(zoom));
+    this.location.replaceState(url.pathname + url.search);
   }
 
   private updateCompanyInViewStats(): void {
