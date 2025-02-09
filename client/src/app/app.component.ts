@@ -244,6 +244,7 @@ export class AppComponent implements OnInit {
     const url = new URL(window.location.href);
     url.searchParams.set('visibleLayers', values.join(','));
     this.location.replaceState(url.pathname + url.search);
+    this.updateCompanyInViewStats();
   };
 
   private get bbox(): BBox {
