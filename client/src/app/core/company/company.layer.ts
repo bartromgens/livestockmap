@@ -117,10 +117,21 @@ export class CompanyLayer {
     }
   }
 
-  add(map: Map): void {
+  add(
+    map: Map,
+    onVisibleLayersChange: (visibleLayers: AnimalType[]) => void,
+  ): void {
     if (this.layerGroup) {
       map.addLayer(this.layerGroup);
     }
+
+    map.on('overlayadd', (event) => {
+      onVisibleLayersChange(this.getLayersVisible(map));
+    });
+
+    map.on('overlayremove', (event) => {
+      onVisibleLayersChange(this.getLayersVisible(map));
+    });
 
     this.updateLayerVisibility(map);
   }
@@ -150,13 +161,41 @@ export class CompanyLayer {
     return [...companiesSet];
   }
 
+  hideAllLayers(map: Map): void {
+    this.options.visibleLayers = [];
+    this.updateLayerVisibility(map);
+  }
+
+  setLayerVisibility(map: Map, animalType: AnimalType, visible: boolean): void {
+    if (this.options.visibleLayers?.includes(animalType) && !visible) {
+      this.options.visibleLayers?.filter((item) => item !== animalType);
+    }
+    if (!this.options.visibleLayers?.includes(animalType) && visible) {
+      this.options.visibleLayers?.push(animalType);
+    }
+    this.updateLayerVisibility(map);
+  }
+
   private updateLayerVisibility(map: Map): void {
     for (const animalType of Object.values(AnimalType)) {
       const animalLayer = this.layers[animalType];
       if (animalLayer && !this.options.visibleLayers?.includes(animalType)) {
         map.removeLayer(animalLayer);
       }
+      if (animalLayer && this.options.visibleLayers?.includes(animalType)) {
+        map.addLayer(animalLayer);
+      }
     }
+  }
+
+  private getLayersVisible(map: Map): AnimalType[] {
+    const values: AnimalType[] = [];
+    for (const [animalType, layer] of Object.entries(this.layers)) {
+      if (layer && map.hasLayer(layer)) {
+        values.push(animalType as AnimalType);
+      }
+    }
+    return values;
   }
 
   private createMarkerGroupIcon(cluster: MarkerCluster): DivIcon {
