@@ -160,9 +160,6 @@ export class AppComponent implements OnInit {
       if (!this.map) {
         return;
       }
-      // companies = companies.filter(
-      //   (company) => company.animalTypeMain == AnimalType.Combined,
-      // );
 
       this.companyLayer.remove(this.map);
       this.companyLayer.create(
