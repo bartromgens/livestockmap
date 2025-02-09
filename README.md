@@ -18,13 +18,12 @@ for more information on how these are to be used.
 
 #### TODO
 
-- [ ] Determine building animal type for companies with multiple
 - [ ] Optimize rendering of many markers (especially zooming out)
-  - [ ] Use canvas? https://github.com/francoisromain/leaflet-markers-canvas?tab=readme-ov-file 
-- [ ] Add dairy cow as animal type
+  - [ ] Use canvas? https://github.com/francoisromain/leaflet-markers-canvas?tab=readme-ov-file
 - [ ] Change animal colors for better distinction between cow and pig
 - [ ] Change sidebar expand button to close button inside sidebar
-- [ ] Filter by animal type
+- [ ] Add about page
+- [ ] Add link to GitHub repo
 
 #### Livestock data 
 
@@ -63,6 +62,7 @@ Websites:
 
 - https://www.uittrekselregister.nl/zoekresultaten?q=
 - https://www.bedrijvenregister.nl/
+- https://www.transfirm.nl/index
 
 ### Tools
 
