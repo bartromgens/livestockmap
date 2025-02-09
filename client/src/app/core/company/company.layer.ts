@@ -31,7 +31,6 @@ export class CompanyLayer {
     visibleLayers: [AnimalType.Pig, AnimalType.Cow_Beef, AnimalType.Chicken],
   };
   private readonly options: CompanyLayerOptions = this.optionsDefault;
-  private layerGroup: LayerGroup | undefined;
   private readonly layers: Record<AnimalType, MarkerClusterGroup | null>;
 
   constructor(options: CompanyLayerOptions = this.optionsDefault) {
@@ -54,19 +53,15 @@ export class CompanyLayer {
     console.log('create markers');
     const companiesGrouped = Company.groupCompaniesByAnimalType(companies);
 
-    const animalLayers = [];
     for (const animalType of Object.values(AnimalType)) {
-      const animalLayer = this.createLayerForAnimalType(
+      this.layers[animalType] = this.createLayerForAnimalType(
         companiesGrouped,
         animalType,
         onClick,
         control,
       );
-      this.layers[animalType] = animalLayer;
-      animalLayers.push(animalLayer);
     }
 
-    this.layerGroup = new LayerGroup(animalLayers);
     console.log('create markers done');
   }
 
@@ -111,20 +106,10 @@ export class CompanyLayer {
     control.addOverlay(markers, labelHtml);
   }
 
-  remove(map: Map): void {
-    if (this.layerGroup && map.hasLayer(this.layerGroup)) {
-      map.removeLayer(this.layerGroup);
-    }
-  }
-
   add(
     map: Map,
     onVisibleLayersChange: (visibleLayers: AnimalType[]) => void,
   ): void {
-    if (this.layerGroup) {
-      map.addLayer(this.layerGroup);
-    }
-
     map.on('overlayadd', (event) => {
       onVisibleLayersChange(this.getLayersVisible(map));
     });

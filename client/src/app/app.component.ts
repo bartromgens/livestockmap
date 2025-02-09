@@ -161,7 +161,6 @@ export class AppComponent implements OnInit {
         return;
       }
 
-      this.companyLayer.remove(this.map);
       this.companyLayer.create(
         companies,
         this.control,
