@@ -10,3 +10,12 @@ export enum AnimalType {
   Goat = 'GOA',
   Combined = 'COM',
 }
+
+export function getAnimalTypeFromString(
+  animalStr: string,
+): AnimalType | undefined {
+  if (Object.values(AnimalType).includes(animalStr as AnimalType)) {
+    return animalStr as AnimalType;
+  }
+  return undefined; // Handle invalid cases
+}

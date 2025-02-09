@@ -1,6 +1,6 @@
 import { Component, NgZone, OnInit } from '@angular/core';
-import { CommonModule, NgOptimizedImage } from '@angular/common';
-import { ActivatedRoute, RouterOutlet } from '@angular/router';
+import { CommonModule, NgOptimizedImage, Location } from '@angular/common';
+import { ActivatedRoute, ParamMap, RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
@@ -33,7 +33,11 @@ import {
 import { Building, BuildingLayer, BuildingService } from './core/building';
 import { TileLayer, TileService } from './core/tile';
 import { environment } from '../environments/environment';
-import { AnimalLayer, AnimalType } from './core/animal';
+import {
+  AnimalLayer,
+  AnimalType,
+  getAnimalTypeFromString,
+} from './core/animal';
 import { FooterComponent } from './nav/footer.component';
 
 @Component({
@@ -84,11 +88,12 @@ export class AppComponent implements OnInit {
   companyLayer: CompanyLayer;
   private animalLayer: AnimalLayer;
   private tileLayer: TileLayer;
-  private control: Control.Layers;
+  private readonly control: Control.Layers;
   companiesInView: Company[] = [];
 
   constructor(
     private route: ActivatedRoute,
+    private location: Location,
     private buildingService: BuildingService,
     private companyService: CompanyService,
     private tileService: TileService,
@@ -112,12 +117,19 @@ export class AppComponent implements OnInit {
       if (params.has('showTiles') && params.get('showTiles') == 'true') {
         this.updateTiles();
       }
+      if (params.has('visibleLayers') && params.get('visibleLayers') !== null) {
+        this.updateVisibleLayersFromParams(params);
+      }
     });
   }
 
   private initializeMap(): void {
     console.log('initializeMap');
     this.isLoading = true;
+    if (!this.map) {
+      console.assert(false, 'map is not defined');
+      return;
+    }
     this.updateCompanies();
     this.update();
     this.addControls();
@@ -148,9 +160,6 @@ export class AppComponent implements OnInit {
       if (!this.map) {
         return;
       }
-      // companies = companies.filter(
-      //   (company) => company.animalTypeMain == AnimalType.Combined,
-      // );
 
       this.companyLayer.remove(this.map);
       this.companyLayer.create(
@@ -158,8 +167,8 @@ export class AppComponent implements OnInit {
         this.control,
         this.onCompanyLayerClick,
       );
-      this.companyLayer.add(this.map);
 
+      this.companyLayer.add(this.map, this.onVisibleLayersChange);
       this.isLoading = false;
       this.updateCompanyInViewStats();
     });
@@ -208,6 +217,35 @@ export class AppComponent implements OnInit {
       this.tileLayer.update(tiles, this.map);
     });
   }
+
+  private updateVisibleLayersFromParams(params: ParamMap) {
+    const visibleLayersStr = params.get('visibleLayers');
+    if (!visibleLayersStr) {
+      return;
+    }
+    const visibleLayers = visibleLayersStr.split(',');
+    const visibleLayersAnimalTypes = visibleLayers
+      .map((visibleAnimalType) => getAnimalTypeFromString(visibleAnimalType))
+      .filter((item) => item !== undefined);
+    this.updateVisibleLayers(visibleLayersAnimalTypes);
+  }
+
+  private updateVisibleLayers(visibleLayersAnimalTypes: AnimalType[]): void {
+    if (!this.map) {
+      console.assert(false, 'map is not defined');
+      return;
+    }
+    this.companyLayer.hideAllLayers(this.map);
+    for (const visibleAnimalType of visibleLayersAnimalTypes) {
+      this.companyLayer.setLayerVisibility(this.map, visibleAnimalType, true);
+    }
+  }
+
+  private onVisibleLayersChange = (values: AnimalType[]): void => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('visibleLayers', values.join(','));
+    this.location.replaceState(url.pathname + url.search);
+  };
 
   private get bbox(): BBox {
     if (!this.map) {
