@@ -119,18 +119,10 @@ export class AppComponent implements OnInit {
         this.updateTiles();
       }
       if (params.has('visibleLayers') && params.get('visibleLayers') !== null) {
-        this.updateVisibleLayersFromParams(params);
+        this.updateVisibleLayersFromURL(params);
       }
       if (params.has('lat') && params.has('lon') && params.has('zoom')) {
-        const lat = Number(params.get('lat'));
-        const lon = Number(params.get('lon'));
-        const zoom = Number(params.get('zoom'));
-        if (lat === null || lon === null || zoom === null) {
-          return;
-        }
-        this.options.center = latLng(lat, lon);
-        this.options.zoom = zoom;
-        this.map?.setView([lat, lon], zoom);
+        this.updateLocationZoomFromURL(params);
       }
     });
   }
@@ -233,7 +225,7 @@ export class AppComponent implements OnInit {
     });
   }
 
-  private updateVisibleLayersFromParams(params: ParamMap) {
+  private updateVisibleLayersFromURL(params: ParamMap) {
     const visibleLayersStr = params.get('visibleLayers');
     if (!visibleLayersStr) {
       return;
@@ -264,6 +256,18 @@ export class AppComponent implements OnInit {
     this.updateBuildings(this.bbox);
     this.updateCompanyInViewStats();
   };
+
+  private updateLocationZoomFromURL(params: ParamMap) {
+    const lat = Number(params.get('lat'));
+    const lon = Number(params.get('lon'));
+    const zoom = Number(params.get('zoom'));
+    if (lat === null || lon === null || zoom === null) {
+      return;
+    }
+    this.options.center = latLng(lat, lon);
+    this.options.zoom = zoom;
+    this.map?.setView([lat, lon], zoom);
+  }
 
   private get bbox(): BBox {
     if (!this.map) {
