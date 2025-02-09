@@ -7,11 +7,13 @@ import {
   LatLng,
 } from 'leaflet';
 import { Building } from './building';
+import { AnimalType } from '../animal';
 
 export class BuildingLayer {
-  private layerGroup: LayerGroup | null = null;
-  private selectedLayer: Polygon | null = null;
-  selectedBuilding: Building | null = null;
+  private layerGroup: LayerGroup | undefined;
+  private selectedLayer: Polygon | undefined;
+  private layers: Record<AnimalType, LayerGroup | null>;
+  selectedBuilding: Building | undefined;
 
   private readonly defaultStyle = {
     color: '#3388FF',
@@ -25,6 +27,20 @@ export class BuildingLayer {
     opacity: 1,
   };
 
+  constructor() {
+    this.layers = this.createLayersMap();
+  }
+
+  private createLayersMap(): Record<AnimalType, LayerGroup | null> {
+    return Object.values(AnimalType).reduce(
+      (map, key) => {
+        map[key as AnimalType] = null;
+        return map;
+      },
+      {} as Record<AnimalType, null>,
+    );
+  }
+
   select(layer: Polygon): void {
     this.selectedLayer?.setStyle(this.defaultStyle);
     layer.setStyle(this.highlightBuildingStyle);
@@ -36,20 +52,35 @@ export class BuildingLayer {
 
   create(
     buildings: Building[],
+    visibleAnimalTypes: AnimalType[],
     onClick: (event: LeafletMouseEvent, layerClicked: Layer) => void,
   ): void {
+    console.log('BuildingLayer:create', visibleAnimalTypes);
     const layers: any[] = [];
-    for (const building of buildings) {
-      const layer: any = building.polygon;
-      layer.on('click', (event: LeafletMouseEvent) => onClick(event, layer));
-      layer.buildingId = building.way_id;
-      layer.building = building;
-      layers.push(layer);
+    for (const animalType of Object.values(AnimalType)) {
+      if (!visibleAnimalTypes.includes(animalType)) {
+        continue;
+      }
+      const buildingsType = buildings.filter(
+        (building) => building.company.animalTypeMain === animalType,
+      );
+      for (const building of buildingsType) {
+        const layer: any = building.polygon;
+        layer.on('click', (event: LeafletMouseEvent) => onClick(event, layer));
+        layer.buildingId = building.way_id;
+        layer.building = building;
+        layers.push(layer);
+      }
+      this.layers[animalType] = new LayerGroup(layers);
     }
-    this.layerGroup = new LayerGroup(layers);
+    this.layerGroup = new LayerGroup(
+      Object.values(this.layers).filter((value) => value !== null),
+    );
   }
 
   remove(map: Map): void {
+    console.log('BuildingLayer:remove');
+    this.layers = this.createLayersMap();
     if (this.layerGroup && map.hasLayer(this.layerGroup)) {
       map.removeLayer(this.layerGroup);
     }

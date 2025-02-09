@@ -89,6 +89,7 @@ export class AppComponent implements OnInit {
   private animalLayer: AnimalLayer;
   private tileLayer: TileLayer;
   private readonly control: Control.Layers;
+  private visibleAnimalTypes: AnimalType[] = [];
   companiesInView: Company[] = [];
 
   constructor(
@@ -187,7 +188,11 @@ export class AppComponent implements OnInit {
         return;
       }
       this.buildingLayer.remove(this.map);
-      this.buildingLayer.create(buildings, this.onBuildingLayerClick);
+      this.buildingLayer.create(
+        buildings,
+        this.visibleAnimalTypes,
+        this.onBuildingLayerClick,
+      );
       this.buildingLayer.add(this.map);
       this.updateAnimals();
     });
@@ -240,10 +245,12 @@ export class AppComponent implements OnInit {
     }
   }
 
-  private onVisibleLayersChange = (values: AnimalType[]): void => {
+  private onVisibleLayersChange = (visibleAnimalTypes: AnimalType[]): void => {
+    this.visibleAnimalTypes = visibleAnimalTypes;
     const url = new URL(window.location.href);
-    url.searchParams.set('visibleLayers', values.join(','));
+    url.searchParams.set('visibleLayers', visibleAnimalTypes.join(','));
     this.location.replaceState(url.pathname + url.search);
+    this.updateBuildings(this.bbox);
     this.updateCompanyInViewStats();
   };
 

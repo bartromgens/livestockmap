@@ -5,7 +5,6 @@ import {
   DivIcon,
   latLng,
   Layer,
-  LayerGroup,
   LeafletMouseEvent,
   Map,
   Marker,
@@ -35,8 +34,11 @@ export class CompanyLayer {
 
   constructor(options: CompanyLayerOptions = this.optionsDefault) {
     this.options = { ...this.options, ...options };
+    this.layers = this.createLayersMap();
+  }
 
-    this.layers = Object.values(AnimalType).reduce(
+  private createLayersMap(): Record<AnimalType, MarkerClusterGroup | null> {
+    return Object.values(AnimalType).reduce(
       (map, key) => {
         map[key as AnimalType] = null;
         return map;
