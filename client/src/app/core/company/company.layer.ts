@@ -205,9 +205,17 @@ export class CompanyLayer {
     const iconWidth = Math.min(icon.width, icon.widthDisplay * sizeFactor);
     const iconHeight = Math.min(icon.height, icon.heightDisplay * sizeFactor);
 
-    let iconHtml = `<div style="width: ${iconWidth}px;">`;
-    iconHtml += `<img src="${icon.iconUrl}" width=${iconWidth} height=${iconHeight} style="display: inline-block;">`;
-
+    let iconHtml = `<div style="width: ${iconWidth}px; position: relative; display: inline-block;">`;
+    iconHtml += `<img src="${icon.iconUrl}" width=${iconWidth} height=${iconHeight} style="display: block;">`;
+    iconHtml += `<span style="
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 12px;
+        color: white;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.6);"
+      >${companies.length}</span>`;
     iconHtml += `</div>`;
     return divIcon({
       html: iconHtml,

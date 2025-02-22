@@ -23,7 +23,6 @@ for more information on how these are to be used.
 - [ ] Change animal colors for better distinction between cow and pig
 - [ ] Add about page
 - [ ] Add link to GitHub repo
-- [ ] Show number of companies inside group icon
 - [ ] Improve layout and styling of footer statistics
   - [ ] Fix footer visibility on small screens 
 
