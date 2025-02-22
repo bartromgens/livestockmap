@@ -21,9 +21,11 @@ for more information on how these are to be used.
 - [ ] Optimize rendering of many markers (especially zooming out)
   - [ ] Use canvas? https://github.com/francoisromain/leaflet-markers-canvas?tab=readme-ov-file
 - [ ] Change animal colors for better distinction between cow and pig
-- [ ] Change sidebar expand button to close button inside sidebar
 - [ ] Add about page
 - [ ] Add link to GitHub repo
+- [ ] Show number of companies inside group icon
+- [ ] Improve layout and styling of footer statistics
+  - [ ] Fix footer visibility on small screens 
 
 #### Livestock data 
 

@@ -9,6 +9,16 @@
     [(opened)]="sidebarOpened"
     class="custom-sidebar"
   >
+    <div class="close-sidebar-button">
+      <button
+        mat-icon-button
+        (click)="sidenav.toggle()"
+        aria-label="Close sidebar"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
     <mat-card
       *ngIf="buildingLayer.selectedBuilding"
       appearance="outlined"
@@ -32,10 +42,6 @@
         <div>
           Size: {{ buildingLayer.selectedBuilding.length | number: "1.0-0" }} x
           {{ buildingLayer.selectedBuilding.width | number: "1.0-0" }} m
-        </div>
-        <div>
-          {{ buildingLayer.selectedBuilding.center.lat }},
-          {{ buildingLayer.selectedBuilding.center.lon }}
         </div>
         <br />
         <div class="mat-title-medium">Tags</div>
@@ -127,14 +133,3 @@
 </mat-sidenav-container>
 
 <app-footer [companies]="companiesInView"></app-footer>
-
-<div
-  class="toggle-sidebar"
-  [ngClass]="{ collapsed: !sidebarOpened }"
-  [ngStyle]="{ 'background-color': 'white', 'z-index': 99 }"
->
-  <div class="btn-toggle-sidebar" (click)="sidenav.toggle()">
-    <mat-icon *ngIf="sidebarOpened">chevron_left</mat-icon>
-    <mat-icon *ngIf="!sidebarOpened">chevron_right</mat-icon>
-  </div>
-</div>
