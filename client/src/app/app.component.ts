@@ -82,6 +82,7 @@ export class AppComponent implements OnInit {
     center: latLng(52.1, 5.58),
   };
   sidebarOpened = false;
+  debug = !environment.production;
 
   private map: Map | null = null;
   buildingLayer: BuildingLayer;
