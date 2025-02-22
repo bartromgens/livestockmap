@@ -25,6 +25,7 @@ for more information on how these are to be used.
 - [ ] Add link to GitHub repo
 - [ ] Improve layout and styling of footer statistics
   - [ ] Fix footer visibility on small screens 
+- [ ] Add and use [SBI-codes](https://www.kvk.nl/over-het-handelsregister/overzicht-standaard-bedrijfsindeling-sbi-codes-voor-activiteiten/) to company data 
 
 #### Livestock data 
 
