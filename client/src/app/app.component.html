@@ -1,6 +1,15 @@
 <mat-toolbar>
   <img ngSrc="/assets/logo.png" alt="veekaart.nl logo" width="90" height="26" />
-  <span [ngStyle]="{ 'margin-left': '8px' }">{{ title }}</span>
+  <a routerLink="/" class="app-title-link">
+    <span [ngStyle]="{ 'margin-left': '8px' }">{{ title }}</span>
+  </a>
+
+  <span class="spacer"></span>
+
+  <nav class="nav-links">
+    <a mat-button routerLink="/about">Info</a>
+    <a mat-button href="https://github.com/bartromgens/livestockmap" target="_blank">Code</a>
+  </nav>
 </mat-toolbar>
 
 <router-outlet></router-outlet>
