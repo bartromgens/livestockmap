@@ -1,141 +1,15 @@
 <mat-toolbar>
-  <img ngSrc="/assets/logo.png" alt="chicken" width="90" height="26" />
-  <span [ngStyle]="{ 'margin-left': '8px' }">{{ title }}</span>
+  <img ngSrc="/assets/logo.png" alt="veekaart.nl logo" width="90" height="26" />
+  <a routerLink="/" class="app-title-link">
+    <span [ngStyle]="{ 'margin-left': '8px' }">{{ title }}</span>
+  </a>
+
+  <span class="spacer"></span>
+
+  <nav class="nav-links">
+    <a mat-button routerLink="/about">Info</a>
+    <a mat-button href="https://github.com/bartromgens/livestockmap" target="_blank">Code</a>
+  </nav>
 </mat-toolbar>
-<mat-sidenav-container>
-  <mat-sidenav
-    #sidenav
-    mode="side"
-    [(opened)]="sidebarOpened"
-    class="custom-sidebar"
-  >
-    <div class="close-sidebar-button">
-      <button
-        mat-icon-button
-        (click)="sidenav.toggle()"
-        aria-label="Close sidebar"
-      >
-        <mat-icon>close</mat-icon>
-      </button>
-    </div>
 
-    <mat-card
-      *ngIf="buildingLayer.selectedBuilding"
-      appearance="outlined"
-      class="card-sidebar"
-    >
-      <mat-card-header>
-        <mat-card-title>Veegebouw</mat-card-title>
-        <mat-card-subtitle>
-          Bron:
-          <a [href]="buildingLayer.selectedBuilding.osmUrl" target="”_blank”">
-            openstreetmap
-            <mat-icon class="small-icon">open_in_new</mat-icon>
-          </a>
-        </mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <div>
-          Oppervlakte:
-          {{ buildingLayer.selectedBuilding.area | number: "1.0-0" }} m<sup
-            >2</sup
-          >
-        </div>
-        <div>
-          Afmetingen:
-          {{ buildingLayer.selectedBuilding.length | number: "1.0-0" }} x
-          {{ buildingLayer.selectedBuilding.width | number: "1.0-0" }} m
-        </div>
-        <br />
-        <div class="mat-title-medium">Labels</div>
-        <div
-          *ngFor="let key of Object.keys(buildingLayer.selectedBuilding.tags)"
-        >
-          {{ key }}: {{ buildingLayer.selectedBuilding.tags[key] }}
-        </div>
-        <br />
-        <div *ngIf="debug">
-          <div class="mat-title-medium">Nearby addresses</div>
-          <div
-            *ngFor="
-              let address of buildingLayer.selectedBuilding.addresses_nearby
-            "
-          >
-            {{ address.toString() }},
-            {{
-              address.coordinate.distanceTo(
-                buildingLayer.selectedBuilding.center
-              ) | number: "1.0-0"
-            }}
-            m
-          </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
-    <mat-card
-      *ngIf="companyLayer.selectedCompany"
-      appearance="outlined"
-      class="card-sidebar"
-    >
-      <mat-card-header>
-        <mat-card-title>Veebedrijf</mat-card-title>
-        <mat-card-subtitle>
-          <img
-            *ngIf="companyLayer.selectedCompany.chicken"
-            ngSrc="/assets/chicken60x60.png"
-            alt="chicken"
-            width="30"
-            height="30"
-          />
-          <img
-            *ngIf="companyLayer.selectedCompany.cattle"
-            ngSrc="/assets/cow60x38.png"
-            alt="chicken"
-            width="30"
-            height="19"
-          />
-          <img
-            *ngIf="companyLayer.selectedCompany.pig"
-            ngSrc="/assets/pig60x40.png"
-            alt="chicken"
-            width="30"
-            height="20"
-          />
-        </mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <div>
-          {{ companyLayer.selectedCompany.description }}
-        </div>
-        <br />
-        <div>
-          <a
-            [href]="
-              googleCoordinateUrl(companyLayer.selectedCompany.coordinate)
-            "
-            target="_blank"
-          >
-            Google Maps <mat-icon class="medium-icon">open_in_new</mat-icon>
-          </a>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </mat-sidenav>
-  <mat-sidenav-content>
-    <div class="loading-overlay" *ngIf="isLoading">
-      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-      <p class="m-0">Loading data...</p>
-    </div>
-    <div
-      class="page-content-wrapper"
-      leaflet
-      [leafletOptions]="options"
-      (leafletClick)="onMapClick($event)"
-      (leafletMapReady)="onMapReady($event)"
-      (leafletMapMoveEnd)="onMove($event)"
-      (leafletMapZoomEnd)="onZoom($event)"
-    ></div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
-
-<app-footer [companies]="companiesInView"></app-footer>
+<router-outlet></router-outlet>
