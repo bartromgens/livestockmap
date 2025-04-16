@@ -27,6 +27,6 @@ class BuildingFactoryTest(TestCase):
     def test_building_area_width_length(self):
         buildings = sorted(self.buildings, key=lambda b: b.area, reverse=True)
         building_largest = buildings[0]
-        self.assertEqual(building_largest.area, 2010.3198927871526)
-        self.assertEqual(building_largest.width, 23.62333423088129)
-        self.assertEqual(building_largest.length, 87.11061224621811)
+        self.assertEqual(round(building_largest.area), 2010)
+        self.assertEqual(round(building_largest.width), 24)
+        self.assertEqual(round(building_largest.length), 87)

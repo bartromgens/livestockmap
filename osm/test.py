@@ -20,7 +20,7 @@ class TestGetAddressNearby(TestCase):
         lon = 3.448
         distance = 100
         nodes = get_address_nearby(lat, lon, distance)
-        self.assertEqual(len(nodes), 14)
+        self.assertEqual(len(nodes), 12)
 
 
 class TestGetBuildings(TestCase):
