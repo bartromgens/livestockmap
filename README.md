@@ -50,6 +50,9 @@ Number of livestock companies [source](https://www.staatvanlandbouwnatuurenvoeds
   - 651 goat [source](https://agrimatie.nl/SectorResultaat.aspx?subpubID=2232&sectorID=2430)
   - 8141 sheep [source](https://agrimatie.nl/SectorResultaat.aspx?subpubID=2232&sectorID=2430)
 
+Vergunningen:
+- https://krd.igoview.nl/ (Gelderland, Limburg, Noord-Brabant en Twente)
+
 #### Company information (KvK)
 
 - Search for companies registered at the KvK near a building on the map
