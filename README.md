@@ -18,11 +18,7 @@ for more information on how these are to be used.
 
 #### TODO
 
-- [ ] Optimize rendering of many markers (especially zooming out)
-  - [ ] Use canvas? https://github.com/francoisromain/leaflet-markers-canvas?tab=readme-ov-file
 - [ ] Change animal colors for better distinction between cow and pig
-- [ ] Add about page
-- [ ] Add link to GitHub repo
 - [ ] Improve layout and styling of footer statistics
   - [ ] Fix footer visibility on small screens 
 - [ ] Add and use [SBI-codes](https://www.kvk.nl/over-het-handelsregister/overzicht-standaard-bedrijfsindeling-sbi-codes-voor-activiteiten/) to company data 
@@ -105,3 +101,5 @@ https://paletton.com to select [3 colors](https://paletton.com/#uid=5000A0kRrUXo
 - https://agrimatie.nl/
 - https://www.staatvanlandbouwnatuurenvoedsel.nl/kerncijfers/
 - https://data.emissieregistratie.nl/emissies/grafiek?s=tq5t3cVjA
+- [Geografische Informatie Agrarische
+Bedrijven 2019](https://edepot.wur.nl/568432)
