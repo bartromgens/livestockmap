@@ -46,6 +46,8 @@ Number of livestock companies [source](https://www.staatvanlandbouwnatuurenvoeds
   - 651 goat [source](https://agrimatie.nl/SectorResultaat.aspx?subpubID=2232&sectorID=2430)
   - 8141 sheep [source](https://agrimatie.nl/SectorResultaat.aspx?subpubID=2232&sectorID=2430)
 
+Number of animals per municipality: https://opendata.cbs.nl/#/CBS/nl/dataset/80781ned/table?dl=C42CF
+
 Vergunningen:
 - https://krd.igoview.nl/ (Gelderland, Limburg, Noord-Brabant en Twente)
 
